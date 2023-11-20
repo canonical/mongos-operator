@@ -13,5 +13,4 @@ website:
 summary: A mongos operator charm
 series:
   - jammy
-
-subordinate: true
+# subordinate: true
