@@ -1,26 +1,15 @@
-<!--
-Avoid using this README file for information that is maintained or published elsewhere, e.g.:
+# Charmed MongoDB Operator
 
-* metadata.yaml > published on Charmhub
-* documentation > published on (or linked to from) Charmhub
-* detailed contribution guide > documentation or CONTRIBUTING.md
+## Overview
 
-Use links instead.
--->
+[mongos](https://www.mongodb.com/docs/v6.0/reference/program/mongos/) is a popular NoSQL database application. It stores its data with JSON-like documents creating a flexible user experience with easy-to-use data aggregation for data analytics. In addition, it is a distributed database, so vertical and horizontal scaling come naturally.
 
-# mongos-operator
+Applications like mongos must be managed and operated in the production environment. This means that mongos proxy administrators and analysts who run workloads in various infrastructures should be able to automate tasks for repeatable operational work. Technologies such as software operators encapsulate the knowledge, wisdom and expertise of a real-world operations team and codify it into a computer program that helps to operate complex server applications like MongoDB and other databases.
 
-Charmhub package name: operator-template
-More information: https://charmhub.io/mongos-operator
+Canonical has developed an open-source operator called Charmed Mongos, which make it easier to operate mongos. The Charmed mongos Virtual Machine (VM) operator deploys and operates mongos on physical, Virtual Machines (VM) and other wide range of cloud and cloud-like environments, including AWS, Azure, OpenStack and VMWare.
 
-Describe your charm in one or two sentences.
+Charmed monogs(VM Operator) is an enhanced, open source and fully-compatible drop-in replacement for the MongoDB Community Edition of mongos with advanced mongos enterprise features. It simplifies the deployment, scaling, design and management of mongos in production in a reliable way.
 
-## Other resources
+It acts as a [subordinate Charmed Operator](https://discourse.charmhub.io/t/subordinate-applications/1053) and is meant to act as a proxy to a sharded MongoDB cluster. To deploy a sharded MongoDB cluster please see our [Charmed solution for MongoDB](https://charmhub.io/mongodb)
 
-<!-- If your charm is documented somewhere else other than Charmhub, provide a link separately. -->
 
-- [Read more](https://example.com)
-
-- [Contributing](CONTRIBUTING.md) <!-- or link to other contribution documentation -->
-
-- See the [Juju SDK documentation](https://juju.is/docs/sdk) for more information about developing and improving charms.
