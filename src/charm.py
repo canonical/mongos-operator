@@ -66,7 +66,7 @@ class MongosOperatorCharm(ops.CharmBase):
     def _on_start(self, event: StartEvent) -> None:
         """Handle the start event."""
         # start hooks are fired before relation hooks and `mongos` requires a config-server in
-        # order to start. Wait to recieve config-server info from the relation event before
+        # order to start. Wait to receive config-server info from the relation event before
         # starting `mongos` daemon
         self.unit.status = BlockedStatus("Missing relation to config-server.")
 
