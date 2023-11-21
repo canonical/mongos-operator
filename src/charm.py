@@ -2,27 +2,17 @@
 """Charm code for `mongos` daemon."""
 # Copyright 2023 Canonical Ltd.
 # See LICENSE file for licensing details.
-from typing import Set, List, Optional
-from exceptions import ApplicationHostNotFoundError
-from charms.mongodb.v0.mongodb_secrets import generate_secret_label, SecretCache
-from charms.mongodb.v1.mongos import MongosConfiguration
-from charms.mongodb.v0.mongodb import MongoDBConfiguration
-from charms.mongodb.v1.helpers import copy_licenses_to_unit, get_mongos_args
-from charms.mongodb.v1.users import (
-    MongoDBUser,
-    OperatorUser,
-)
+from typing import List
+from charms.mongodb.v0.mongodb_secrets import SecretCache
+from charms.mongodb.v1.helpers import copy_licenses_to_unit
 from charms.operator_libs_linux.v1 import snap
 
 from config import Config
-from machine_helpers import add_args_to_env
 
 import ops
 from ops.model import (
     BlockedStatus,
     MaintenanceStatus,
-    Relation,
-    Unit,
 )
 from ops.charm import (
     InstallEvent,
