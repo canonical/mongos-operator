@@ -3,7 +3,6 @@
 # Copyright 2023 Canonical Ltd.
 # See LICENSE file for licensing details.
 from typing import List
-from charms.mongodb.v0.mongodb_secrets import SecretCache
 from charms.mongodb.v1.helpers import copy_licenses_to_unit
 from charms.operator_libs_linux.v1 import snap
 
@@ -16,6 +15,7 @@ from ops.model import (
 )
 from ops.charm import (
     InstallEvent,
+    StartEvent,
 )
 
 import logging
@@ -33,10 +33,14 @@ class MongosOperatorCharm(ops.CharmBase):
     def __init__(self, *args):
         super().__init__(*args)
         self.framework.observe(self.on.install, self._on_install)
+        self.framework.observe(self.on.start, self._on_start)
 
-        self.secrets = SecretCache(self)
+        # todo future PRs:
+        # 1. start daemon when relation to config server is made
+        # 2. add users for related application
+        # 3. update status indicates missing relations
 
-    # START: hook functions
+    # BEGIN: hook functions
     def _on_install(self, event: InstallEvent) -> None:
         """Handle the install event (fired on startup)."""
         self.unit.status = MaintenanceStatus("installing mongos")
@@ -58,6 +62,13 @@ class MongosOperatorCharm(ops.CharmBase):
 
         # add licenses
         copy_licenses_to_unit()
+
+    def _on_start(self, event: StartEvent) -> None:
+        """Handle the start event."""
+        # start hooks are fired before relation hooks and `mongos` requires a config-server in
+        # order to start. Wait to recieve config-server info from the relation event before
+        # starting `mongos` daemon
+        self.unit.status = BlockedStatus("Missing relation to config-server.")
 
     # END: hook functions
 
