@@ -2,7 +2,7 @@
 """Charm code for `mongos` daemon."""
 # Copyright 2023 Canonical Ltd.
 # See LICENSE file for licensing details.
-
+from typing import Set
 from charms.mongodb.v1.mongos import MongosConfiguration
 from charms.mongodb.v0.mongodb import MongoDBConfiguration
 from charms.mongodb.v1.helpers import copy_licenses_to_unit, get_mongos_args

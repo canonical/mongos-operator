@@ -4,8 +4,20 @@
 type: charm
 bases:
   - build-on:
-    - name: ubuntu
-      channel: "22.04"
+      - name: ubuntu
+        channel: "22.04"
     run-on:
-    - name: ubuntu
-      channel: "22.04"
+      - name: ubuntu
+        channel: "22.04"
+
+parts:
+  charm:
+    charm-binary-python-packages:
+      - setuptools
+      - cryptography
+    build-packages:
+      - git
+      - libffi-dev
+      - libssl-dev
+      - rustc
+      - cargo
