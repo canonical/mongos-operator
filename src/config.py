@@ -23,6 +23,7 @@ class Config:
 
         APP_SCOPE = "app"
         UNIT_SCOPE = "unit"
+        PEERS = "router-peers"
         Scopes = Literal[APP_SCOPE, UNIT_SCOPE]
 
     class Secrets:

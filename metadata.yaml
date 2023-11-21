@@ -15,6 +15,10 @@ series:
   - jammy
 # subordinate: true
 
+peers:
+  router-peers:
+    interface: mongos-peers
+
 storage:
   mongodb:
     type: filesystem

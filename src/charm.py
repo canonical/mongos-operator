@@ -2,7 +2,9 @@
 """Charm code for `mongos` daemon."""
 # Copyright 2023 Canonical Ltd.
 # See LICENSE file for licensing details.
-from typing import Set
+from typing import Set, List, Optional
+from exceptions import ApplicationHostNotFoundError
+from charms.mongodb.v0.mongodb_secrets import generate_secret_label, SecretCache
 from charms.mongodb.v1.mongos import MongosConfiguration
 from charms.mongodb.v0.mongodb import MongoDBConfiguration
 from charms.mongodb.v1.helpers import copy_licenses_to_unit, get_mongos_args
@@ -19,6 +21,8 @@ import ops
 from ops.model import (
     BlockedStatus,
     MaintenanceStatus,
+    Relation,
+    Unit,
 )
 from ops.charm import (
     InstallEvent,
@@ -39,9 +43,10 @@ class MongosOperatorCharm(ops.CharmBase):
     def __init__(self, *args):
         super().__init__(*args)
         self.framework.observe(self.on.install, self._on_install)
-        self.framework.observe(self.on.start, self._on_start)
-        self.framework.observe(self.on.update_status, self._on_update_status)
 
+        self.secrets = SecretCache(self)
+
+    # START: hook functions
     def _on_install(self, event: InstallEvent) -> None:
         """Handle the install event (fired on startup)."""
         self.unit.status = MaintenanceStatus("installing mongos")
@@ -61,31 +66,37 @@ class MongosOperatorCharm(ops.CharmBase):
             self.unit.status = BlockedStatus("Could not install mongos")
             return
 
-        # Construct the mongod startup commandline args for systemd and reload the daemon.
-        mongos_start_args = get_mongos_args(self.mongos_config, snap_install=True)
-        add_args_to_env("MONGOS_ARGS", mongos_start_args)
-
         # add licenses
         copy_licenses_to_unit()
 
-    @property
-    def mongos_config(self) -> MongoDBConfiguration:
-        """Generates a MongoDBConfiguration object for mongos in the deployment of MongoDB."""
-        return self._get_mongos_config_for_user(OperatorUser, set(self._unit_ips))
+    # END: hook functions
 
-    def _get_mongos_config_for_user(
-        self, user: MongoDBUser, hosts: Set[str]
-    ) -> MongosConfiguration:
-        external_ca, _ = self.tls.get_tls_files(UNIT_SCOPE)
-        internal_ca, _ = self.tls.get_tls_files(APP_SCOPE)
+    # BEGIN: helper functions
 
-        return MongosConfiguration(
-            database=user.get_database_name(),
-            username=user.get_username(),
-            password=self.get_secret(APP_SCOPE, user.get_password_key_name()),
-            hosts=hosts,
-            port=Config.MONGOS_PORT,
-            roles=user.get_roles(),
-            tls_external=external_ca is not None,
-            tls_internal=internal_ca is not None,
-        )
+    def _install_snap_packages(self, packages: List[str]) -> None:
+        """Installs package(s) to container.
+
+        Args:
+            packages: list of packages to install.
+        """
+        for snap_name, snap_channel, snap_revision in packages:
+            try:
+                snap_cache = snap.SnapCache()
+                snap_package = snap_cache[snap_name]
+                snap_package.ensure(
+                    snap.SnapState.Latest, channel=snap_channel, revision=snap_revision
+                )
+                # snaps will auto refresh so it is necessary to hold the current revision
+                snap_package.hold()
+
+            except snap.SnapError as e:
+                logger.error(
+                    "An exception occurred when installing %s. Reason: %s", snap_name, str(e)
+                )
+                raise
+
+    # END: helper functions
+
+
+if __name__ == "__main__":
+    ops.main(MongosOperatorCharm)
