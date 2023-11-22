@@ -47,17 +47,9 @@ class MongosOperatorCharm(ops.CharmBase):
         try:
             self._install_snap_packages(packages=Config.SNAP_PACKAGES)
 
-        except snap.SnapError:
+        except snap.SnapError as e:
+            logger.info("Failed to install snap, error: %s", e)
             self.unit.status = BlockedStatus("couldn't install mongos")
-            return
-
-        # clear the default config file - user provided config files will be added in the config
-        # changed hook
-        try:
-            with open(Config.MONGOD_CONF_FILE_PATH, "r+") as f:
-                f.truncate(0)
-        except IOError:
-            self.unit.status = BlockedStatus("Could not install mongos")
             return
 
         # add licenses

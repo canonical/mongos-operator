@@ -19,11 +19,6 @@ peers:
   router-peers:
     interface: mongos-peers
 
-storage:
-  mongodb:
-    type: filesystem
-    location: /var/snap/charmed-mongodb/common
-
 requires:
   mongos_proxy:
     interface: mongodb_client
