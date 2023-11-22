@@ -1,51 +1,9 @@
-# Copyright 2023 Canonical Ltd.
-# See LICENSE file for licensing details.
-
-# Testing tools configuration
-[tool.coverage.run]
-branch = true
-
-[tool.coverage.report]
-show_missing = true
-
-[tool.pytest.ini_options]
-minversion = "6.0"
-log_cli_level = "INFO"
-asyncio_mode = "auto"
-markers = ["unstable"]
-
-# Formatting tools configuration
-[tool.black]
-line-length = 99
-target-version = ["py38"]
-
-[tool.isort]
-profile = "black"
-
-# Linting tools configuration
-[tool.flake8]
-max-line-length = 99
-max-doc-length = 99
-max-complexity = 10
-exclude = [".git", "__pycache__", ".tox", "build", "dist", "*.egg_info", "venv", "tests/integration/relation_tests/new_relations/application-charm/lib"]
-select = ["E", "W", "F", "C", "N", "R", "D", "H"]
-# Ignore W503, E501 because using black creates errors with this
-# Ignore D107 Missing docstring in __init__
-ignore = ["W503", "E501", "D107"]
-# D100, D101, D102, D103: Ignore missing docstrings in tests
-per-file-ignores = ["tests/*:D100,D101,D102,D103,D104"]
-docstring-convention = "google"
-# Check for properly formatted copyright header in each file
-copyright-check = "True"
-copyright-author = "Canonical Ltd."
-copyright-regexp = "Copyright\\s\\d{4}([-,]\\d{4})*\\s+%(author)s"
-
 [tool.poetry]
 name = "mongos-operator"
 version = "0.1.0"
 description = ""
-authors = ["Mia Altieri <mgaltier200@gmail.com>"]
-license = "Apache License v2.0"
+authors = ["Your Name <you@example.com>"]
+readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.10"
@@ -56,7 +14,6 @@ importlib-resources = "5.10.2"
 tenacity = "8.1.0"
 pymongo = "4.3.3"
 ops = "2.4.1"
-jsonschema = "4.17.3"
 cryptography = "38.0.4"
 pure-sasl = "0.6.2"
 pycparser = "2.2"
@@ -65,14 +22,37 @@ pydantic = "1.10.12"
 pyrsistent = "0.19.3"
 pyyaml = "6.0.1"
 zipp = "3.11.0"
-pyOpenSSL = "22.1.0"
+pyopenssl = "22.1.0"
 typing-extensions = "4.5.0"
 parameterized = "0.9.0"
-poetry-core = "^1.8.1"
-tox = "^4.11.3"
+jsonschema = "^4.20.0"
 
-[tool.poetry.dev-dependencies]
+
+[tool.poetry.group.fmt.dependencies]
+black = "^23.11.0"
+ruff = "^0.1.6"
+
+
+[tool.poetry.group.lint.dependencies]
+black = "^23.11.0"
+ruff = "^0.1.6"
+codespell = "^2.2.6"
+pyright = "^1.1.337"
+
+
+[tool.poetry.group.unit.dependencies]
+pytest = "^7.4.3"
+coverage = "^7.3.2"
+jsonschema = "^4.20.0"
+pytest-mock = "^3.12.0"
+
+
+[tool.poetry.group.integration.dependencies]
+pytest = ">=7.2"
+juju = "^3.2.0"
+pytest-operator = ">0.20"
+coverage = "^7.3.2"
 
 [build-system]
-requires = ["poetry-core>=1.0.0"]
+requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"

@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # Copyright 2023 Canonical Ltd.
 # See LICENSE file for licensing details.
-import asyncio
 import pytest
 from pytest_operator.plugin import OpsTest
 
@@ -37,13 +36,11 @@ async def test_waits_for_config_server(ops_test: OpsTest) -> None:
     await ops_test.model.add_relation(APPLICATION_APP_NAME, MONGOS_APP_NAME)
 
     # verify that Charmed MongoDB is blocked and reports incorrect credentials
-    await asyncio.gather(
-        ops_test.model.wait_for_idle(
-            apps=[MONGOS_APP_NAME],
-            status="blocked",
-            idle_period=10,
-        ),
-    )
+    ops_test.model.wait_for_idle(
+        apps=[MONGOS_APP_NAME],
+        status="blocked",
+        idle_period=10,
+    ),
 
     config_server_unit = ops_test.model.applications[MONGOS_APP_NAME].units[0]
     assert config_server_unit.workload_status_message == "Missing relation to config-server."

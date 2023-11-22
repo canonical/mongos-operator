@@ -84,7 +84,9 @@ class MongosOperatorCharm(ops.CharmBase):
 
             except snap.SnapError as e:
                 logger.error(
-                    "An exception occurred when installing %s. Reason: %s", snap_name, str(e)
+                    "An exception occurred when installing %s. Reason: %s",
+                    snap_name,
+                    str(e),
                 )
                 raise
 
