@@ -3,7 +3,7 @@
 name: mongos
 display-name: mongos
 description: |
-  mongos is a proxy used for sharded MongoDB clusters. This charm
+  mongos is a router/proxy used for sharded MongoDB clusters. This charm
   deploys and operates mongos as a subordinate charm.
 source: https://github.com/canonical/mongos-operator
 issues: https://github.com/canonical/mongos-operator/issues
@@ -13,5 +13,13 @@ website:
 summary: A mongos operator charm
 series:
   - jammy
-
 subordinate: true
+
+peers:
+  router-peers:
+    interface: mongos-peers
+
+requires:
+  mongos_proxy:
+    interface: mongodb_client
+    scope: container

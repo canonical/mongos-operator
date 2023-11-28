@@ -25,7 +25,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Install tox
-        # TODO: Consider replacing with custom image on self-hosted runner OR pinning version
         run: python3 -m pip install tox
       - name: Run linters
         run: tox run -e lint
@@ -47,4 +46,6 @@ jobs:
 
   build:
     name: Build charms
-    uses: canonical/data-platform-workflows/.github/workflows/build_charms_with_cache.yaml@v5.1.2
+    uses: canonical/data-platform-workflows/.github/workflows/build_charms_with_cache.yaml@v5.0.1
+    permissions:
+      actions: write # Needed to manage GitHub Actions cache
