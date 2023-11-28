@@ -23,3 +23,5 @@ requires:
   mongos_proxy:
     interface: mongodb_client
     scope: container
+  cluster:
+    interface: config-server

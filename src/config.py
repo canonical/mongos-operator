@@ -24,7 +24,24 @@ class Config:
         APP_SCOPE = "app"
         UNIT_SCOPE = "unit"
         PEERS = "router-peers"
+        CLUSTER_RELATIONS_NAME = "cluster"
         Scopes = Literal[APP_SCOPE, UNIT_SCOPE]
+
+    class TLS:
+        """TLS related config for MongoDB Charm."""
+
+        EXT_PEM_FILE = "external-cert.pem"
+        EXT_CA_FILE = "external-ca.crt"
+        INT_PEM_FILE = "internal-cert.pem"
+        INT_CA_FILE = "internal-ca.crt"
+        KEY_FILE_NAME = "keyFile"
+        TLS_PEER_RELATION = "certificates"
+
+        SECRET_CA_LABEL = "ca-secret"
+        SECRET_KEY_LABEL = "key-secret"
+        SECRET_CERT_LABEL = "cert-secret"
+        SECRET_CSR_LABEL = "csr-secret"
+        SECRET_CHAIN_LABEL = "chain-secret"
 
     class Secrets:
         """Secrets related constants."""
