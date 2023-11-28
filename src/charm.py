@@ -2,7 +2,6 @@
 """Charm code for `mongos` daemon."""
 # Copyright 2023 Canonical Ltd.
 # See LICENSE file for licensing details.
-from typing import List
 import os
 import pwd
 from charms.mongodb.v1.helpers import copy_licenses_to_unit, KEY_FILE
@@ -15,7 +14,6 @@ from exceptions import ApplicationHostNotFoundError
 from charms.mongodb.v0.mongodb_secrets import generate_secret_label
 from charms.mongodb.v1.mongos import MongosConfiguration
 from charms.mongodb.v0.mongodb import MongoDBConfiguration
-from charms.mongodb.v1.helpers import copy_licenses_to_unit
 from charms.mongodb.v0.config_server_interface import ClusterRequirer
 from charms.mongodb.v1.users import (
     MongoDBUser,
@@ -101,7 +99,9 @@ class MongosOperatorCharm(ops.CharmBase):
 
             except snap.SnapError as e:
                 logger.error(
-                    "An exception occurred when installing %s. Reason: %s", snap_name, str(e)
+                    "An exception occurred when installing %s. Reason: %s",
+                    snap_name,
+                    str(e),
                 )
                 raise
 
@@ -113,7 +113,6 @@ class MongosOperatorCharm(ops.CharmBase):
     def _get_mongos_config_for_user(
         self, user: MongoDBUser, hosts: Set[str], config_server_uri: str
     ) -> MongosConfiguration:
-
         return MongosConfiguration(
             config_server_uri=config_server_uri,
             database=user.get_database_name(),
@@ -122,15 +121,17 @@ class MongosOperatorCharm(ops.CharmBase):
             hosts=hosts,
             port=Config.MONGOS_PORT,
             roles=user.get_roles(),
-            tls_external=None,  # Future PR will suport TLS
-            tls_internal=None,  # Future PR will suport TLS
+            tls_external=None,  # Future PR will support TLS
+            tls_internal=None,  # Future PR will support TLS
         )
 
     def _unit_ip(self, unit: Unit) -> str:
         """Returns the ip address of a given unit."""
         # check if host is current host
         if unit == self.unit:
-            return str(self.model.get_binding(Config.Relations.PEERS).network.bind_address)
+            return str(
+                self.model.get_binding(Config.Relations.PEERS).network.bind_address
+            )
         # check if host is a peer
         elif unit in self._peers.data:
             return str(self._peers.data[unit].get("private-address"))
@@ -206,7 +207,9 @@ class MongosOperatorCharm(ops.CharmBase):
         content = secret.get_content()
 
         if not content.get(key) or content[key] == Config.Secrets.SECRET_DELETED_LABEL:
-            logger.error(f"Non-existing secret {scope}:{key} was attempted to be removed.")
+            logger.error(
+                f"Non-existing secret {scope}:{key} was attempted to be removed."
+            )
             return
 
         content[key] = Config.Secrets.SECRET_DELETED_LABEL
@@ -221,6 +224,7 @@ class MongosOperatorCharm(ops.CharmBase):
 
         key_file_path = f"{Config.MONGOD_CONF_DIR}/{KEY_FILE}"
         key_file = Path(key_file_path)
+        print(key_file.is_file())
         if not key_file.is_file():
             logger.info("no keyfile present")
             return
