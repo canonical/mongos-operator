@@ -10,7 +10,6 @@ from pathlib import Path
 
 from charms.mongodb.v0.mongodb_secrets import SecretCache
 from typing import Set, List, Optional
-from exceptions import ApplicationHostNotFoundError
 from charms.mongodb.v0.mongodb_secrets import generate_secret_label
 from charms.mongodb.v1.mongos import MongosConfiguration
 from charms.mongodb.v0.mongodb import MongoDBConfiguration
@@ -23,7 +22,7 @@ from charms.mongodb.v1.users import (
 from config import Config
 
 import ops
-from ops.model import BlockedStatus, MaintenanceStatus, Unit, Relation
+from ops.model import BlockedStatus, MaintenanceStatus, Relation
 from ops.charm import (
     InstallEvent,
     StartEvent,
@@ -108,7 +107,7 @@ class MongosOperatorCharm(ops.CharmBase):
     @property
     def mongos_config(self) -> MongoDBConfiguration:
         """Generates a MongoDBConfiguration object for mongos in the deployment of MongoDB."""
-        return self._get_mongos_config_for_user(OperatorUser, set(self._unit_ips))
+        return self._get_mongos_config_for_user(OperatorUser, set("/tmp/mongos.sock"))
 
     def _get_mongos_config_for_user(
         self, user: MongoDBUser, hosts: Set[str], config_server_uri: str
@@ -124,38 +123,6 @@ class MongosOperatorCharm(ops.CharmBase):
             tls_external=None,  # Future PR will support TLS
             tls_internal=None,  # Future PR will support TLS
         )
-
-    def _unit_ip(self, unit: Unit) -> str:
-        """Returns the ip address of a given unit."""
-        # check if host is current host
-        if unit == self.unit:
-            return str(
-                self.model.get_binding(Config.Relations.PEERS).network.bind_address
-            )
-        # check if host is a peer
-        elif unit in self._peers.data:
-            return str(self._peers.data[unit].get("private-address"))
-        # raise exception if host not found
-        else:
-            raise ApplicationHostNotFoundError
-
-    @property
-    def _unit_ips(self) -> List[str]:
-        """Retrieve IP addresses associated with MongoDB application.
-
-        Returns:
-            a list of IP address associated with MongoDB application.
-        """
-        peer_addresses = []
-        if self._peers:
-            peer_addresses = [self._unit_ip(unit) for unit in self._peers.units]
-
-        self_address = self._unit_ip(self.unit)
-        addresses = []
-        if peer_addresses:
-            addresses.extend(peer_addresses)
-        addresses.append(self_address)
-        return addresses
 
     @property
     def _peers(self) -> Optional[Relation]:
@@ -224,7 +191,6 @@ class MongosOperatorCharm(ops.CharmBase):
 
         key_file_path = f"{Config.MONGOD_CONF_DIR}/{KEY_FILE}"
         key_file = Path(key_file_path)
-        print(key_file.is_file())
         if not key_file.is_file():
             logger.info("no keyfile present")
             return
