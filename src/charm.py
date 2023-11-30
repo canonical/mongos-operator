@@ -5,7 +5,6 @@
 import os
 import pwd
 import json
-import subprocess
 from charms.mongodb.v1.helpers import copy_licenses_to_unit, KEY_FILE
 from charms.operator_libs_linux.v1 import snap
 from pathlib import Path
@@ -14,7 +13,6 @@ from charms.mongodb.v0.mongodb_secrets import SecretCache
 from typing import Set, List, Optional, Dict
 from charms.mongodb.v0.mongodb_secrets import generate_secret_label
 from charms.mongodb.v1.mongos import MongosConfiguration
-from charms.mongodb.v0.mongodb import MongoDBConfiguration
 from charms.mongodb.v0.config_server_interface import ClusterRequirer
 from charms.mongodb.v1.users import (
     MongoDBUser,
@@ -173,7 +171,9 @@ class MongosOperatorCharm(ops.CharmBase):
         content = secret.get_content()
 
         if not content.get(key) or content[key] == Config.Secrets.SECRET_DELETED_LABEL:
-            logger.error(f"Non-existing secret {scope}:{key} was attempted to be removed.")
+            logger.error(
+                f"Non-existing secret {scope}:{key} was attempted to be removed."
+            )
             return
 
         content[key] = Config.Secrets.SECRET_DELETED_LABEL
