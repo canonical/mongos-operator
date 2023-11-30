@@ -6,15 +6,14 @@
 This class handles the sharing of secrets between sharded components, adding shards, and removing
 shards.
 """
-import logging
 import json
+import logging
 
+from charms.mongodb.v1.helpers import add_args_to_env, get_mongos_args
+from charms.mongodb.v1.mongos import MongosConnection
 from ops.charm import CharmBase, EventBase
 from ops.framework import Object
-from ops.model import WaitingStatus, MaintenanceStatus, ActiveStatus
-
-from charms.mongodb.v1.helpers import get_mongos_args, add_args_to_env
-from charms.mongodb.v1.mongos import MongosConnection
+from ops.model import ActiveStatus, MaintenanceStatus, WaitingStatus
 
 from config import Config
 
@@ -23,6 +22,7 @@ KEYFILE_KEY = "key-file"
 KEY_FILE = "keyFile"
 HOSTS_KEY = "host"
 CONFIG_SERVER_DB_KEY = "config-server-db"
+MONGOS_SOCKET_URI_FMT = "%2Fvar%2Fsnap%2Fcharmed-mongodb%2Fcommon%2Fvar%2Fmongodb-27018.sock"
 
 # The unique Charmhub library identifier, never change it
 LIBID = "58ad1ccca4974932ba22b97781b9b2a0"
@@ -32,7 +32,7 @@ LIBAPI = 0
 
 # Increment this PATCH version before using `charmcraft publish-lib` or reset
 # to 0 if you are raising the major API version
-LIBPATCH = 1
+LIBPATCH = 2
 
 
 class ClusterProvider(Object):
@@ -51,7 +51,7 @@ class ClusterProvider(Object):
         )
 
         # TODO Future PRs handle scale down
-        # TODO Future PRs handle changing of units/passwords to be propogated to mongos
+        # TODO Future PRs handle changing of units/passwords to be propagated to mongos
 
     def pass_hook_checks(self, event: EventBase) -> bool:
         """Runs the pre-hooks checks for ClusterProvider, returns True if all pass."""
@@ -71,7 +71,7 @@ class ClusterProvider(Object):
 
         return True
 
-    def _on_relation_joined(self, event):
+    def _on_relation_joined(self, event) -> None:
         """Handles providing mongos with KeyFile and hosts."""
         if not self.pass_hook_checks(event):
             logger.info("Skipping relation joined event: hook checks did not pass")
@@ -133,7 +133,7 @@ class ClusterRequirer(Object):
         )
         # TODO Future PRs handle scale down
 
-    def _on_relation_changed(self, event):
+    def _on_relation_changed(self, event) -> None:
         """Starts/restarts monogs with config server information."""
         relation_data = event.relation.data[event.app]
         if not relation_data.get(KEYFILE_KEY) or not relation_data.get(CONFIG_SERVER_DB_KEY):
@@ -147,29 +147,27 @@ class ClusterRequirer(Object):
         )
 
         # avoid restarting mongos when possible
-        if not updated_keyfile and not updated_config and self.charm.monogs_initialised:
+        if not updated_keyfile and not updated_config and self.is_mongos_running():
             return
 
         # mongos is not available until it is using new secrets
-        del self.charm.unit_peer_data["mongos_initialised"]
         logger.info("Restarting mongos with new secrets")
-        self.unit.status = MaintenanceStatus("starting mongos")
+        self.charm.unit.status = MaintenanceStatus("starting mongos")
         self.charm.restart_mongos_service()
 
         # restart on high loaded databases can be very slow (e.g. up to 10-20 minutes).
         if not self.is_mongos_running():
-            logger.info("mongos has not started, deferfing")
+            logger.info("mongos has not started, deferring")
             self.charm.unit.status = WaitingStatus("Waiting for mongos to start")
             event.defer()
             return
 
         # TODO: Follow up PR. Add a user for mongos once it has been started
-        self.charm.unit_peer_data["mongos_initialised"] = json.dumps(True)
-        self.unit.status = ActiveStatus()
+        self.charm.unit.status = ActiveStatus()
 
     def is_mongos_running(self) -> bool:
         """Returns true if mongos service is running."""
-        with MongosConnection(None, "mongodb://localhost:27018") as mongo:
+        with MongosConnection(None, f"mongodb://{MONGOS_SOCKET_URI_FMT}") as mongo:
             return mongo.is_ready
 
     def update_config_server_db(self, config_server_db) -> bool:

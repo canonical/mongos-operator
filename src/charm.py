@@ -51,10 +51,8 @@ class MongosOperatorCharm(ops.CharmBase):
 
         self.cluster = ClusterRequirer(self)
         self.secrets = SecretCache(self)
-        # todo future PRs:
-        # 1. start daemon when relation to config server is made
-        # 2. add users for related application
-        # 3. update status indicates missing relations
+        # 1. add users for related application (to be done on config-server charm side)
+        # 2. update status indicates missing relations
 
     # BEGIN: hook functions
     def _on_install(self, event: InstallEvent) -> None:
@@ -73,12 +71,6 @@ class MongosOperatorCharm(ops.CharmBase):
 
     def _on_start(self, event: StartEvent) -> None:
         """Handle the start event."""
-        try:
-            self._open_ports_tcp([Config.MONGOS_PORT])
-        except subprocess.CalledProcessError:
-            self.unit.status = BlockedStatus("failed to open TCP port for MongoDB")
-            return
-
         # start hooks are fired before relation hooks and `mongos` requires a config-server in
         # order to start. Wait to receive config-server info from the relation event before
         # starting `mongos` daemon
@@ -115,7 +107,7 @@ class MongosOperatorCharm(ops.CharmBase):
     @property
     def mongos_config(self) -> MongosConfiguration:
         """Generates a MongoDBConfiguration object for mongos in the deployment of MongoDB."""
-        return self._get_mongos_config_for_user(OperatorUser, set("/tmp/mongos.sock"))
+        return self._get_mongos_config_for_user(OperatorUser, set(Config.MONGOS_SOCKET))
 
     def _get_mongos_config_for_user(
         self, user: MongoDBUser, hosts: Set[str]
@@ -275,34 +267,6 @@ class MongosOperatorCharm(ops.CharmBase):
             return ""
 
         return json.loads(self.unit_peer_data.get("config_server_db"))
-
-    @property
-    def db_initialised(self) -> bool:
-        """Abstraction for client connection code.
-
-        mongodb_provider waits for database to be initialised before creating new users. For this
-        charm it is only necessary to have mongos initialised.
-        """
-        return self.mongos_initialised
-
-    @property
-    def mongos_initialised(self) -> bool:
-        """Check if MongoDB is initialised."""
-        return "mongos_initialised" in self.unit_peer_data
-
-    def _open_ports_tcp(self, ports: int) -> None:
-        """Open the given port.
-
-        Args:
-            ports: The ports to open.
-        """
-        for port in ports:
-            try:
-                logger.debug("opening tcp port")
-                subprocess.check_call(["open-port", "{}/TCP".format(port)])
-            except subprocess.CalledProcessError as e:
-                logger.exception("failed opening port: %s", str(e))
-                raise
 
     # END: helper functions
 
