@@ -12,6 +12,7 @@ bases:
 
 parts:
   charm:
+    # todo: remove binary packages
     charm-binary-python-packages:
       - setuptools
       - cryptography

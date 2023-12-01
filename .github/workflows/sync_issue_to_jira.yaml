@@ -9,10 +9,12 @@ on:
 jobs:
   sync:
     name: Sync GitHub issue to Jira
+    # TODO: update version
     uses: canonical/data-platform-workflows/.github/workflows/sync_issue_to_jira.yaml@v2
     with:
       jira-base-url: https://warthogs.atlassian.net
       jira-project-key: DPE
+      # TODO: update
       jira-component-names: mongodb-vm
     secrets:
       jira-api-token: ${{ secrets.JIRA_API_TOKEN }}
