@@ -4,15 +4,15 @@
 # See LICENSE file for licensing details.
 import os
 import pwd
+import json
 from charms.mongodb.v1.helpers import copy_licenses_to_unit, KEY_FILE
 from charms.operator_libs_linux.v1 import snap
 from pathlib import Path
 
 from charms.mongodb.v0.mongodb_secrets import SecretCache
-from typing import Set, List, Optional
+from typing import Set, List, Optional, Dict
 from charms.mongodb.v0.mongodb_secrets import generate_secret_label
 from charms.mongodb.v1.mongos import MongosConfiguration
-from charms.mongodb.v0.mongodb import MongoDBConfiguration
 from charms.mongodb.v0.config_server_interface import ClusterRequirer
 from charms.mongodb.v1.users import (
     MongoDBUser,
@@ -49,10 +49,8 @@ class MongosOperatorCharm(ops.CharmBase):
 
         self.cluster = ClusterRequirer(self)
         self.secrets = SecretCache(self)
-        # todo future PRs:
-        # 1. start daemon when relation to config server is made
-        # 2. add users for related application
-        # 3. update status indicates missing relations
+        # 1. add users for related application (to be done on config-server charm side)
+        # 2. update status indicates missing relations
 
     # BEGIN: hook functions
     def _on_install(self, event: InstallEvent) -> None:
@@ -105,15 +103,14 @@ class MongosOperatorCharm(ops.CharmBase):
                 raise
 
     @property
-    def mongos_config(self) -> MongoDBConfiguration:
+    def mongos_config(self) -> MongosConfiguration:
         """Generates a MongoDBConfiguration object for mongos in the deployment of MongoDB."""
-        return self._get_mongos_config_for_user(OperatorUser, set("/tmp/mongos.sock"))
+        return self._get_mongos_config_for_user(OperatorUser, set(Config.MONGOS_SOCKET))
 
     def _get_mongos_config_for_user(
-        self, user: MongoDBUser, hosts: Set[str], config_server_uri: str
+        self, user: MongoDBUser, hosts: Set[str]
     ) -> MongosConfiguration:
         return MongosConfiguration(
-            config_server_uri=config_server_uri,
             database=user.get_database_name(),
             username=user.get_username(),
             password=self.get_secret(APP_SCOPE, user.get_password_key_name()),
@@ -215,6 +212,61 @@ class MongosOperatorCharm(ops.CharmBase):
             os.chmod(file_name, 0o440)
         mongodb_user = pwd.getpwnam(MONGO_USER)
         os.chown(file_name, mongodb_user.pw_uid, ROOT_USER_GID)
+
+    def start_mongos_service(self) -> None:
+        """Starts the mongos service.
+
+        Raises:
+            snap.SnapError
+        """
+        snap_cache = snap.SnapCache()
+        mongodb_snap = snap_cache["charmed-mongodb"]
+        mongodb_snap.start(services=["mongos"], enable=True)
+
+    def stop_mongos_service(self) -> None:
+        """Stops the mongos service.
+
+        Raises:
+            snap.SnapError
+        """
+        snap_cache = snap.SnapCache()
+        mongodb_snap = snap_cache["charmed-mongodb"]
+        mongodb_snap.stop(services=["mongos"])
+
+    def restart_mongos_service(self) -> None:
+        """Retarts the mongos service.
+
+        Raises:
+            snap.SnapError
+        """
+        self.stop_mongos_service()
+        self.start_mongos_service()
+
+    @property
+    def _peers(self) -> Optional[Relation]:
+        """Fetch the peer relation.
+
+        Returns:
+             An `ops.model.Relation` object representing the peer relation.
+        """
+        return self.model.get_relation(Config.Relations.PEERS)
+
+    @property
+    def unit_peer_data(self) -> Dict:
+        """Unit peer relation data object."""
+        return self._peers.data[self.unit]
+
+    @property
+    def config_server_db(self):
+        """Fetch current the config server database that this unit is connected to.
+
+        Returns:
+            A list of hosts addresses (strings).
+        """
+        if "config_server_db" not in self.unit_peer_data:
+            return ""
+
+        return json.loads(self.unit_peer_data.get("config_server_db"))
 
     # END: helper functions
 

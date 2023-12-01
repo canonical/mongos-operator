@@ -3,9 +3,16 @@
 # See LICENSE file for licensing details.
 import pytest
 from pytest_operator.plugin import OpsTest
+from .helpers import check_mongos
 
 APPLICATION_APP_NAME = "application"
 MONGOS_APP_NAME = "mongos"
+CLUSTER_REL_NAME = "cluster"
+
+CONFIG_SERVER_APP_NAME = "config-server"
+SHARD_APP_NAME = "shard"
+SHARD_REL_NAME = "sharding"
+CONFIG_SERVER_REL_NAME = "config-server"
 
 
 @pytest.mark.abort_on_fail
@@ -45,8 +52,41 @@ async def test_waits_for_config_server(ops_test: OpsTest) -> None:
         idle_period=10,
     ),
 
-    config_server_unit = ops_test.model.applications[MONGOS_APP_NAME].units[0]
-    assert (
-        config_server_unit.workload_status_message
-        == "Missing relation to config-server."
+    mongos_unit = ops_test.model.applications[MONGOS_APP_NAME].units[0]
+    assert mongos_unit.workload_status_message == "Missing relation to config-server."
+
+
+@pytest.mark.abort_on_fail
+# wait for 6/edge charm on mongodb to be updated before running this test on CI
+@pytest.mark.skip()
+async def test_mongos_starts_with_config_server(ops_test: OpsTest) -> None:
+    # prepare sharded cluster
+    await ops_test.model.wait_for_idle(
+        apps=[CONFIG_SERVER_APP_NAME, SHARD_APP_NAME],
+        idle_period=10,
+        raise_on_blocked=False,
     )
+    await ops_test.model.integrate(
+        f"{SHARD_APP_NAME}:{SHARD_REL_NAME}",
+        f"{CONFIG_SERVER_APP_NAME}:{CONFIG_SERVER_REL_NAME}",
+    )
+    await ops_test.model.wait_for_idle(
+        apps=[CONFIG_SERVER_APP_NAME, SHARD_APP_NAME],
+        idle_period=10,
+        raise_on_blocked=False,
+    )
+
+    # connect sharded cluster to mongos
+    await ops_test.model.integrate(
+        f"{MONGOS_APP_NAME}:{CLUSTER_REL_NAME}",
+        f"{CONFIG_SERVER_APP_NAME}:{CLUSTER_REL_NAME}",
+    )
+    await ops_test.model.wait_for_idle(
+        apps=[CONFIG_SERVER_APP_NAME, SHARD_APP_NAME, MONGOS_APP_NAME],
+        idle_period=10,
+        status="active",
+    )
+
+    mongos_unit = ops_test.model.applications[MONGOS_APP_NAME].units[0]
+    mongos_running = await check_mongos(ops_test, mongos_unit)
+    assert mongos_running, "Mongos is not currently running."
