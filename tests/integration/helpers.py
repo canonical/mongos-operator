@@ -8,14 +8,14 @@ MONGOS_URI = (
 MONGOS_APP_NAME = "mongos"
 
 
-async def mongs_command(ops_test: OpsTest) -> str:
+async def mongos_command(ops_test: OpsTest) -> str:
     """Generates a command which verifies TLS status."""
-    return f"{MONGO_SHELL} '{MONGOS_URI}'  --eval 'use test-db'"
+    return f"{MONGO_SHELL} '{MONGOS_URI}'  --eval 'ping'"
 
 
 async def check_mongos(ops_test: OpsTest, unit: ops.model.Unit) -> bool:
     """Returns whether mongos is running on the provided unit."""
-    mongos_check = await mongs_command(ops_test)
+    mongos_check = await mongos_command(ops_test)
     check_tls_cmd = f"exec --unit {unit.name} -- {mongos_check}"
     return_code, _, _ = await ops_test.juju(*check_tls_cmd.split())
     mongos_running = return_code == 0
