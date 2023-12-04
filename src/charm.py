@@ -4,7 +4,6 @@
 # See LICENSE file for licensing details.
 import os
 import pwd
-import json
 from charms.mongodb.v1.helpers import copy_licenses_to_unit, KEY_FILE
 from charms.operator_libs_linux.v1 import snap
 from pathlib import Path
@@ -37,6 +36,11 @@ APP_SCOPE = Config.Relations.APP_SCOPE
 UNIT_SCOPE = Config.Relations.UNIT_SCOPE
 ROOT_USER_GID = 0
 MONGO_USER = "snap_daemon"
+ENV_VAR_PATH = "/etc/environment"
+MONGOS_VAR = "MONGOS_ARGS"
+CONFIG_ARG = "--configdb"
+USER_ROLES_TAG = "extra-user-roles"
+DATABASE_TAG = "database"
 
 
 class MongosOperatorCharm(ops.CharmBase):
@@ -102,11 +106,6 @@ class MongosOperatorCharm(ops.CharmBase):
                 )
                 raise
 
-    @property
-    def mongos_config(self) -> MongosConfiguration:
-        """Generates a MongoDBConfiguration object for mongos in the deployment of MongoDB."""
-        return self._get_mongos_config_for_user(OperatorUser, set(Config.MONGOS_SOCKET))
-
     def _get_mongos_config_for_user(
         self, user: MongoDBUser, hosts: Set[str]
     ) -> MongosConfiguration:
@@ -120,15 +119,6 @@ class MongosOperatorCharm(ops.CharmBase):
             tls_external=None,  # Future PR will support TLS
             tls_internal=None,  # Future PR will support TLS
         )
-
-    @property
-    def _peers(self) -> Optional[Relation]:
-        """Fetch the peer relation.
-
-        Returns:
-             An `ops.model.Relation` object representing the peer relation.
-        """
-        return self.model.get_relation(Config.Relations.PEERS)
 
     def get_secret(self, scope: str, key: str) -> Optional[str]:
         """Get secret from the secret storage."""
@@ -242,6 +232,77 @@ class MongosOperatorCharm(ops.CharmBase):
         self.stop_mongos_service()
         self.start_mongos_service()
 
+    def share_uri(self) -> None:
+        """Future PR - generate URI and give it to related app"""
+        # TODO future PR - generate different URI for data-integrator as that charm will not
+        # communicate to mongos via the Unix Domain Socket.
+
+    def set_user_role(self, roles: List[str]):
+        """Updates the roles for the mongos user."""
+        roles = roles.join(",")
+        self.app_peer_data[USER_ROLES_TAG] = roles
+
+        if len(self.model.relations[Config.Relations.CLUSTER_RELATIONS_NAME]) == 0:
+            return
+
+        # a mongos shard can only be related to one config server
+        config_server_rel = self.model.relations[
+            Config.Relations.CLUSTER_RELATIONS_NAME
+        ][0]
+        self.cluster.update_relation_data(config_server_rel.id, {USER_ROLES_TAG: roles})
+
+    def set_database(self, database: str):
+        """Updates the database requested for the mongos user."""
+        self.app_peer_data[DATABASE_TAG] = database
+
+        if len(self.model.relations[Config.Relations.CLUSTER_RELATIONS_NAME]) == 0:
+            return
+
+        # a mongos shard can only be related to one config server
+        config_server_rel = self.model.relations[
+            Config.Relations.CLUSTER_RELATIONS_NAME
+        ][0]
+        self.cluster.update_relation_data(
+            config_server_rel.id, {DATABASE_TAG: database}
+        )
+
+    # TODO future PR add function to set database field
+    # END: helper functions
+
+    # BEGIN: properties
+
+    @property
+    def database(self) -> Optional[str]:
+        """Returns the database requested by the hosting application of the subordinate charm."""
+        if not self._peers:
+            logger.info("Peer relation not joined yet.")
+            return None
+
+        return self.app_peer_data.get("database", "mongos-database")
+
+    @property
+    def extra_user_roles(self) -> Set[str]:
+        """Returns the user roles requested by the hosting application of the subordinate charm."""
+        if not self._peers:
+            logger.info("Peer relation not joined yet.")
+            return None
+
+        return self.app_peer_data.get(USER_ROLES_TAG, "default")
+
+    @property
+    def mongos_config(self) -> MongosConfiguration:
+        """Generates a MongoDBConfiguration object for mongos in the deployment of MongoDB."""
+        return self._get_mongos_config_for_user(OperatorUser, set(Config.MONGOS_SOCKET))
+
+    @property
+    def _peers(self) -> Optional[Relation]:
+        """Fetch the peer relation.
+
+        Returns:
+             An `ops.model.Relation` object representing the peer relation.
+        """
+        return self.model.get_relation(Config.Relations.PEERS)
+
     @property
     def _peers(self) -> Optional[Relation]:
         """Fetch the peer relation.
@@ -257,18 +318,34 @@ class MongosOperatorCharm(ops.CharmBase):
         return self._peers.data[self.unit]
 
     @property
-    def config_server_db(self):
-        """Fetch current the config server database that this unit is connected to.
+    def app_peer_data(self) -> Dict:
+        """App peer relation data object."""
+        return self._peers.data[self.app]
 
-        Returns:
-            A list of hosts addresses (strings).
-        """
-        if "config_server_db" not in self.unit_peer_data:
+    @property
+    def config_server_db(self) -> str:
+        """Fetch current the config server database that this unit is connected to."""
+
+        env_var = Path(ENV_VAR_PATH)
+        if not env_var.is_file():
+            logger.info("no environment variable file")
             return ""
 
-        return json.loads(self.unit_peer_data.get("config_server_db"))
+        with open(ENV_VAR_PATH, "r") as file:
+            env_vars = file.read()
 
-    # END: helper functions
+        for env_var in env_vars.split("\n"):
+            if MONGOS_VAR not in env_var:
+                continue
+            if CONFIG_ARG not in env_var:
+                return ""
+
+            # parse config db variable
+            return env_var.split(CONFIG_ARG)[1].strip().split(" ")[0]
+
+        return ""
+
+    # END: properties
 
 
 if __name__ == "__main__":

@@ -21,7 +21,8 @@ peers:
 
 requires:
   mongos_proxy:
-    interface: mongodb_client
+    interface: mongos_client
     scope: container
   cluster:
     interface: config-server
+    limit: 1

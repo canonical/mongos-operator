@@ -11,4 +11,4 @@ series:
 
 provides:
   mongos_proxy:
-    interface: mongodb_client
+    interface: mongos_client
