@@ -276,7 +276,9 @@ class MongosOperatorCharm(ops.CharmBase):
         """Returns the database requested by the hosting application of the subordinate charm."""
         if not self._peers:
             logger.info("Peer relation not joined yet.")
-            return None
+            # TODO future PR implement relation interface between host application mongos and use
+            # host application name in generation of db name.
+            return "mongos-database"
 
         return self.app_peer_data.get("database", "mongos-database")
 

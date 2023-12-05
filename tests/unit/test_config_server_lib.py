@@ -1,9 +1,8 @@
 # Copyright 2023 Canonical Ltd.
 # See LICENSE file for licensing details.
 import unittest
-import json
 
-from unittest.mock import patch
+from unittest.mock import patch, mock_open
 
 from ops.testing import Harness
 
@@ -17,6 +16,7 @@ REL_DATA = {
     "key-file": "key-file-contents",
     "config-server-db": "config-server-db/host:port",
 }
+MONGOS_VAR = "MONGOS_ARGS=--configdb config-server-db/host:port"
 
 
 class TestConfigServerInterface(unittest.TestCase):
@@ -96,8 +96,12 @@ class TestConfigServerInterface(unittest.TestCase):
     @patch("charm.ClusterRequirer.is_mongos_running")
     @patch("charm.MongosOperatorCharm.restart_mongos_service")
     @patch("charms.mongodb.v0.config_server_interface.add_args_to_env")
+    @patch("builtins.open", new_callable=mock_open, read_data=MONGOS_VAR)
+    @patch("charm.Path")
     def test_same_config_db(
         self,
+        path,
+        open,
         add_args_to_env,
         restart_mongos_service,
         is_mongos_running,
@@ -107,9 +111,7 @@ class TestConfigServerInterface(unittest.TestCase):
     ):
         """Tests that charm doesn't update config-server when they are the same."""
         get_keyfile_contents.return_value = REL_DATA["key-file"]
-        self.harness.charm.unit_peer_data["config_server_db"] = json.dumps(
-            "config-server-db/host:port"
-        )
+
         relation_id = self.harness.add_relation("cluster", "config-server")
         self.harness.add_relation_unit(relation_id, "config-server/0")
         self.harness.update_relation_data(relation_id, "config-server", REL_DATA)
