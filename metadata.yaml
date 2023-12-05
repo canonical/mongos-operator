@@ -7,6 +7,7 @@ description: |
   deploys and operates mongos as a subordinate charm.
 source: https://github.com/canonical/mongos-operator
 issues: https://github.com/canonical/mongos-operator/issues
+docs: https://discourse.charmhub.io/t/charmed-mongos-6-docs/12722
 website:
   - https://github.com/canonical/mongos-operator
   - https://chat.charmhub.io/charmhub/channels/data-platform
