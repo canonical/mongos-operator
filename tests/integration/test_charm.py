@@ -72,7 +72,7 @@ async def test_mongos_starts_with_config_server(ops_test: OpsTest) -> None:
     )
     await ops_test.model.wait_for_idle(
         apps=[CONFIG_SERVER_APP_NAME, SHARD_APP_NAME],
-        idle_period=10,
+        idle_period=20,
         raise_on_blocked=False,
     )
 
@@ -83,10 +83,20 @@ async def test_mongos_starts_with_config_server(ops_test: OpsTest) -> None:
     )
     await ops_test.model.wait_for_idle(
         apps=[CONFIG_SERVER_APP_NAME, SHARD_APP_NAME, MONGOS_APP_NAME],
-        idle_period=10,
+        idle_period=20,
         status="active",
     )
 
     mongos_unit = ops_test.model.applications[MONGOS_APP_NAME].units[0]
-    mongos_running = await check_mongos(ops_test, mongos_unit)
+    mongos_running = await check_mongos(ops_test, mongos_unit, auth=False)
+    assert mongos_running, "Mongos is not currently running."
+
+
+@pytest.mark.abort_on_fail
+# wait for 6/edge charm on mongodb to be updated before running this test on CI
+@pytest.mark.skip()
+async def test_mongos_has_user(ops_test: OpsTest) -> None:
+    # prepare sharded cluster
+    mongos_unit = ops_test.model.applications[MONGOS_APP_NAME].units[0]
+    mongos_running = await check_mongos(ops_test, mongos_unit, auth=True)
     assert mongos_running, "Mongos is not currently running."
