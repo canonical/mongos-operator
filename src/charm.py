@@ -239,8 +239,8 @@ class MongosOperatorCharm(ops.CharmBase):
 
     def set_user_role(self, roles: List[str]):
         """Updates the roles for the mongos user."""
-        roles = roles.join(",")
-        self.app_peer_data[USER_ROLES_TAG] = roles
+        roles_str = roles.join(",")
+        self.app_peer_data[USER_ROLES_TAG] = roles_str
 
         if len(self.model.relations[Config.Relations.CLUSTER_RELATIONS_NAME]) == 0:
             return
@@ -249,7 +249,9 @@ class MongosOperatorCharm(ops.CharmBase):
         config_server_rel = self.model.relations[
             Config.Relations.CLUSTER_RELATIONS_NAME
         ][0]
-        self.cluster.update_relation_data(config_server_rel.id, {USER_ROLES_TAG: roles})
+        self.cluster.update_relation_data(
+            config_server_rel.id, {USER_ROLES_TAG: roles_str}
+        )
 
     def set_database(self, database: str):
         """Updates the database requested for the mongos user."""
