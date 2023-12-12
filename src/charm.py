@@ -249,7 +249,7 @@ class MongosOperatorCharm(ops.CharmBase):
         config_server_rel = self.model.relations[
             Config.Relations.CLUSTER_RELATIONS_NAME
         ][0]
-        self.cluster.update_relation_data(
+        self.cluster.database_requires.update_relation_data(
             config_server_rel.id, {USER_ROLES_TAG: roles_str}
         )
 
@@ -264,7 +264,7 @@ class MongosOperatorCharm(ops.CharmBase):
         config_server_rel = self.model.relations[
             Config.Relations.CLUSTER_RELATIONS_NAME
         ][0]
-        self.cluster.update_relation_data(
+        self.cluster.database_requires.update_relation_data(
             config_server_rel.id, {DATABASE_TAG: database}
         )
 
