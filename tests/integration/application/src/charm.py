@@ -19,6 +19,8 @@ logger = logging.getLogger(__name__)
 # Extra roles that this application needs when interacting with the database.
 EXTRA_USER_ROLES = "admin"
 
+from charms.mongos.v0.mongos_client_interface import MongosRequirer
+
 
 class ApplicationCharm(CharmBase):
     """Application charm that connects to database charms."""
@@ -27,6 +29,13 @@ class ApplicationCharm(CharmBase):
         super().__init__(*args)
         # Default charm events.
         self.framework.observe(self.on.start, self._on_start)
+
+        # relation events for mongos client
+        self._mongos_client = MongosRequirer(
+            self,
+            database_name="beans",
+            extra_user_roles=EXTRA_USER_ROLES,
+        )
 
     def _on_start(self, _) -> None:
         """Only sets an Active status."""

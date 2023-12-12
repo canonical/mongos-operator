@@ -9,6 +9,7 @@ from charms.operator_libs_linux.v1 import snap
 from pathlib import Path
 
 from charms.mongodb.v0.mongodb_secrets import SecretCache
+from charms.mongos.v0.mongos_client_interface import MongosProvider
 from typing import Set, List, Optional, Dict
 from charms.mongodb.v0.mongodb_secrets import generate_secret_label
 from charms.mongodb.v1.mongos import MongosConfiguration
@@ -53,6 +54,7 @@ class MongosOperatorCharm(ops.CharmBase):
 
         self.cluster = ClusterRequirer(self)
         self.secrets = SecretCache(self)
+        self.mongos_provider = MongosProvider(self)
         # 1. add users for related application (to be done on config-server charm side)
         # 2. update status indicates missing relations
 
@@ -161,9 +163,7 @@ class MongosOperatorCharm(ops.CharmBase):
         content = secret.get_content()
 
         if not content.get(key) or content[key] == Config.Secrets.SECRET_DELETED_LABEL:
-            logger.error(
-                f"Non-existing secret {scope}:{key} was attempted to be removed."
-            )
+            logger.error(f"Non-existing secret {scope}:{key} was attempted to be removed.")
             return
 
         content[key] = Config.Secrets.SECRET_DELETED_LABEL
@@ -237,21 +237,19 @@ class MongosOperatorCharm(ops.CharmBase):
         # TODO future PR - generate different URI for data-integrator as that charm will not
         # communicate to mongos via the Unix Domain Socket.
 
-    def set_user_role(self, roles: List[str]):
+    def set_user_role(self, roles: List[str]) -> None:
         """Updates the roles for the mongos user."""
-        roles = roles.join(",")
-        self.app_peer_data[USER_ROLES_TAG] = roles
+        roles_str = ",".join(roles)
+        self.app_peer_data[USER_ROLES_TAG] = roles_str
 
         if len(self.model.relations[Config.Relations.CLUSTER_RELATIONS_NAME]) == 0:
             return
 
         # a mongos shard can only be related to one config server
-        config_server_rel = self.model.relations[
-            Config.Relations.CLUSTER_RELATIONS_NAME
-        ][0]
-        self.cluster.update_relation_data(config_server_rel.id, {USER_ROLES_TAG: roles})
+        config_server_rel = self.model.relations[Config.Relations.CLUSTER_RELATIONS_NAME][0]
+        self.cluster.update_relation_data(config_server_rel.id, {USER_ROLES_TAG: roles_str})
 
-    def set_database(self, database: str):
+    def set_database(self, database: str) -> None:
         """Updates the database requested for the mongos user."""
         self.app_peer_data[DATABASE_TAG] = database
 
@@ -259,14 +257,9 @@ class MongosOperatorCharm(ops.CharmBase):
             return
 
         # a mongos shard can only be related to one config server
-        config_server_rel = self.model.relations[
-            Config.Relations.CLUSTER_RELATIONS_NAME
-        ][0]
-        self.cluster.update_relation_data(
-            config_server_rel.id, {DATABASE_TAG: database}
-        )
+        config_server_rel = self.model.relations[Config.Relations.CLUSTER_RELATIONS_NAME][0]
+        self.cluster.update_relation_data(config_server_rel.id, {DATABASE_TAG: database})
 
-    # TODO future PR add function to set database field
     # END: helper functions
 
     # BEGIN: properties
