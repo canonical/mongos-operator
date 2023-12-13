@@ -247,7 +247,9 @@ class MongosOperatorCharm(ops.CharmBase):
 
         # a mongos shard can only be related to one config server
         config_server_rel = self.model.relations[Config.Relations.CLUSTER_RELATIONS_NAME][0]
-        self.cluster.update_relation_data(config_server_rel.id, {USER_ROLES_TAG: roles_str})
+        self.cluster.database_requires.update_relation_data(
+            config_server_rel.id, {USER_ROLES_TAG: roles_str}
+        )
 
     def set_database(self, database: str) -> None:
         """Updates the database requested for the mongos user."""
@@ -258,7 +260,9 @@ class MongosOperatorCharm(ops.CharmBase):
 
         # a mongos shard can only be related to one config server
         config_server_rel = self.model.relations[Config.Relations.CLUSTER_RELATIONS_NAME][0]
-        self.cluster.update_relation_data(config_server_rel.id, {DATABASE_TAG: database})
+        self.cluster.database_requires.update_relation_data(
+            config_server_rel.id, {DATABASE_TAG: database}
+        )
 
     # END: helper functions
 
@@ -273,7 +277,7 @@ class MongosOperatorCharm(ops.CharmBase):
             # host application name in generation of db name.
             return "mongos-database"
 
-        return self.app_peer_data.get("database", "mongos-database")
+        return self.app_peer_data.get(DATABASE_TAG, "mongos-database")
 
     @property
     def extra_user_roles(self) -> Set[str]:

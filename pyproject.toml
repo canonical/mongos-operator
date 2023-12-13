@@ -59,6 +59,7 @@ pytest = ">=7.2"
 juju = "^3.2.0"
 pytest-operator = ">0.20"
 coverage = "^7.3.2"
+protobuf = "3.20"
 
 [build-system]
 requires = ["poetry-core"]
