@@ -3,16 +3,20 @@
 # See LICENSE file for licensing details.
 import pytest
 from pytest_operator.plugin import OpsTest
-from .helpers import check_mongos
+from .helpers import check_mongos, run_mongos_command, get_application_relation_data, MONGOS_SOCKET
 
 APPLICATION_APP_NAME = "application"
 MONGOS_APP_NAME = "mongos"
 CLUSTER_REL_NAME = "cluster"
+MONGODB_CHARM_NAME = "mongodb"
 
 CONFIG_SERVER_APP_NAME = "config-server"
 SHARD_APP_NAME = "shard"
 SHARD_REL_NAME = "sharding"
 CONFIG_SERVER_REL_NAME = "config-server"
+
+TEST_USER_NAME = "TestUserName0"
+TEST_USER_PWD = "Test123"
 
 
 @pytest.mark.abort_on_fail
@@ -30,11 +34,23 @@ async def test_build_and_deploy(ops_test: OpsTest) -> None:
         num_units=0,
         application_name=MONGOS_APP_NAME,
     )
+    await ops_test.model.deploy(
+        MONGODB_CHARM_NAME,
+        application_name=CONFIG_SERVER_APP_NAME,
+        channel="6/edge",
+        revision=142,
+        config={"role": "config-server"},
+    )
+    await ops_test.model.deploy(
+        MONGODB_CHARM_NAME,
+        application_name=SHARD_APP_NAME,
+        channel="6/edge",
+        revision=142,
+        config={"role": "shard"},
+    )
 
     await ops_test.model.wait_for_idle(
-        apps=[
-            APPLICATION_APP_NAME,
-        ],
+        apps=[APPLICATION_APP_NAME, SHARD_APP_NAME, CONFIG_SERVER_APP_NAME],
         idle_period=10,
         raise_on_blocked=False,
     )
@@ -57,8 +73,6 @@ async def test_waits_for_config_server(ops_test: OpsTest) -> None:
 
 
 @pytest.mark.abort_on_fail
-# wait for 6/edge charm on mongodb to be updated before running this test on CI
-@pytest.mark.skip()
 async def test_mongos_starts_with_config_server(ops_test: OpsTest) -> None:
     # prepare sharded cluster
     await ops_test.model.wait_for_idle(
@@ -93,10 +107,50 @@ async def test_mongos_starts_with_config_server(ops_test: OpsTest) -> None:
 
 
 @pytest.mark.abort_on_fail
-# wait for 6/edge charm on mongodb to be updated before running this test on CI
-@pytest.mark.skip()
 async def test_mongos_has_user(ops_test: OpsTest) -> None:
     # prepare sharded cluster
     mongos_unit = ops_test.model.applications[MONGOS_APP_NAME].units[0]
     mongos_running = await check_mongos(ops_test, mongos_unit, auth=True)
+    assert mongos_running, "Mongos is not currently running."
+
+
+@pytest.mark.abort_on_fail
+async def test_mongos_updates_config_db(ops_test: OpsTest) -> None:
+    # completely change the hosts that mongos was connected to
+    await ops_test.model.applications[CONFIG_SERVER_APP_NAME].add_units(count=1)
+    await ops_test.model.wait_for_idle(
+        apps=[CONFIG_SERVER_APP_NAME],
+        status="active",
+        timeout=1000,
+    )
+
+    # destroy the unit we were initially connected to
+    await ops_test.model.applications[CONFIG_SERVER_APP_NAME].destroy_units(
+        f"{CONFIG_SERVER_APP_NAME}/0"
+    )
+    await ops_test.model.wait_for_idle(
+        apps=[CONFIG_SERVER_APP_NAME],
+        status="active",
+        timeout=1000,
+    )
+
+    # prepare sharded cluster
+    mongos_unit = ops_test.model.applications[MONGOS_APP_NAME].units[0]
+    mongos_running = await check_mongos(ops_test, mongos_unit, auth=True)
+    assert mongos_running, "Mongos is not currently running."
+
+
+@pytest.mark.abort_on_fail
+async def test_user_with_extra_roles(ops_test: OpsTest) -> None:
+    database = await get_application_relation_data(
+        ops_test, APPLICATION_APP_NAME, "mongos_proxy", "database"
+    )
+
+    cmd = f'db.createUser({{user: "{TEST_USER_NAME}", pwd: "{TEST_USER_PWD}", roles: [{{role: "readWrite", db: "{database}"}}]}});'
+
+    mongos_unit = ops_test.model.applications[MONGOS_APP_NAME].units[0]
+    await run_mongos_command(ops_test, mongos_unit, cmd)
+
+    test_user_uri = f"mongodb://{TEST_USER_NAME}:{TEST_USER_PWD}@{MONGOS_SOCKET}"
+    mongos_running = await check_mongos(ops_test, mongos_unit, auth=True, uri=test_user_uri)
     assert mongos_running, "Mongos is not currently running."
