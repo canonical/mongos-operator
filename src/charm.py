@@ -282,7 +282,7 @@ class MongosOperatorCharm(ops.CharmBase):
             # host application name in generation of db name.
             return "mongos-database"
 
-        return self.app_peer_data.get("database", "mongos-database")
+        return self.app_peer_data.get(DATABASE_TAG, "mongos-database")
 
     @property
     def extra_user_roles(self) -> Set[str]:
