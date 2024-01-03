@@ -150,10 +150,6 @@ async def test_user_with_extra_roles(ops_test: OpsTest) -> None:
         return_code == 0
     ), f"mongos user does not have correct permissions to create new user, error: {std_err}"
 
-    test_user_uri = (
-        f"mongodb://{TEST_USER_NAME}:{TEST_USER_PWD}@{MONGOS_SOCKET}/{TEST_DB_NAME}"
-    )
-    mongos_running = await check_mongos(
-        ops_test, mongos_unit, auth=True, uri=test_user_uri
-    )
+    test_user_uri = f"mongodb://{TEST_USER_NAME}:{TEST_USER_PWD}@{MONGOS_SOCKET}/{TEST_DB_NAME}"
+    mongos_running = await check_mongos(ops_test, mongos_unit, auth=True, uri=test_user_uri)
     assert mongos_running, "User created is not accessible."
