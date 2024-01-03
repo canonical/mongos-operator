@@ -14,12 +14,13 @@ from ops.charm import CharmBase
 from ops.main import main
 from ops.model import ActiveStatus
 
+
+from charms.mongos.v0.mongos_client_interface import MongosRequirer
+
 logger = logging.getLogger(__name__)
 
 # Extra roles that this application needs when interacting with the database.
 EXTRA_USER_ROLES = "admin"
-
-from charms.mongos.v0.mongos_client_interface import MongosRequirer
 
 
 class ApplicationCharm(CharmBase):

@@ -10,11 +10,9 @@ MONGOS_APP_NAME = "mongos"
 PING_CMD = "db.runCommand({ping: 1})"
 
 
-class MongosCommandException(Exception):
-    """Raised when a command passed to mongos fails."""
-
-
-async def generate_mongos_command(ops_test: OpsTest, auth: bool, uri: str = None) -> str:
+async def generate_mongos_command(
+    ops_test: OpsTest, auth: bool, uri: str = None
+) -> str:
     """Generates a command which verifies mongos is running."""
     mongodb_uri = uri or await generate_mongos_uri(ops_test, auth)
     return f"{MONGO_SHELL} '{mongodb_uri}'  --eval '{PING_CMD}'"
@@ -33,14 +31,13 @@ async def check_mongos(
     return return_code == 0
 
 
-async def run_mongos_command(ops_test: OpsTest, unit: ops.model.Unit, mongos_cmd: str) -> str:
+async def run_mongos_command(ops_test: OpsTest, unit: ops.model.Unit, mongos_cmd: str):
     """Runs the provided mongos command.
 
     The mongos charm uses the unix domain socket to communicate, and therefore we cannot run
-    MongoDB comands from outside the unit and we must use `juju exec` instead.
+    MongoDB commands from outside the unit and we must use `juju exec` instead.
     """
     mongodb_uri = await generate_mongos_uri(ops_test, auth=True)
-    full_mongos_cmd = f"{MONGO_SHELL} '{mongodb_uri}'  --eval '{mongos_cmd}'"
 
     check_cmd = [
         "exec",
@@ -54,10 +51,7 @@ async def run_mongos_command(ops_test: OpsTest, unit: ops.model.Unit, mongos_cmd
     ]
     return_code, std_output, std_err = await ops_test.juju(*check_cmd)
     print(return_code, std_output, std_err)
-    if return_code:
-        raise MongosCommandException(f"Command: {full_mongos_cmd} failed with: {std_err}")
-
-    return std_output
+    return (return_code, std_output, std_err)
 
 
 async def generate_mongos_uri(ops_test: OpsTest, auth: bool) -> str:
@@ -65,7 +59,9 @@ async def generate_mongos_uri(ops_test: OpsTest, auth: bool) -> str:
     if not auth:
         return f"mongodb://{MONGOS_SOCKET}"
 
-    secret_uri = await get_application_relation_data(ops_test, "mongos", "cluster", "secret-user")
+    secret_uri = await get_application_relation_data(
+        ops_test, "mongos", "cluster", "secret-user"
+    )
 
     secret_data = await get_secret_data(ops_test, secret_uri)
     username = secret_data.get("username")
@@ -116,7 +112,9 @@ async def get_application_relation_data(
     data = yaml.safe_load(raw_data)
 
     # Filter the data based on the relation name.
-    relation_data = [v for v in data[unit_name]["relation-info"] if v["endpoint"] == relation_name]
+    relation_data = [
+        v for v in data[unit_name]["relation-info"] if v["endpoint"] == relation_name
+    ]
 
     if relation_id:
         # Filter the data based on the relation id.
