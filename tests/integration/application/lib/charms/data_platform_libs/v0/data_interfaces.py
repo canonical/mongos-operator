@@ -426,20 +426,29 @@ def diff(event: RelationChangedEvent, bucket: Union[Unit, Application]) -> Diff:
 
     # Retrieve the new data from the event relation databag.
     new_data = (
-        {key: value for key, value in event.relation.data[event.app].items() if key != "data"}
+        {
+            key: value
+            for key, value in event.relation.data[event.app].items()
+            if key != "data"
+        }
         if event.app
         else {}
     )
 
     # These are the keys that were added to the databag and triggered this event.
-    added = new_data.keys() - old_data.keys()  # pyright: ignore [reportGeneralTypeIssues]
+    added = (
+        new_data.keys() - old_data.keys()
+    )  # pyright: ignore [reportGeneralTypeIssues]
     # These are the keys that were removed from the databag and triggered this event.
-    deleted = old_data.keys() - new_data.keys()  # pyright: ignore [reportGeneralTypeIssues]
+    deleted = (
+        old_data.keys() - new_data.keys()
+    )  # pyright: ignore [reportGeneralTypeIssues]
     # These are the keys that already existed in the databag,
     # but had their values changed.
     changed = {
         key
-        for key in old_data.keys() & new_data.keys()  # pyright: ignore [reportGeneralTypeIssues]
+        for key in old_data.keys()
+        & new_data.keys()  # pyright: ignore [reportGeneralTypeIssues]
         if old_data[key] != new_data[key]  # pyright: ignore [reportGeneralTypeIssues]
     }
     # Convert the new_data to a serializable format and save it for a next diff check.
@@ -455,7 +464,8 @@ def leader_only(f):
     def wrapper(self, *args, **kwargs):
         if not self.local_unit.is_leader():
             logger.error(
-                "This operation (%s()) can only be performed by the leader unit", f.__name__
+                "This operation (%s()) can only be performed by the leader unit",
+                f.__name__,
             )
             return
         return f(self, *args, **kwargs)
@@ -570,7 +580,9 @@ class SecretCache:
                 self._secrets[label] = secret
         return self._secrets.get(label)
 
-    def add(self, label: str, content: Dict[str, str], relation: Relation) -> CachedSecret:
+    def add(
+        self, label: str, content: Dict[str, str], relation: Relation
+    ) -> CachedSecret:
         """Adding a secret to Juju Secret."""
         if self._secrets.get(label):
             raise SecretAlreadyExistsError(f"Secret {label} already exists")
@@ -625,7 +637,10 @@ class DataRelation(Object, ABC):
 
     @abstractmethod
     def _get_relation_secret(
-        self, relation_id: int, group_mapping: SecretGroup, relation_name: Optional[str] = None
+        self,
+        relation_id: int,
+        group_mapping: SecretGroup,
+        relation_name: Optional[str] = None,
     ) -> Optional[CachedSecret]:
         """Retrieve a Juju Secret that's been stored in the relation databag."""
         raise NotImplementedError
@@ -756,7 +771,10 @@ class DataRelation(Object, ABC):
 
     @juju_secrets_only
     def _get_relation_secret_data(
-        self, relation_id: int, group_mapping: SecretGroup, relation_name: Optional[str] = None
+        self,
+        relation_id: int,
+        group_mapping: SecretGroup,
+        relation_name: Optional[str] = None,
     ) -> Optional[Dict[str, str]]:
         """Retrieve contents of a Juju Secret that's been stored in the relation databag."""
         secret = self._get_relation_secret(relation_id, group_mapping, relation_name)
@@ -796,7 +814,9 @@ class DataRelation(Object, ABC):
 
             for group in secret_fieldnames_grouped:
                 # operation() should return nothing when all goes well
-                if group_result := operation(relation, group, secret_fields, *args, **kwargs):
+                if group_result := operation(
+                    relation, group, secret_fields, *args, **kwargs
+                ):
                     # If "meaningful" data was returned, we take it. (Some 'operation'-s only return success/failure.)
                     if isinstance(group_result, dict):
                         result.update(group_result)
@@ -846,7 +866,9 @@ class DataRelation(Object, ABC):
                 return {}
 
             all_fields = list(relation.data[app].keys())
-            normal_fields = [field for field in all_fields if not self._is_secret_field(field)]
+            normal_fields = [
+                field for field in all_fields if not self._is_secret_field(field)
+            ]
 
             # There must have been secrets there
             if all_fields != normal_fields and req_secret_fields:
@@ -862,7 +884,9 @@ class DataRelation(Object, ABC):
         # (Typically when Juju3 Requires meets Juju2 Provides)
         if normal_fields:
             result.update(
-                self._fetch_relation_data_without_secrets(app, relation, list(normal_fields))
+                self._fetch_relation_data_without_secrets(
+                    app, relation, list(normal_fields)
+                )
             )
         return result
 
@@ -933,7 +957,8 @@ class DataRelation(Object, ABC):
         relations = []
         if relation_ids:
             relations = [
-                self.get_relation(relation_name, relation_id) for relation_id in relation_ids
+                self.get_relation(relation_name, relation_id)
+                for relation_id in relation_ids
             ]
         else:
             relations = self.relations
@@ -972,7 +997,8 @@ class DataRelation(Object, ABC):
         relations = []
         if relation_ids:
             relations = [
-                self.get_relation(relation_name, relation_id) for relation_id in relation_ids
+                self.get_relation(relation_name, relation_id)
+                for relation_id in relation_ids
             ]
         else:
             relations = self.relations
@@ -980,7 +1006,9 @@ class DataRelation(Object, ABC):
         data = {}
         for relation in relations:
             if not relation_ids or relation.id in relation_ids:
-                data[relation.id] = self._fetch_my_specific_relation_data(relation, fields)
+                data[relation.id] = self._fetch_my_specific_relation_data(
+                    relation, fields
+                )
         return data
 
     @leader_only
@@ -992,7 +1020,9 @@ class DataRelation(Object, ABC):
         NOTE: Since only the leader can read the relation's 'this_app'-side
         Application databag, the functionality is limited to leaders
         """
-        if relation_data := self.fetch_my_relation_data([relation_id], [field], relation_name):
+        if relation_data := self.fetch_my_relation_data(
+            [relation_id], [field], relation_name
+        ):
             return relation_data.get(relation_id, {}).get(field)
 
     @leader_only
@@ -1040,10 +1070,14 @@ class DataProvides(DataRelation):
         """Add a new Juju Secret that will be registered in the relation databag."""
         secret_field = self._generate_secret_field_name(group_mapping)
         if relation.data[self.local_app].get(secret_field):
-            logging.error("Secret for relation %s already exists, not adding again", relation.id)
+            logging.error(
+                "Secret for relation %s already exists, not adding again", relation.id
+            )
             return False
 
-        label = self._generate_secret_label(self.relation_name, relation.id, group_mapping)
+        label = self._generate_secret_label(
+            self.relation_name, relation.id, group_mapping
+        )
         secret = self.secrets.add(label, content, relation)
 
         # According to lint we may not have a Secret ID
@@ -1088,7 +1122,11 @@ class DataProvides(DataRelation):
 
     @juju_secrets_only
     def _delete_relation_secret(
-        self, relation: Relation, group: SecretGroup, secret_fields: List[str], fields: List[str]
+        self,
+        relation: Relation,
+        group: SecretGroup,
+        secret_fields: List[str],
+        fields: List[str],
     ) -> bool:
         """Update the contents of an existing Juju Secret, referred in the relation databag."""
         secret = self._get_relation_secret(relation.id, group)
@@ -1127,7 +1165,10 @@ class DataProvides(DataRelation):
 
     @juju_secrets_only
     def _get_relation_secret(
-        self, relation_id: int, group_mapping: SecretGroup, relation_name: Optional[str] = None
+        self,
+        relation_id: int,
+        group_mapping: SecretGroup,
+        relation_name: Optional[str] = None,
     ) -> Optional[CachedSecret]:
         """Retrieve a Juju Secret that's been stored in the relation databag."""
         if not relation_name:
@@ -1176,7 +1217,9 @@ class DataProvides(DataRelation):
         """Set values for fields not caring whether it's a secret or not."""
         req_secret_fields = []
         if relation.app:
-            req_secret_fields = get_encoded_list(relation, relation.app, REQ_SECRET_FIELDS)
+            req_secret_fields = get_encoded_list(
+                relation, relation.app, REQ_SECRET_FIELDS
+            )
 
         _, normal_fields = self._process_secret_fields(
             relation,
@@ -1187,18 +1230,28 @@ class DataProvides(DataRelation):
         )
 
         normal_content = {k: v for k, v in data.items() if k in normal_fields}
-        self._update_relation_data_without_secrets(self.local_app, relation, normal_content)
+        self._update_relation_data_without_secrets(
+            self.local_app, relation, normal_content
+        )
 
     def _delete_relation_data(self, relation: Relation, fields: List[str]) -> None:
         """Delete fields from the Relation not caring whether it's a secret or not."""
         req_secret_fields = []
         if relation.app:
-            req_secret_fields = get_encoded_list(relation, relation.app, REQ_SECRET_FIELDS)
+            req_secret_fields = get_encoded_list(
+                relation, relation.app, REQ_SECRET_FIELDS
+            )
 
         _, normal_fields = self._process_secret_fields(
-            relation, req_secret_fields, fields, self._delete_relation_secret, fields=fields
+            relation,
+            req_secret_fields,
+            fields,
+            self._delete_relation_secret,
+            fields=fields,
         )
-        self._delete_relation_data_without_secrets(self.local_app, relation, list(normal_fields))
+        self._delete_relation_data_without_secrets(
+            self.local_app, relation, list(normal_fields)
+        )
 
     # Public methods - "native"
 
@@ -1213,7 +1266,9 @@ class DataProvides(DataRelation):
             username: user that was created.
             password: password of the created user.
         """
-        self.update_relation_data(relation_id, {"username": username, "password": password})
+        self.update_relation_data(
+            relation_id, {"username": username, "password": password}
+        )
 
     def set_tls(self, relation_id: int, tls: str) -> None:
         """Set whether TLS is enabled.
@@ -1254,7 +1309,8 @@ class DataRequires(DataRelation):
             self._secret_fields += additional_secret_fields
 
         self.framework.observe(
-            self.charm.on[relation_name].relation_created, self._on_relation_created_event
+            self.charm.on[relation_name].relation_created,
+            self._on_relation_created_event,
         )
         self.framework.observe(
             charm.on.secret_changed,
@@ -1299,7 +1355,9 @@ class DataRequires(DataRelation):
         # Fetchin the Secret's meta information ensuring that it's locally getting registered with
         CachedSecret(self.charm, label, secret_id).meta
 
-    def _register_secrets_to_relation(self, relation: Relation, params_name_list: List[str]):
+    def _register_secrets_to_relation(
+        self, relation: Relation, params_name_list: List[str]
+    ):
         """Make sure that secrets of the provided list are locally 'registered' from the databag.
 
         More on 'locally registered' magic is described in _register_secret_to_relation() method
@@ -1342,16 +1400,19 @@ class DataRequires(DataRelation):
         """
         if relation_id is not None:
             try:
-                relation = [relation for relation in self.relations if relation.id == relation_id][
-                    0
-                ]
+                relation = [
+                    relation
+                    for relation in self.relations
+                    if relation.id == relation_id
+                ][0]
                 return self._is_resource_created_for_relation(relation)
             except IndexError:
                 raise IndexError(f"relation id {relation_id} cannot be accessed")
         else:
             return (
                 all(
-                    self._is_resource_created_for_relation(relation) for relation in self.relations
+                    self._is_resource_created_for_relation(relation)
+                    for relation in self.relations
                 )
                 if self.relations
                 else False
@@ -1397,9 +1458,13 @@ class DataRequires(DataRelation):
             relation.app, self.secret_fields, relation, fields
         )
 
-    def _fetch_my_specific_relation_data(self, relation, fields: Optional[List[str]]) -> dict:
+    def _fetch_my_specific_relation_data(
+        self, relation, fields: Optional[List[str]]
+    ) -> dict:
         """Fetching our own relation data."""
-        return self._fetch_relation_data_without_secrets(self.local_app, relation, fields)
+        return self._fetch_relation_data_without_secrets(
+            self.local_app, relation, fields
+        )
 
     def _update_relation_data(self, relation: Relation, data: dict) -> None:
         """Updates a set of key-value pairs in the relation.
@@ -1412,7 +1477,9 @@ class DataRequires(DataRelation):
             data: dict containing the key-value pairs
                 that should be updated in the relation.
         """
-        return self._update_relation_data_without_secrets(self.local_app, relation, data)
+        return self._update_relation_data_without_secrets(
+            self.local_app, relation, data
+        )
 
     def _delete_relation_data(self, relation: Relation, fields: List[str]) -> None:
         """Deletes a set of fields from the relation.
@@ -1424,7 +1491,9 @@ class DataRequires(DataRelation):
             relation: the particular relation.
             fields: list containing the field names that should be removed from the relation.
         """
-        return self._delete_relation_data_without_secrets(self.local_app, relation, fields)
+        return self._delete_relation_data_without_secrets(
+            self.local_app, relation, fields
+        )
 
 
 # General events
@@ -1715,7 +1784,9 @@ class DatabaseProvides(DataProvides):
         """
         self.update_relation_data(relation_id, {"endpoints": connection_strings})
 
-    def set_read_only_endpoints(self, relation_id: int, connection_strings: str) -> None:
+    def set_read_only_endpoints(
+        self, relation_id: int, connection_strings: str
+    ) -> None:
         """Set database replicas connection strings.
 
         This function writes in the application data bag, therefore,
@@ -1725,7 +1796,9 @@ class DatabaseProvides(DataProvides):
             relation_id: the identifier for a particular relation.
             connection_strings: database hosts and ports comma separated list.
         """
-        self.update_relation_data(relation_id, {"read-only-endpoints": connection_strings})
+        self.update_relation_data(
+            relation_id, {"read-only-endpoints": connection_strings}
+        )
 
     def set_replset(self, relation_id: int, replset: str) -> None:
         """Set replica set name in the application relation databag.
@@ -1774,7 +1847,9 @@ class DatabaseRequires(DataRequires):
         additional_secret_fields: Optional[List[str]] = [],
     ):
         """Manager of database client relations."""
-        super().__init__(charm, relation_name, extra_user_roles, additional_secret_fields)
+        super().__init__(
+            charm, relation_name, extra_user_roles, additional_secret_fields
+        )
         self.database = database_name
         self.relations_aliases = relations_aliases
 
@@ -1790,7 +1865,9 @@ class DatabaseRequires(DataRequires):
                 )
 
             for relation_alias in relations_aliases:
-                self.on.define_event(f"{relation_alias}_database_created", DatabaseCreatedEvent)
+                self.on.define_event(
+                    f"{relation_alias}_database_created", DatabaseCreatedEvent
+                )
                 self.on.define_event(
                     f"{relation_alias}_endpoints_changed", DatabaseEndpointsChangedEvent
                 )
@@ -1826,7 +1903,9 @@ class DatabaseRequires(DataRequires):
         for relation in self.charm.model.relations[self.relation_name]:
             alias = relation.data[self.local_unit].get("alias")
             if alias:
-                logger.debug("Alias %s was already assigned to relation %d", alias, relation.id)
+                logger.debug(
+                    "Alias %s was already assigned to relation %d", alias, relation.id
+                )
                 available_aliases.remove(alias)
 
         # Set the alias in the unit relation databag of the specific relation.
@@ -1866,7 +1945,9 @@ class DatabaseRequires(DataRequires):
                 return relation.data[self.local_unit].get("alias")
         return None
 
-    def is_postgresql_plugin_enabled(self, plugin: str, relation_index: int = 0) -> bool:
+    def is_postgresql_plugin_enabled(
+        self, plugin: str, relation_index: int = 0
+    ) -> bool:
         """Returns whether a plugin is enabled in the database.
 
         Args:
@@ -1899,19 +1980,19 @@ class DatabaseRequires(DataRequires):
         user = content.get("username")
         password = content.get("password")
 
-        connection_string = (
-            f"host='{host}' dbname='{self.database}' user='{user}' password='{password}'"
-        )
+        connection_string = f"host='{host}' dbname='{self.database}' user='{user}' password='{password}'"
         try:
             with psycopg.connect(connection_string) as connection:
                 with connection.cursor() as cursor:
                     cursor.execute(
-                        "SELECT TRUE FROM pg_extension WHERE extname=%s::text;", (plugin,)
+                        "SELECT TRUE FROM pg_extension WHERE extname=%s::text;",
+                        (plugin,),
                     )
                     return cursor.fetchone() is not None
         except psycopg.Error as e:
             logger.exception(
-                f"failed to check whether {plugin} plugin is enabled in the database: %s", str(e)
+                f"failed to check whether {plugin} plugin is enabled in the database: %s",
+                str(e),
             )
             return False
 
@@ -2130,14 +2211,18 @@ class KafkaProvides(DataProvides):
         """
         self.update_relation_data(relation_id, {"endpoints": bootstrap_server})
 
-    def set_consumer_group_prefix(self, relation_id: int, consumer_group_prefix: str) -> None:
+    def set_consumer_group_prefix(
+        self, relation_id: int, consumer_group_prefix: str
+    ) -> None:
         """Set the consumer group prefix in the application relation databag.
 
         Args:
             relation_id: the identifier for a particular relation.
             consumer_group_prefix: the consumer group prefix string.
         """
-        self.update_relation_data(relation_id, {"consumer-group-prefix": consumer_group_prefix})
+        self.update_relation_data(
+            relation_id, {"consumer-group-prefix": consumer_group_prefix}
+        )
 
     def set_zookeeper_uris(self, relation_id: int, zookeeper_uris: str) -> None:
         """Set the zookeeper uris in the application relation databag.
@@ -2165,7 +2250,9 @@ class KafkaRequires(DataRequires):
     ):
         """Manager of Kafka client relations."""
         # super().__init__(charm, relation_name)
-        super().__init__(charm, relation_name, extra_user_roles, additional_secret_fields)
+        super().__init__(
+            charm, relation_name, extra_user_roles, additional_secret_fields
+        )
         self.charm = charm
         self.topic = topic
         self.consumer_group_prefix = consumer_group_prefix or ""
@@ -2219,7 +2306,9 @@ class KafkaRequires(DataRequires):
         ) or secret_field_user in diff.added:
             # Emit the default event (the one without an alias).
             logger.info("topic created at %s", datetime.now())
-            getattr(self.on, "topic_created").emit(event.relation, app=event.app, unit=event.unit)
+            getattr(self.on, "topic_created").emit(
+                event.relation, app=event.app, unit=event.unit
+            )
 
             # To avoid unnecessary application restarts do not trigger
             # “endpoints_changed“ event if “topic_created“ is triggered.
@@ -2353,7 +2442,9 @@ class OpenSearchRequires(DataRequires):
         additional_secret_fields: Optional[List[str]] = [],
     ):
         """Manager of OpenSearch client relations."""
-        super().__init__(charm, relation_name, extra_user_roles, additional_secret_fields)
+        super().__init__(
+            charm, relation_name, extra_user_roles, additional_secret_fields
+        )
         self.charm = charm
         self.index = index
 
@@ -2411,7 +2502,14 @@ class OpenSearchRequires(DataRequires):
 
         secret_field_user = self._generate_secret_field_name(SecretGroup.USER)
         secret_field_tls = self._generate_secret_field_name(SecretGroup.TLS)
-        updates = {"username", "password", "tls", "tls-ca", secret_field_user, secret_field_tls}
+        updates = {
+            "username",
+            "password",
+            "tls",
+            "tls-ca",
+            secret_field_user,
+            secret_field_tls,
+        }
         if len(set(diff._asdict().keys()) - updates) < len(diff):
             logger.info("authentication updated at: %s", datetime.now())
             getattr(self.on, "authentication_updated").emit(
@@ -2425,7 +2523,9 @@ class OpenSearchRequires(DataRequires):
         ) or secret_field_user in diff.added:
             # Emit the default event (the one without an alias).
             logger.info("index created at: %s", datetime.now())
-            getattr(self.on, "index_created").emit(event.relation, app=event.app, unit=event.unit)
+            getattr(self.on, "index_created").emit(
+                event.relation, app=event.app, unit=event.unit
+            )
 
             # To avoid unnecessary application restarts do not trigger
             # “endpoints_changed“ event if “index_created“ is triggered.

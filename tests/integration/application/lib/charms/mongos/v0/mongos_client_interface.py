@@ -37,8 +37,8 @@ LIBPATCH = 1
 
 """Library to manage the relation for the application between mongos and the deployed application.
 In short, this relation ensure that:
-1. mongos recieves the specified database and users roles needed by the host application
-2. the host application recieves the generated username, password and uri for connecting to the 
+1. mongos receives the specified database and users roles needed by the host application
+2. the host application receives the generated username, password and uri for connecting to the 
 sharded cluster.
 
 This library contains the Requires and Provides classes for handling the relation between an
@@ -65,7 +65,7 @@ class ApplicationCharm(CharmBase):
         )
 ```
 
-To recieve the username, password, and uri:
+To receive the username, password, and uri:
 # TODO this is to be implemented in a future PR
 """
 
@@ -73,11 +73,15 @@ To recieve the username, password, and uri:
 class MongosProvider(Object):
     """Manage relations between the mongos router and the application on the mongos side."""
 
-    def __init__(self, charm: CharmBase, relation_name: str = MONGOS_RELATION_NAME) -> None:
+    def __init__(
+        self, charm: CharmBase, relation_name: str = MONGOS_RELATION_NAME
+    ) -> None:
         """Constructor for MongosProvider object."""
         self.relation_name = relation_name
         self.charm = charm
-        self.database_provides = DatabaseProvides(self.charm, relation_name=self.relation_name)
+        self.database_provides = DatabaseProvides(
+            self.charm, relation_name=self.relation_name
+        )
 
         super().__init__(charm, self.relation_name)
         self.framework.observe(
@@ -93,7 +97,9 @@ class MongosProvider(Object):
 
         relation_data = event.relation.data[event.app]
         new_database_name = relation_data.get(DATABASE_KEY, self.charm.database)
-        new_extra_user_roles = relation_data.get(USER_ROLES_KEY, self.charm.extra_user_roles)
+        new_extra_user_roles = relation_data.get(
+            USER_ROLES_KEY, self.charm.extra_user_roles
+        )
 
         if new_database_name != self.charm.database:
             self.charm.set_database(new_database_name)

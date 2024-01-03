@@ -37,8 +37,8 @@ LIBPATCH = 1
 
 """Library to manage the relation for the application between mongos and the deployed application.
 In short, this relation ensure that:
-1. mongos recieves the specified database and users roles needed by the host application
-2. the host application recieves the generated username, password and uri for connecting to the 
+1. mongos receives the specified database and users roles needed by the host application
+2. the host application receives the generated username, password and uri for connecting to the 
 sharded cluster.
 
 This library contains the Requires and Provides classes for handling the relation between an
@@ -65,7 +65,7 @@ class ApplicationCharm(CharmBase):
         )
 ```
 
-To recieve the username, password, and uri:
+To receive the username, password, and uri:
 # TODO this is to be implemented in a future PR
 """
 
