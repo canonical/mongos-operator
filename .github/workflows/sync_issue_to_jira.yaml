@@ -13,8 +13,7 @@ jobs:
     with:
       jira-base-url: https://warthogs.atlassian.net
       jira-project-key: DPE
-      # TODO: update
-      jira-component-names: mongodb-vm
+      jira-component-names: mongos-vm
     secrets:
       jira-api-token: ${{ secrets.JIRA_API_TOKEN }}
       jira-user-email: ${{ secrets.JIRA_USER_EMAIL }}
