@@ -9,6 +9,7 @@ description = ""
 authors = []
 
 [tool.poetry.dependencies]
+# todo verify
 python = "^3.10"
 attrs = "^22.2.0"
 cffi = "^1.15.1"
