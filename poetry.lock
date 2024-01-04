@@ -836,6 +836,20 @@ files = [
 ]
 
 [[package]]
+name = "parameterized"
+version = "0.9.0"
+description = "Parameterized testing with any Python test framework"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "parameterized-0.9.0-py2.py3-none-any.whl", hash = "sha256:4e0758e3d41bea3bbd05ec14fc2c24736723f243b28d702081aef438c9372b1b"},
+    {file = "parameterized-0.9.0.tar.gz", hash = "sha256:7fc905272cefa4f364c1a3429cbbe9c0f98b793988efb5bf90aac80f08db09b1"},
+]
+
+[package.extras]
+dev = ["jinja2"]
+
+[[package]]
 name = "paramiko"
 version = "2.12.0"
 description = "SSH2 protocol library"
@@ -1673,4 +1687,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "25d37a3d89b6e43ec2ff03c66378feb72248536cc597c5a9ba1cfdc1b3597ef5"
+content-hash = "0a1dc410fe8c67d8e6117a1cf03e516fefce1494719d42183e62a7af6da8d1c3"
