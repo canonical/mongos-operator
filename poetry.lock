@@ -95,20 +95,6 @@ jupyter = ["ipython (>=7.8.0)", "tokenize-rt (>=3.2.0)"]
 uvloop = ["uvloop (>=0.15.2)"]
 
 [[package]]
-name = "bson"
-version = "0.5.10"
-description = "BSON codec for Python"
-optional = false
-python-versions = "*"
-files = [
-    {file = "bson-0.5.10.tar.gz", hash = "sha256:d6511b2ab051139a9123c184de1a04227262173ad593429d21e443d6462d6590"},
-]
-
-[package.dependencies]
-python-dateutil = ">=2.4.0"
-six = ">=1.9.0"
-
-[[package]]
 name = "cachetools"
 version = "5.3.2"
 description = "Extensible memoizing collections and decorators"
@@ -1739,4 +1725,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "fda39108ac405412904e7bc78e9ed1f6e9bf42c754e99d85692c66658bd1ba6d"
+content-hash = "7538a554133218574bb84a913eaa5db268dd5712087ba6ecbb71775a7b32610e"
