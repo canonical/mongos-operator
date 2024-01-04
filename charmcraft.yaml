@@ -24,7 +24,6 @@ parts:
       - setuptools
       - cryptography
     build-packages:
-      - git # todo why?
       - libffi-dev
       - libssl-dev
        # todo add pkg-config?
