@@ -20,6 +20,7 @@ TEST_USER_PWD = "Test123"
 TEST_DB_NAME = "test"
 
 
+@pytest.mark.group(1)
 @pytest.mark.abort_on_fail
 async def test_build_and_deploy(ops_test: OpsTest) -> None:
     """Build and deploy a sharded cluster."""
@@ -57,6 +58,7 @@ async def test_build_and_deploy(ops_test: OpsTest) -> None:
     )
 
 
+@pytest.mark.group(1)
 @pytest.mark.abort_on_fail
 async def test_waits_for_config_server(ops_test: OpsTest) -> None:
     """Verifies that the application and unit are active."""
@@ -73,6 +75,7 @@ async def test_waits_for_config_server(ops_test: OpsTest) -> None:
     assert mongos_unit.workload_status_message == "Missing relation to config-server."
 
 
+@pytest.mark.group(1)
 @pytest.mark.abort_on_fail
 async def test_mongos_starts_with_config_server(ops_test: OpsTest) -> None:
     # prepare sharded cluster
@@ -107,6 +110,7 @@ async def test_mongos_starts_with_config_server(ops_test: OpsTest) -> None:
     assert mongos_running, "Mongos is not currently running."
 
 
+@pytest.mark.group(1)
 @pytest.mark.abort_on_fail
 async def test_mongos_has_user(ops_test: OpsTest) -> None:
     # prepare sharded cluster
@@ -115,6 +119,7 @@ async def test_mongos_has_user(ops_test: OpsTest) -> None:
     assert mongos_running, "Mongos is not currently running."
 
 
+@pytest.mark.group(1)
 @pytest.mark.abort_on_fail
 async def test_mongos_updates_config_db(ops_test: OpsTest) -> None:
     # completely change the hosts that mongos was connected to
@@ -141,6 +146,7 @@ async def test_mongos_updates_config_db(ops_test: OpsTest) -> None:
     assert mongos_running, "Mongos is not currently running."
 
 
+@pytest.mark.group(1)
 @pytest.mark.abort_on_fail
 async def test_user_with_extra_roles(ops_test: OpsTest) -> None:
     cmd = f'db.createUser({{user: "{TEST_USER_NAME}", pwd: "{TEST_USER_PWD}", roles: [{{role: "readWrite", db: "{TEST_DB_NAME}"}}]}});'
@@ -150,10 +156,6 @@ async def test_user_with_extra_roles(ops_test: OpsTest) -> None:
         return_code == 0
     ), f"mongos user does not have correct permissions to create new user, error: {std_err}"
 
-    test_user_uri = (
-        f"mongodb://{TEST_USER_NAME}:{TEST_USER_PWD}@{MONGOS_SOCKET}/{TEST_DB_NAME}"
-    )
-    mongos_running = await check_mongos(
-        ops_test, mongos_unit, auth=True, uri=test_user_uri
-    )
+    test_user_uri = f"mongodb://{TEST_USER_NAME}:{TEST_USER_PWD}@{MONGOS_SOCKET}/{TEST_DB_NAME}"
+    mongos_running = await check_mongos(ops_test, mongos_unit, auth=True, uri=test_user_uri)
     assert mongos_running, "User created is not accessible."
