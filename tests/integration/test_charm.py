@@ -3,7 +3,7 @@
 # See LICENSE file for licensing details.
 import pytest
 from pytest_operator.plugin import OpsTest
-from .helpers import check_mongos
+from .helpers import check_mongos, run_mongos_command, MONGOS_SOCKET
 
 APPLICATION_APP_NAME = "application"
 MONGOS_APP_NAME = "mongos"
@@ -14,6 +14,10 @@ CONFIG_SERVER_APP_NAME = "config-server"
 SHARD_APP_NAME = "shard"
 SHARD_REL_NAME = "sharding"
 CONFIG_SERVER_REL_NAME = "config-server"
+
+TEST_USER_NAME = "TestUserName1"
+TEST_USER_PWD = "Test123"
+TEST_DB_NAME = "test"
 
 
 @pytest.mark.group(1)
@@ -140,3 +144,18 @@ async def test_mongos_updates_config_db(ops_test: OpsTest) -> None:
     mongos_unit = ops_test.model.applications[MONGOS_APP_NAME].units[0]
     mongos_running = await check_mongos(ops_test, mongos_unit, auth=True)
     assert mongos_running, "Mongos is not currently running."
+
+
+@pytest.mark.group(1)
+@pytest.mark.abort_on_fail
+async def test_user_with_extra_roles(ops_test: OpsTest) -> None:
+    cmd = f'db.createUser({{user: "{TEST_USER_NAME}", pwd: "{TEST_USER_PWD}", roles: [{{role: "readWrite", db: "{TEST_DB_NAME}"}}]}});'
+    mongos_unit = ops_test.model.applications[MONGOS_APP_NAME].units[0]
+    return_code, _, std_err = await run_mongos_command(ops_test, mongos_unit, cmd)
+    assert (
+        return_code == 0
+    ), f"mongos user does not have correct permissions to create new user, error: {std_err}"
+
+    test_user_uri = f"mongodb://{TEST_USER_NAME}:{TEST_USER_PWD}@{MONGOS_SOCKET}/{TEST_DB_NAME}"
+    mongos_running = await check_mongos(ops_test, mongos_unit, auth=True, uri=test_user_uri)
+    assert mongos_running, "User created is not accessible."

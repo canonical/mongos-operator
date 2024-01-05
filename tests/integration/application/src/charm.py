@@ -14,6 +14,9 @@ from ops.charm import CharmBase
 from ops.main import main
 from ops.model import ActiveStatus
 
+
+from charms.mongos.v0.mongos_client_interface import MongosRequirer
+
 logger = logging.getLogger(__name__)
 
 # Extra roles that this application needs when interacting with the database.
@@ -27,6 +30,13 @@ class ApplicationCharm(CharmBase):
         super().__init__(*args)
         # Default charm events.
         self.framework.observe(self.on.start, self._on_start)
+
+        # relation events for mongos client
+        self._mongos_client = MongosRequirer(
+            self,
+            database_name="my-test-db",
+            extra_user_roles=EXTRA_USER_ROLES,
+        )
 
     def _on_start(self, _) -> None:
         """Only sets an Active status."""

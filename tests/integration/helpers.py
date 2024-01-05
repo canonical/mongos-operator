@@ -10,18 +10,47 @@ MONGOS_APP_NAME = "mongos"
 PING_CMD = "db.runCommand({ping: 1})"
 
 
-async def generate_mongos_command(ops_test: OpsTest, auth: bool) -> str:
+async def generate_mongos_command(
+    ops_test: OpsTest, auth: bool, uri: str = None
+) -> str:
     """Generates a command which verifies mongos is running."""
-    mongodb_uri = await generate_mongos_uri(ops_test, auth)
+    mongodb_uri = uri or await generate_mongos_uri(ops_test, auth)
     return f"{MONGO_SHELL} '{mongodb_uri}'  --eval '{PING_CMD}'"
 
 
-async def check_mongos(ops_test: OpsTest, unit: ops.model.Unit, auth: bool) -> bool:
+async def check_mongos(
+    ops_test: OpsTest, unit: ops.model.Unit, auth: bool, uri: str = None
+) -> bool:
     """Returns whether mongos is running on the provided unit."""
-    mongos_check = await generate_mongos_command(ops_test, auth)
+    mongos_check = await generate_mongos_command(ops_test, auth, uri)
+
+    # since mongos is communicating only via the unix domain socket, we cannot connect to it via
+    # traditional pymongo methods
     check_cmd = f"exec --unit {unit.name} -- {mongos_check}"
     return_code, _, _ = await ops_test.juju(*check_cmd.split())
     return return_code == 0
+
+
+async def run_mongos_command(ops_test: OpsTest, unit: ops.model.Unit, mongos_cmd: str):
+    """Runs the provided mongos command.
+
+    The mongos charm uses the unix domain socket to communicate, and therefore we cannot run
+    MongoDB commands from outside the unit and we must use `juju exec` instead.
+    """
+    mongodb_uri = await generate_mongos_uri(ops_test, auth=True)
+
+    check_cmd = [
+        "exec",
+        "--unit",
+        unit.name,
+        "--",
+        MONGO_SHELL,
+        f"'{mongodb_uri}'",
+        "--eval",
+        f"'{mongos_cmd}'",
+    ]
+    return_code, std_output, std_err = await ops_test.juju(*check_cmd)
+    return (return_code, std_output, std_err)
 
 
 async def generate_mongos_uri(ops_test: OpsTest, auth: bool) -> str:
