@@ -108,7 +108,7 @@ class MongosProvider(Object):
             if isinstance(new_extra_user_roles, str):
                 new_extra_user_roles = [new_extra_user_roles]
 
-            self.charm.set_user_role(new_extra_user_roles)
+            self.charm.set_user_roles(new_extra_user_roles)
 
 
 class MongosRequirer(Object):
@@ -126,7 +126,7 @@ class MongosRequirer(Object):
         self.charm = charm
 
         if not database_name:
-            database_name = f"{self.charm.app}-mongos"
+            database_name = f"{self.charm.app}"
 
         self.database_requires = DatabaseRequires(
             self.charm,

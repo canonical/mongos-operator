@@ -239,7 +239,7 @@ class MongosOperatorCharm(ops.CharmBase):
         # TODO future PR - generate different URI for data-integrator as that charm will not
         # communicate to mongos via the Unix Domain Socket.
 
-    def set_user_role(self, roles: List[str]) -> None:
+    def set_user_roles(self, roles: List[str]) -> None:
         """Updates the roles for the mongos user."""
         roles_str = ",".join(roles)
         self.app_peer_data[USER_ROLES_TAG] = roles_str
