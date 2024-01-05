@@ -104,6 +104,17 @@ class MongosProvider(Object):
 
             self.charm.set_user_role(new_extra_user_roles)
 
+    def update_connection_info(self, config) -> None:
+        """Sends the URI to the related parent application"""
+        logger.info("Sharing connection information to host application.")
+        for relation in self.model.relations[MONGOS_RELATION_NAME]:
+            self.database_provides.set_credentials(relation.id, config.username, config.password)
+            self.database_provides.set_database(relation.id, config.database)
+            self.database_provides.set_uris(
+                relation.id,
+                config.uri,
+            )
+
 
 class MongosRequirer(Object):
     """Manage relations between the mongos router and the application on the application side."""

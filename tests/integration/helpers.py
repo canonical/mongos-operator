@@ -10,9 +10,7 @@ MONGOS_APP_NAME = "mongos"
 PING_CMD = "db.runCommand({ping: 1})"
 
 
-async def generate_mongos_command(
-    ops_test: OpsTest, auth: bool, uri: str = None
-) -> str:
+async def generate_mongos_command(ops_test: OpsTest, auth: bool, uri: str = None) -> str:
     """Generates a command which verifies mongos is running."""
     mongodb_uri = uri or await generate_mongos_uri(ops_test, auth)
     return f"{MONGO_SHELL} '{mongodb_uri}'  --eval '{PING_CMD}'"
@@ -59,14 +57,11 @@ async def generate_mongos_uri(ops_test: OpsTest, auth: bool) -> str:
         return f"mongodb://{MONGOS_SOCKET}"
 
     secret_uri = await get_application_relation_data(
-        ops_test, "mongos", "cluster", "secret-user"
+        ops_test, "application", "mongos_proxy", "secret-user"
     )
 
     secret_data = await get_secret_data(ops_test, secret_uri)
-    username = secret_data.get("username")
-    password = secret_data.get("password")
-
-    return f"mongodb://{username}:{password}@{MONGOS_SOCKET}"
+    return secret_data.get("uris")
 
 
 async def get_secret_data(ops_test, secret_uri) -> Dict:
@@ -111,9 +106,7 @@ async def get_application_relation_data(
     data = yaml.safe_load(raw_data)
 
     # Filter the data based on the relation name.
-    relation_data = [
-        v for v in data[unit_name]["relation-info"] if v["endpoint"] == relation_name
-    ]
+    relation_data = [v for v in data[unit_name]["relation-info"] if v["endpoint"] == relation_name]
 
     if relation_id:
         # Filter the data based on the relation id.

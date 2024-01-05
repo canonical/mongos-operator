@@ -163,9 +163,7 @@ class MongosOperatorCharm(ops.CharmBase):
         content = secret.get_content()
 
         if not content.get(key) or content[key] == Config.Secrets.SECRET_DELETED_LABEL:
-            logger.error(
-                f"Non-existing secret {scope}:{key} was attempted to be removed."
-            )
+            logger.error(f"Non-existing secret {scope}:{key} was attempted to be removed.")
             return
 
         content[key] = Config.Secrets.SECRET_DELETED_LABEL
@@ -234,10 +232,9 @@ class MongosOperatorCharm(ops.CharmBase):
         self.stop_mongos_service()
         self.start_mongos_service()
 
-    def share_uri(self) -> None:
+    def share_connection_info(self) -> None:
         """Future PR - generate URI and give it to related app"""
-        # TODO future PR - generate different URI for data-integrator as that charm will not
-        # communicate to mongos via the Unix Domain Socket.
+        self.mongos_provider.update_connection_info(self.mongos_config)
 
     def set_user_role(self, roles: List[str]) -> None:
         """Updates the roles for the mongos user."""
@@ -248,9 +245,7 @@ class MongosOperatorCharm(ops.CharmBase):
             return
 
         # a mongos shard can only be related to one config server
-        config_server_rel = self.model.relations[
-            Config.Relations.CLUSTER_RELATIONS_NAME
-        ][0]
+        config_server_rel = self.model.relations[Config.Relations.CLUSTER_RELATIONS_NAME][0]
         self.cluster.database_requires.update_relation_data(
             config_server_rel.id, {USER_ROLES_TAG: roles_str}
         )
@@ -263,9 +258,7 @@ class MongosOperatorCharm(ops.CharmBase):
             return
 
         # a mongos shard can only be related to one config server
-        config_server_rel = self.model.relations[
-            Config.Relations.CLUSTER_RELATIONS_NAME
-        ][0]
+        config_server_rel = self.model.relations[Config.Relations.CLUSTER_RELATIONS_NAME][0]
         self.cluster.database_requires.update_relation_data(
             config_server_rel.id, {DATABASE_TAG: database}
         )
@@ -297,7 +290,23 @@ class MongosOperatorCharm(ops.CharmBase):
     @property
     def mongos_config(self) -> MongosConfiguration:
         """Generates a MongoDBConfiguration object for mongos in the deployment of MongoDB."""
-        return self._get_mongos_config_for_user(OperatorUser, set(Config.MONGOS_SOCKET))
+        # TODO future PR - use ip addresses for hosts for data-integrator as that charm will not
+        # communicate to mongos via the Unix Domain Socket.
+        hosts = [Config.MONGOS_SOCKET_URI_FMT]
+        # mongos using Unix Domain Socket to communicate do not use port, Future PR - use port
+        # when suborinate charm of data-integrator.
+        port = None
+
+        return MongosConfiguration(
+            database=self.database,
+            username=self.get_secret(APP_SCOPE, Config.Secrets.USERNAME),
+            password=self.get_secret(APP_SCOPE, Config.Secrets.PASSWORD),
+            hosts=hosts,
+            port=port,
+            roles=self.extra_user_roles,
+            tls_external=None,  # Future PR will support TLS
+            tls_internal=None,  # Future PR will support TLS
+        )
 
     @property
     def _peers(self) -> Optional[Relation]:
