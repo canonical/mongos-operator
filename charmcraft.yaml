@@ -12,15 +12,6 @@ bases:
 
 parts:
   charm:
-    charm-binary-python-packages:
-      - setuptools
-      - cryptography
-    build-packages:
-      - git
-      - libffi-dev
-      - libssl-dev
-      - rustc
-      - cargo
     override-pull: |
       craftctl default
       if [[ ! -f requirements.txt ]]
@@ -28,3 +19,9 @@ parts:
           echo 'ERROR: Use "tox run -e build" instead of calling "charmcraft pack" directly' >&2
           exit 1
       fi
+    build-packages:
+      - libffi-dev
+      - libssl-dev
+      - pkg-config
+      - rustc
+      - cargo

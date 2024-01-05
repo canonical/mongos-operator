@@ -16,6 +16,7 @@ SHARD_REL_NAME = "sharding"
 CONFIG_SERVER_REL_NAME = "config-server"
 
 
+@pytest.mark.group(1)
 @pytest.mark.abort_on_fail
 async def test_build_and_deploy(ops_test: OpsTest) -> None:
     """Build and deploy a sharded cluster."""
@@ -53,6 +54,7 @@ async def test_build_and_deploy(ops_test: OpsTest) -> None:
     )
 
 
+@pytest.mark.group(1)
 @pytest.mark.abort_on_fail
 async def test_waits_for_config_server(ops_test: OpsTest) -> None:
     """Verifies that the application and unit are active."""
@@ -63,12 +65,13 @@ async def test_waits_for_config_server(ops_test: OpsTest) -> None:
         apps=[MONGOS_APP_NAME],
         status="blocked",
         idle_period=10,
-    ),
+    )
 
     mongos_unit = ops_test.model.applications[MONGOS_APP_NAME].units[0]
     assert mongos_unit.workload_status_message == "Missing relation to config-server."
 
 
+@pytest.mark.group(1)
 @pytest.mark.abort_on_fail
 async def test_mongos_starts_with_config_server(ops_test: OpsTest) -> None:
     # prepare sharded cluster
@@ -103,6 +106,7 @@ async def test_mongos_starts_with_config_server(ops_test: OpsTest) -> None:
     assert mongos_running, "Mongos is not currently running."
 
 
+@pytest.mark.group(1)
 @pytest.mark.abort_on_fail
 async def test_mongos_has_user(ops_test: OpsTest) -> None:
     # prepare sharded cluster
@@ -111,6 +115,7 @@ async def test_mongos_has_user(ops_test: OpsTest) -> None:
     assert mongos_running, "Mongos is not currently running."
 
 
+@pytest.mark.group(1)
 @pytest.mark.abort_on_fail
 async def test_mongos_updates_config_db(ops_test: OpsTest) -> None:
     # completely change the hosts that mongos was connected to
