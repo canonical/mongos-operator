@@ -1,3 +1,6 @@
+/requirements.txt
+/requirements-last-build.txt
+
 venv/
 build/
 *.charm
@@ -7,4 +10,3 @@ __pycache__/
 *.py[cod]
 .idea
 .vscode/
-requirements.txt

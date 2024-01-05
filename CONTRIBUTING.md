@@ -2,11 +2,19 @@
 
 To make contributions to this charm, you'll need a working [development setup](https://juju.is/docs/sdk/dev-setup).
 
-You can create an environment for development with `tox`:
+## Developing
+Install `tox` and `poetry`
+```shell
+python3 -m pip install --user pipx
+python3 -m pipx ensurepath
+pipx install tox
+pipx install poetry
+```
+
+You can create an environment for development:
 
 ```shell
-tox devenv -e integration
-source venv/bin/activate
+poetry install
 ```
 
 ## Testing
@@ -28,7 +36,7 @@ tox                      # runs 'format', 'lint', 'static', and 'unit' environme
 Build the charm in this git repository using:
 
 ```shell
-charmcraft pack
+tox run -e build
 ```
 
 <!-- You may want to include any contribution/style guidelines in this document>

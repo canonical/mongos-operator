@@ -69,7 +69,7 @@ async def test_waits_for_config_server(ops_test: OpsTest) -> None:
         apps=[MONGOS_APP_NAME],
         status="blocked",
         idle_period=10,
-    ),
+    )
 
     mongos_unit = ops_test.model.applications[MONGOS_APP_NAME].units[0]
     assert mongos_unit.workload_status_message == "Missing relation to config-server."
