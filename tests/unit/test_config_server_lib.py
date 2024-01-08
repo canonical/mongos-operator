@@ -10,6 +10,7 @@ from charm import MongosOperatorCharm
 
 from .helpers import patch_network_get
 
+from charms.data_platform_libs.v0.data_interfaces import DatabaseRequiresEvents
 
 PEER_ADDR = {"private-address": "127.4.5.6"}
 REL_DATA = {
@@ -18,10 +19,25 @@ REL_DATA = {
 }
 MONGOS_VAR = "MONGOS_ARGS=--configdb config-server-db/host:port"
 
+CLUSTER_ALIAS = "cluster"
+
 
 class TestConfigServerInterface(unittest.TestCase):
     @patch_network_get(private_address="1.1.1.1")
     def setUp(self):
+        try:
+            # runs before each test to delete the custom events created for the aliases. This is
+            # needed because the events are created again in the next test, which causes an error
+            # related to duplicated events.
+            delattr(DatabaseRequiresEvents, f"{CLUSTER_ALIAS}_database_created")
+            delattr(DatabaseRequiresEvents, f"{CLUSTER_ALIAS}_endpoints_changed")
+            delattr(
+                DatabaseRequiresEvents, f"{CLUSTER_ALIAS}_read_only_endpoints_changed"
+            )
+        except AttributeError:
+            # Ignore the events not existing before the first test.
+            pass
+
         self.harness = Harness(MongosOperatorCharm)
         self.harness.begin()
         self.harness.add_relation("router-peers", "router-peers")

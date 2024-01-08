@@ -18,9 +18,26 @@ from charm import MongosOperatorCharm
 
 from .helpers import patch_network_get
 
+from charms.data_platform_libs.v0.data_interfaces import DatabaseRequiresEvents
+
+CLUSTER_ALIAS = "cluster"
+
 
 class TestCharm(unittest.TestCase):
     def setUp(self, *unused):
+        try:
+            # runs before each test to delete the custom events created for the aliases. This is
+            # needed because the events are created again in the next test, which causes an error
+            # related to duplicated events.
+            delattr(DatabaseRequiresEvents, f"{CLUSTER_ALIAS}_database_created")
+            delattr(DatabaseRequiresEvents, f"{CLUSTER_ALIAS}_endpoints_changed")
+            delattr(
+                DatabaseRequiresEvents, f"{CLUSTER_ALIAS}_read_only_endpoints_changed"
+            )
+        except AttributeError:
+            # Ignore the events not existing before the first test.
+            pass
+
         self.harness = Harness(MongosOperatorCharm)
         self.addCleanup(self.harness.cleanup)
         self.harness.begin()

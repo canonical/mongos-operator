@@ -59,14 +59,11 @@ async def generate_mongos_uri(ops_test: OpsTest, auth: bool) -> str:
         return f"mongodb://{MONGOS_SOCKET}"
 
     secret_uri = await get_application_relation_data(
-        ops_test, "mongos", "cluster", "secret-user"
+        ops_test, "application", "mongos_proxy", "secret-user"
     )
 
     secret_data = await get_secret_data(ops_test, secret_uri)
-    username = secret_data.get("username")
-    password = secret_data.get("password")
-
-    return f"mongodb://{username}:{password}@{MONGOS_SOCKET}"
+    return secret_data.get("uris")
 
 
 async def get_secret_data(ops_test, secret_uri) -> Dict:

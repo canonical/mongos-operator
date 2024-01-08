@@ -17,7 +17,7 @@ CONFIG_SERVER_REL_NAME = "config-server"
 
 TEST_USER_NAME = "TestUserName1"
 TEST_USER_PWD = "Test123"
-TEST_DB_NAME = "test"
+TEST_DB_NAME = "my-test-db"
 
 
 @pytest.mark.group(1)
