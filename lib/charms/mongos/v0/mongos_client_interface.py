@@ -14,6 +14,7 @@ from charms.data_platform_libs.v0.data_interfaces import (
     DatabaseRequires,
 )
 
+from charms.mongodb.v1.mongos import MongosConfiguration
 
 logger = logging.getLogger(__name__)
 DATABASE_KEY = "database"
@@ -104,7 +105,7 @@ class MongosProvider(Object):
 
             self.charm.set_user_role(new_extra_user_roles)
 
-    def update_connection_info(self, config) -> None:
+    def update_connection_info(self, config: MongosConfiguration) -> None:
         """Sends the URI to the related parent application"""
         logger.info("Sharing connection information to host application.")
         for relation in self.model.relations[MONGOS_RELATION_NAME]:
