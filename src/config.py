@@ -4,6 +4,7 @@
 
 
 from typing import Literal
+from urllib.parse import quote
 
 
 class Config:
@@ -11,6 +12,7 @@ class Config:
 
     MONGOS_PORT = 27018
     MONGOS_SOCKET = "/var/snap/charmed-mongodb/common/var/mongodb-27018.sock"
+    MONGOS_SOCKET_URI_FMT = quote(MONGOS_SOCKET, safe="")
     MONGODB_PORT = 27017
     SUBSTRATE = "vm"
     ENV_VAR_PATH = "/etc/environment"
@@ -51,5 +53,7 @@ class Config:
         SECRET_CACHE_LABEL = "cache"
         SECRET_KEYFILE_NAME = "keyfile"
         SECRET_INTERNAL_LABEL = "internal-secret"
+        USERNAME = "username"
+        PASSWORD = "password"
         SECRET_DELETED_LABEL = "None"
         MAX_PASSWORD_LENGTH = 4096

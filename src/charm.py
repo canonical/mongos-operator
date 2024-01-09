@@ -16,7 +16,6 @@ from charms.mongodb.v1.mongos import MongosConfiguration
 from charms.mongodb.v0.config_server_interface import ClusterRequirer
 from charms.mongodb.v1.users import (
     MongoDBUser,
-    OperatorUser,
 )
 
 from config import Config
@@ -234,10 +233,9 @@ class MongosOperatorCharm(ops.CharmBase):
         self.stop_mongos_service()
         self.start_mongos_service()
 
-    def share_uri(self) -> None:
+    def share_connection_info(self) -> None:
         """Future PR - generate URI and give it to related app"""
-        # TODO future PR - generate different URI for data-integrator as that charm will not
-        # communicate to mongos via the Unix Domain Socket.
+        self.mongos_provider.update_connection_info(self.mongos_config)
 
     def set_user_roles(self, roles: List[str]) -> None:
         """Updates the roles for the mongos user."""
@@ -297,7 +295,23 @@ class MongosOperatorCharm(ops.CharmBase):
     @property
     def mongos_config(self) -> MongosConfiguration:
         """Generates a MongoDBConfiguration object for mongos in the deployment of MongoDB."""
-        return self._get_mongos_config_for_user(OperatorUser, set(Config.MONGOS_SOCKET))
+        # TODO future PR - use ip addresses for hosts for data-integrator as that charm will not
+        # communicate to mongos via the Unix Domain Socket.
+        hosts = [Config.MONGOS_SOCKET_URI_FMT]
+        # mongos using Unix Domain Socket to communicate do not use port, Future PR - use port
+        # when suborinate charm of data-integrator.
+        port = None
+
+        return MongosConfiguration(
+            database=self.database,
+            username=self.get_secret(APP_SCOPE, Config.Secrets.USERNAME),
+            password=self.get_secret(APP_SCOPE, Config.Secrets.PASSWORD),
+            hosts=hosts,
+            port=port,
+            roles=self.extra_user_roles,
+            tls_external=None,  # Future PR will support TLS
+            tls_internal=None,  # Future PR will support TLS
+        )
 
     @property
     def _peers(self) -> Optional[Relation]:
