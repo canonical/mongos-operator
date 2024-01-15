@@ -35,7 +35,7 @@ LIBAPI = 0
 
 # Increment this PATCH version before using `charmcraft publish-lib` or reset
 # to 0 if you are raising the major API version
-LIBPATCH = 2
+LIBPATCH = 3
 
 
 class ClusterProvider(Object):
@@ -54,8 +54,13 @@ class ClusterProvider(Object):
             charm.on[self.relation_name].relation_changed, self._on_relation_changed
         )
 
-        # TODO Future PRs handle scale down
-        # TODO Future PRs handle changing of units/passwords to be propagated to mongos
+        self.framework.observe(
+            charm.on[self.relation_name].relation_departed,
+            self.charm.check_relation_broken_or_scale_down,
+        )
+        self.framework.observe(
+            charm.on[self.relation_name].relation_broken, self._on_relation_broken
+        )
 
     def pass_hook_checks(self, event: EventBase) -> bool:
         """Runs the pre-hooks checks for ClusterProvider, returns True if all pass."""
@@ -96,6 +101,26 @@ class ClusterProvider(Object):
                     CONFIG_SERVER_DB_KEY: config_server_db,
                 },
             )
+
+    def _on_relation_broken(self, event) -> None:
+        # Only relation_deparated events can check if scaling down
+        departed_relation_id = event.relation.id
+        if not self.charm.has_departed_run(departed_relation_id):
+            logger.info(
+                "Deferring, must wait for relation departed hook to decide if relation should be removed."
+            )
+            event.defer()
+            return
+
+        if not self.pass_hook_checks(event):
+            logger.info("Skipping relation broken event: hook checks did not pass")
+            return
+
+        if not self.charm.proceed_on_broken_event(event):
+            logger.info("Skipping relation broken event, broken event due to scale down")
+            return
+
+        self.charm.client_relations.oversee_users(departed_relation_id, event)
 
     def update_config_server_db(self, event):
         """Provides related mongos applications with new config server db."""
@@ -157,7 +182,13 @@ class ClusterRequirer(Object):
         self.framework.observe(
             charm.on[self.relation_name].relation_changed, self._on_relation_changed
         )
-        # TODO Future PRs handle scale down
+        self.framework.observe(
+            charm.on[self.relation_name].relation_departed,
+            self.charm.check_relation_broken_or_scale_down,
+        )
+        self.framework.observe(
+            charm.on[self.relation_name].relation_broken, self._on_relation_broken
+        )
 
     def _on_database_created(self, event) -> None:
         if not self.charm.unit.is_leader():
@@ -201,6 +232,31 @@ class ClusterRequirer(Object):
             return
 
         self.charm.unit.status = ActiveStatus()
+
+    def _on_relation_broken(self, event) -> None:
+        # Only relation_deparated events can check if scaling down
+        departed_relation_id = event.relation.id
+        if not self.charm.has_departed_run(departed_relation_id):
+            logger.info(
+                "Deferring, must wait for relation departed hook to decide if relation should be removed."
+            )
+            event.defer()
+            return
+
+        if not self.charm.proceed_on_broken_event(event):
+            logger.info("Skipping relation broken event, broken event due to scale down")
+            return
+
+        self.charm.stop_mongos_service()
+        logger.info("Stopped mongos daemon")
+
+        if not self.charm.unit.is_leader():
+            return
+
+        logger.info("Database and user removed for mongos application")
+        self.charm.remove_secret(Config.Relations.APP_SCOPE, Config.Secrets.USERNAME)
+        self.charm.remove_secret(Config.Relations.APP_SCOPE, Config.Secrets.PASSWORD)
+        self.charm.share_connection_info(remove_info=True)
 
     # BEGIN: helper functions
 
