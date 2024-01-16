@@ -3,7 +3,12 @@
 # See LICENSE file for licensing details.
 import pytest
 from pytest_operator.plugin import OpsTest
-from .helpers import check_mongos, run_mongos_command, MONGOS_SOCKET
+from .helpers import (
+    check_mongos,
+    run_mongos_command,
+    get_application_relation_data,
+    MONGOS_SOCKET,
+)
 
 APPLICATION_APP_NAME = "application"
 MONGOS_APP_NAME = "mongos"
@@ -156,6 +161,74 @@ async def test_user_with_extra_roles(ops_test: OpsTest) -> None:
         return_code == 0
     ), f"mongos user does not have correct permissions to create new user, error: {std_err}"
 
-    test_user_uri = f"mongodb://{TEST_USER_NAME}:{TEST_USER_PWD}@{MONGOS_SOCKET}/{TEST_DB_NAME}"
-    mongos_running = await check_mongos(ops_test, mongos_unit, auth=True, uri=test_user_uri)
+    test_user_uri = (
+        f"mongodb://{TEST_USER_NAME}:{TEST_USER_PWD}@{MONGOS_SOCKET}/{TEST_DB_NAME}"
+    )
+    mongos_running = await check_mongos(
+        ops_test, mongos_unit, auth=True, uri=test_user_uri
+    )
     assert mongos_running, "User created is not accessible."
+
+
+@pytest.mark.group(1)
+@pytest.mark.abort_on_fail
+async def test_mongos_can_scale(ops_test: OpsTest) -> None:
+    """Tests that mongos powers down when no config server is accessible."""
+    # note mongos scales only when hosting application scales
+    await ops_test.model.applications[APPLICATION_APP_NAME].add_units(count=1)
+    await ops_test.model.wait_for_idle(
+        apps=[APPLICATION_APP_NAME, MONGOS_APP_NAME],
+        status="active",
+        timeout=1000,
+    )
+
+    for mongos_unit in ops_test.model.applications[MONGOS_APP_NAME].units:
+        mongos_running = await check_mongos(ops_test, mongos_unit, auth=True)
+        assert mongos_running, "Mongos is not currently running."
+
+    # destroy the unit we were initially connected to
+    await ops_test.model.applications[APPLICATION_APP_NAME].destroy_units(
+        f"{APPLICATION_APP_NAME}/0"
+    )
+    await ops_test.model.wait_for_idle(
+        apps=[APPLICATION_APP_NAME, MONGOS_APP_NAME],
+        status="active",
+        timeout=1000,
+    )
+
+    # prepare sharded cluster
+    mongos_unit = ops_test.model.applications[MONGOS_APP_NAME].units[0]
+    mongos_running = await check_mongos(ops_test, mongos_unit, auth=True)
+    assert mongos_running, "Mongos is not currently running."
+
+
+@pytest.mark.group(1)
+@pytest.mark.abort_on_fail
+async def test_mongos_stops_without_config_server(ops_test: OpsTest) -> None:
+    """Tests that mongos powers down when no config server is accessible."""
+    await ops_test.model.applications[CONFIG_SERVER_APP_NAME].remove_relation(
+        f"{MONGOS_APP_NAME}:{CLUSTER_REL_NAME}",
+        f"{CONFIG_SERVER_APP_NAME}:{CLUSTER_REL_NAME}",
+    )
+
+    await ops_test.model.wait_for_idle(
+        apps=[
+            APPLICATION_APP_NAME,
+            MONGOS_APP_NAME,
+            SHARD_APP_NAME,
+            CONFIG_SERVER_APP_NAME,
+        ],
+        idle_period=10,
+        raise_on_blocked=False,
+    )
+
+    mongos_unit = ops_test.model.applications[MONGOS_APP_NAME].units[0]
+    mongos_running = await check_mongos(ops_test, mongos_unit, auth=False)
+    assert not mongos_running, "Mongos is running without a config server."
+
+    secrets = await get_application_relation_data(
+        ops_test, "application", "mongos_proxy", "secret-user"
+    )
+    assert (
+        secrets is None
+    ), "mongos still has connection info without being connected to clsuter."

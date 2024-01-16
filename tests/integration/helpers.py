@@ -100,16 +100,16 @@ async def get_application_relation_data(
             or if there is no data for the particular relation endpoint
             and/or alias.
     """
-    unit_name = f"{application_name}/0"
-    raw_data = (await ops_test.juju("show-unit", unit_name))[1]
+    unit = ops_test.model.applications[application_name].units[0]
+    raw_data = (await ops_test.juju("show-unit", unit.name))[1]
 
     if not raw_data:
-        raise ValueError(f"no unit info could be grabbed for {unit_name}")
+        raise ValueError(f"no unit info could be grabbed for { unit.name}")
     data = yaml.safe_load(raw_data)
 
     # Filter the data based on the relation name.
     relation_data = [
-        v for v in data[unit_name]["relation-info"] if v["endpoint"] == relation_name
+        v for v in data[unit.name]["relation-info"] if v["endpoint"] == relation_name
     ]
 
     if relation_id:
