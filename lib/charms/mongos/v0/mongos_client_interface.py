@@ -107,7 +107,7 @@ class MongosProvider(Object):
 
     def remove_connection_info(self) -> None:
         """Sends the URI to the related parent application"""
-        logger.info("Sharing connection information to host application.")
+        logger.info("Removing connection information from host application.")
         for relation in self.model.relations[MONGOS_RELATION_NAME]:
             self.database_provides.delete_relation_data(
                 relation.id, fields=["username", "password", "uris"]

@@ -3,6 +3,7 @@
 # Copyright 2023 Canonical Ltd.
 # See LICENSE file for licensing details.
 import os
+import json
 import pwd
 from charms.mongodb.v1.helpers import copy_licenses_to_unit, KEY_FILE
 from charms.operator_libs_linux.v1 import snap
@@ -22,10 +23,7 @@ from config import Config
 
 import ops
 from ops.model import BlockedStatus, MaintenanceStatus, Relation
-from ops.charm import (
-    InstallEvent,
-    StartEvent,
-)
+from ops.charm import InstallEvent, StartEvent, RelationDepartedEvent
 
 import logging
 
@@ -232,11 +230,11 @@ class MongosOperatorCharm(ops.CharmBase):
         self.start_mongos_service()
 
     def remove_connection_info(self) -> None:
+        """Remove: URI, username, and password from the host-app"""
         self.mongos_provider.remove_connection_info()
 
     def share_connection_info(self) -> None:
-        """Future PR - generate URI and give it to related app"""
-
+        """Provide: URI, username, and password to the host-app"""
         self.mongos_provider.update_connection_info(self.mongos_config)
 
     def set_user_roles(self, roles: List[str]) -> None:
