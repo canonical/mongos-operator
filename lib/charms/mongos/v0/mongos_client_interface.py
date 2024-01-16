@@ -105,8 +105,6 @@ class MongosProvider(Object):
 
             self.charm.set_user_roles(new_extra_user_roles)
 
-<<<<<<< Updated upstream
-=======
     def remove_connection_info(self) -> None:
         """Sends the URI to the related parent application"""
         logger.info("Sharing connection information to host application.")
@@ -115,7 +113,6 @@ class MongosProvider(Object):
                 relation.id, fields=["username", "password", "uris"]
             )
 
->>>>>>> Stashed changes
     def update_connection_info(self, config: MongosConfiguration) -> None:
         """Sends the URI to the related parent application"""
         logger.info("Sharing connection information to host application.")

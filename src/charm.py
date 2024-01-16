@@ -162,9 +162,7 @@ class MongosOperatorCharm(ops.CharmBase):
         content = secret.get_content()
 
         if not content.get(key) or content[key] == Config.Secrets.SECRET_DELETED_LABEL:
-            logger.error(
-                f"Non-existing secret {scope}:{key} was attempted to be removed."
-            )
+            logger.error(f"Non-existing secret {scope}:{key} was attempted to be removed.")
             return
 
         content[key] = Config.Secrets.SECRET_DELETED_LABEL
@@ -233,17 +231,12 @@ class MongosOperatorCharm(ops.CharmBase):
         self.stop_mongos_service()
         self.start_mongos_service()
 
-<<<<<<< Updated upstream
-    def share_connection_info(self) -> None:
-        """Future PR - generate URI and give it to related app"""
-=======
     def remove_connection_info(self) -> None:
         self.mongos_provider.remove_connection_info()
 
     def share_connection_info(self) -> None:
         """Future PR - generate URI and give it to related app"""
 
->>>>>>> Stashed changes
         self.mongos_provider.update_connection_info(self.mongos_config)
 
     def set_user_roles(self, roles: List[str]) -> None:
@@ -255,9 +248,7 @@ class MongosOperatorCharm(ops.CharmBase):
             return
 
         # a mongos shard can only be related to one config server
-        config_server_rel = self.model.relations[
-            Config.Relations.CLUSTER_RELATIONS_NAME
-        ][0]
+        config_server_rel = self.model.relations[Config.Relations.CLUSTER_RELATIONS_NAME][0]
         self.cluster.database_requires.update_relation_data(
             config_server_rel.id, {USER_ROLES_TAG: roles_str}
         )
@@ -270,15 +261,11 @@ class MongosOperatorCharm(ops.CharmBase):
             return
 
         # a mongos shard can only be related to one config server
-        config_server_rel = self.model.relations[
-            Config.Relations.CLUSTER_RELATIONS_NAME
-        ][0]
+        config_server_rel = self.model.relations[Config.Relations.CLUSTER_RELATIONS_NAME][0]
         self.cluster.database_requires.update_relation_data(
             config_server_rel.id, {DATABASE_TAG: database}
         )
 
-<<<<<<< Updated upstream
-=======
     def check_relation_broken_or_scale_down(self, event: RelationDepartedEvent) -> None:
         """Checks relation departed event is the result of removed relation or scale down.
 
@@ -336,7 +323,6 @@ class MongosOperatorCharm(ops.CharmBase):
         """Generates the relation departed key for a specified relation id."""
         return f"relation_{rel_id}_departed"
 
->>>>>>> Stashed changes
     # END: helper functions
 
     # BEGIN: properties
