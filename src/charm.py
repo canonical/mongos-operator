@@ -233,8 +233,17 @@ class MongosOperatorCharm(ops.CharmBase):
         self.stop_mongos_service()
         self.start_mongos_service()
 
+<<<<<<< Updated upstream
     def share_connection_info(self) -> None:
         """Future PR - generate URI and give it to related app"""
+=======
+    def remove_connection_info(self) -> None:
+        self.mongos_provider.remove_connection_info()
+
+    def share_connection_info(self) -> None:
+        """Future PR - generate URI and give it to related app"""
+
+>>>>>>> Stashed changes
         self.mongos_provider.update_connection_info(self.mongos_config)
 
     def set_user_roles(self, roles: List[str]) -> None:
@@ -268,6 +277,66 @@ class MongosOperatorCharm(ops.CharmBase):
             config_server_rel.id, {DATABASE_TAG: database}
         )
 
+<<<<<<< Updated upstream
+=======
+    def check_relation_broken_or_scale_down(self, event: RelationDepartedEvent) -> None:
+        """Checks relation departed event is the result of removed relation or scale down.
+
+        Relation departed and relation broken events occur during scaling down or during relation
+        removal, only relation departed events have access to metadata to determine which case.
+        """
+        scaling_down = self.set_scaling_down(event)
+
+        if scaling_down:
+            logger.info(
+                "Scaling down the application, no need to process removed relation in broken hook."
+            )
+
+    def is_scaling_down(self, rel_id: int) -> bool:
+        """Returns True if the application is scaling down."""
+        rel_departed_key = self._generate_relation_departed_key(rel_id)
+        return json.loads(self.unit_peer_data[rel_departed_key])
+
+    def has_departed_run(self, rel_id: int) -> bool:
+        """Returns True if the relation departed event has run."""
+        rel_departed_key = self._generate_relation_departed_key(rel_id)
+        return rel_departed_key in self.unit_peer_data
+
+    def set_scaling_down(self, event: RelationDepartedEvent) -> bool:
+        """Sets whether or not the current unit is scaling down."""
+        # check if relation departed is due to current unit being removed. (i.e. scaling down the
+        # application.)
+        rel_departed_key = self._generate_relation_departed_key(event.relation.id)
+        scaling_down = event.departing_unit == self.unit
+        self.unit_peer_data[rel_departed_key] = json.dumps(scaling_down)
+        return scaling_down
+
+    def proceed_on_broken_event(self, event) -> bool:
+        """Returns True if relation broken event should be acted on.."""
+        # Only relation_deparated events can check if scaling down
+        departed_relation_id = event.relation.id
+        if not self.has_departed_run(departed_relation_id):
+            logger.info(
+                "Deferring, must wait for relation departed hook to decide if relation should be removed."
+            )
+            event.defer()
+            return False
+
+        # check if were scaling down and add a log message
+        if self.is_scaling_down(departed_relation_id):
+            logger.info(
+                "Relation broken event occurring due to scale down, do not proceed to remove users."
+            )
+            return False
+
+        return True
+
+    @staticmethod
+    def _generate_relation_departed_key(rel_id: int) -> str:
+        """Generates the relation departed key for a specified relation id."""
+        return f"relation_{rel_id}_departed"
+
+>>>>>>> Stashed changes
     # END: helper functions
 
     # BEGIN: properties
