@@ -162,3 +162,69 @@ class TestConfigServerInterface(unittest.TestCase):
         # update with the same data
         self.harness.update_relation_data(relation_id, "config-server", REL_DATA)
         restart_mongos.assert_called()
+
+    @patch("charm.ClusterRequirer._on_relation_changed")
+    @patch("charm.MongosOperatorCharm.has_departed_run")
+    @patch("charm.MongosOperatorCharm.proceed_on_broken_event")
+    @patch("charm.MongosOperatorCharm.stop_mongos_service")
+    def test_broken_does_not_excute_on_scale_down(
+        self,
+        stop_mongos_service,
+        has_departed_run,
+        proceed_on_broken_event,
+        rel_changed,
+    ):
+        # case 1: scale down check has not run yet
+        has_departed_run.return_value = False
+        relation_id = self.harness.add_relation("cluster", "config-server")
+        self.harness.add_relation_unit(relation_id, "config-server/0")
+        self.harness.update_relation_data(relation_id, "config-server", REL_DATA)
+        self.harness.remove_relation(relation_id)
+        stop_mongos_service.assert_not_called()
+
+        # case 2: broken event is due to scale down
+        has_departed_run.return_value = True
+        proceed_on_broken_event.return_value = False
+        relation_id = self.harness.add_relation("cluster", "config-server")
+        self.harness.add_relation_unit(relation_id, "config-server/0")
+        self.harness.update_relation_data(relation_id, "config-server", REL_DATA)
+        self.harness.remove_relation(relation_id)
+        stop_mongos_service.assert_not_called()
+
+    @patch("charm.ClusterRequirer._on_relation_changed")
+    @patch("charm.MongosOperatorCharm.remove_connection_info")
+    @patch("charm.MongosOperatorCharm.has_departed_run")
+    @patch("charm.MongosOperatorCharm.proceed_on_broken_event")
+    @patch("charm.MongosOperatorCharm.stop_mongos_service")
+    def test_broken_stops_mongos(
+        self,
+        stop_mongos_service,
+        has_departed_run,
+        proceed_on_broken_event,
+        remove_connection_info,
+        rel_changed,
+    ):
+        """When the relation to config-server is broken all units should stop mongos service."""
+        # case 1: non-leader units stop mongos
+        has_departed_run.return_value = True
+        proceed_on_broken_event.return_value = True
+        self.harness.set_leader(False)
+        relation_id = self.harness.add_relation("cluster", "config-server")
+        self.harness.add_relation_unit(relation_id, "config-server/0")
+        self.harness.update_relation_data(relation_id, "config-server", REL_DATA)
+        self.harness.remove_relation(relation_id)
+        stop_mongos_service.assert_called()
+        # despite stopping the mongos service, only leaders should remove connection info.
+        remove_connection_info.assert_not_called()
+
+        # case 2: leader units stop mongos
+        has_departed_run.return_value = True
+        proceed_on_broken_event.return_value = True
+        self.harness.set_leader(True)
+        relation_id = self.harness.add_relation("cluster", "config-server")
+        self.harness.add_relation_unit(relation_id, "config-server/0")
+        self.harness.update_relation_data(relation_id, "config-server", REL_DATA)
+        self.harness.remove_relation(relation_id)
+        stop_mongos_service.assert_called()
+        # leaders should remove the connection info.
+        remove_connection_info.assert_called()
