@@ -160,7 +160,9 @@ class MongosOperatorCharm(ops.CharmBase):
         content = secret.get_content()
 
         if not content.get(key) or content[key] == Config.Secrets.SECRET_DELETED_LABEL:
-            logger.error(f"Non-existing secret {scope}:{key} was attempted to be removed.")
+            logger.error(
+                f"Non-existing secret {scope}:{key} was attempted to be removed."
+            )
             return
 
         content[key] = Config.Secrets.SECRET_DELETED_LABEL
@@ -246,7 +248,9 @@ class MongosOperatorCharm(ops.CharmBase):
             return
 
         # a mongos shard can only be related to one config server
-        config_server_rel = self.model.relations[Config.Relations.CLUSTER_RELATIONS_NAME][0]
+        config_server_rel = self.model.relations[
+            Config.Relations.CLUSTER_RELATIONS_NAME
+        ][0]
         self.cluster.database_requires.update_relation_data(
             config_server_rel.id, {USER_ROLES_TAG: roles_str}
         )
@@ -259,7 +263,9 @@ class MongosOperatorCharm(ops.CharmBase):
             return
 
         # a mongos shard can only be related to one config server
-        config_server_rel = self.model.relations[Config.Relations.CLUSTER_RELATIONS_NAME][0]
+        config_server_rel = self.model.relations[
+            Config.Relations.CLUSTER_RELATIONS_NAME
+        ][0]
         self.cluster.database_requires.update_relation_data(
             config_server_rel.id, {DATABASE_TAG: database}
         )
