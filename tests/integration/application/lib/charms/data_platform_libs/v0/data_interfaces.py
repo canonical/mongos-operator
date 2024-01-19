@@ -436,19 +436,14 @@ def diff(event: RelationChangedEvent, bucket: Union[Unit, Application]) -> Diff:
     )
 
     # These are the keys that were added to the databag and triggered this event.
-    added = (
-        new_data.keys() - old_data.keys()
-    )  # pyright: ignore [reportGeneralTypeIssues]
+    added = new_data.keys() - old_data.keys()  # pyright: ignore [reportGeneralTypeIssues]
     # These are the keys that were removed from the databag and triggered this event.
-    deleted = (
-        old_data.keys() - new_data.keys()
-    )  # pyright: ignore [reportGeneralTypeIssues]
+    deleted = old_data.keys() - new_data.keys()  # pyright: ignore [reportGeneralTypeIssues]
     # These are the keys that already existed in the databag,
     # but had their values changed.
     changed = {
         key
-        for key in old_data.keys()
-        & new_data.keys()  # pyright: ignore [reportGeneralTypeIssues]
+        for key in old_data.keys() & new_data.keys()  # pyright: ignore [reportGeneralTypeIssues]
         if old_data[key] != new_data[key]  # pyright: ignore [reportGeneralTypeIssues]
     }
     # Convert the new_data to a serializable format and save it for a next diff check.

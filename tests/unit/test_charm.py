@@ -7,6 +7,7 @@ from unittest.mock import patch
 
 import pytest
 import re
+import json
 from parameterized import parameterized
 from unittest import mock
 
@@ -98,3 +99,33 @@ class TestCharm(unittest.TestCase):
         path_function.is_file.return_value = False
         path.return_value = path_function
         self.assertEqual(self.harness.charm.get_keyfile_contents(), None)
+
+    def test_proceed_on_broken_event(self):
+        """Tests that proceed on broken event only returns true when relation is broken.
+
+        Note: relation broken events also occur when scaling down related applications so it is
+        important to differentiate the two."""
+
+        # case 1: no relation departed check has run
+        mock_event = mock.Mock()
+        mock_event.event.relation.id = 7
+        assert not self.harness.charm.proceed_on_broken_event(mock_event)
+        mock_event.defer.assert_called()
+
+        # case 2: relation departed check ran, but is due to scale down
+        mock_event = mock.Mock()
+        mock_event.relation.id = 7
+        self.harness.charm.unit_peer_data[
+            self.harness.charm._generate_relation_departed_key("7")
+        ] = json.dumps(True)
+        assert not self.harness.charm.proceed_on_broken_event(mock_event)
+        mock_event.defer.assert_not_called()
+
+        # case 3: relation departed check ran and is due to a broken event
+        mock_event = mock.Mock()
+        mock_event.relation.id = 7
+        self.harness.charm.unit_peer_data[
+            self.harness.charm._generate_relation_departed_key("7")
+        ] = json.dumps(False)
+        assert self.harness.charm.proceed_on_broken_event(mock_event)
+        mock_event.defer.assert_not_called()
