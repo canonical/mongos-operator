@@ -60,10 +60,16 @@ jobs:
         uses: codecov/codecov-action@v3
 
   build:
-    name: Build charms
-    uses: canonical/data-platform-workflows/.github/workflows/build_charms_with_cache.yaml@v8.0.0
-    permissions:
-      actions: write # Needed to manage GitHub Actions cache
+    strategy:
+      matrix:
+        dir:
+          - .
+          - tests/integration/application
+    name: Build charm | ${{ matrix.dir }}
+    uses: canonical/data-platform-workflows/.github/workflows/build_charm.yaml@artifact-v4
+    with:
+      cache: true
+      path-to-charm-directory: ${{ matrix.dir }}
 
   integration-test:
     name: Integration test charm
