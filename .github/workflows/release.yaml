@@ -11,3 +11,5 @@ jobs:
   build:
     name: Build charm
     uses: canonical/data-platform-workflows/.github/workflows/build_charm.yaml@artifact-v4
+    with:
+      charmcraft-snap-channel: beta
