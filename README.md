@@ -30,13 +30,13 @@ The upper portion of this page describes the Operating System (OS) where the cha
 
 ## Security, Bugs and feature request
 
-If you find a bug in this snap or want to request a specific feature, here are the useful links:
+If you find a bug in this charm or want to request a specific feature, here are the useful links:
 
 * Raise issues or feature requests in [Github](https://github.com/canonical/mongos-operator/issues)
 
 * Security issues in the Charmed MongoDB Operator can be reported through [LaunchPad](https://wiki.ubuntu.com/DebuggingSecurity#How%20to%20File). Please do not file GitHub issues about security issues.
 
-* Meet the community and chat with us if there are issues and feature requests in our [Mattermost Channel](https://chat.charmhub.io/charmhub/channels/data-platform)
+* Meet the community and chat with us if there are issues and feature requests in our [Matrix Room](https://matrix.to/#/#charmhub-data-platform:ubuntu.com)
 
 ## Contributing
 
@@ -48,7 +48,7 @@ The Charmed MongoDB Operator is free software, distributed under the Apache Soft
 
 The Charmed Mongos Operator is free software, distributed under the Apache Software License, version 2.0. It [installs/operates/depends on] [MongoDB Community Version](https://github.com/mongodb/mongo), which is licensed under the Server Side Public License (SSPL)
 
-See [LICENSE](https://github.com/canonical/mongodb-operator/blob/main/LICENSE) for more information.
+See [LICENSE](https://github.com/canonical/mongos-operator/blob/main/LICENSE) for more information.
 
 ## Trademark notice
 MongoDB' is a trademark or registered trademark of MongoDB Inc. Other trademarks are property of their respective owners.
