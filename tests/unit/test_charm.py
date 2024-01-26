@@ -12,7 +12,7 @@ from parameterized import parameterized
 from unittest import mock
 
 from charms.operator_libs_linux.v1 import snap
-from ops.model import BlockedStatus
+from ops.model import BlockedStatus, WaitingStatus
 from ops.testing import Harness
 
 from charm import MongosOperatorCharm
@@ -129,3 +129,17 @@ class TestCharm(unittest.TestCase):
         ] = json.dumps(False)
         assert self.harness.charm.proceed_on_broken_event(mock_event)
         mock_event.defer.assert_not_called()
+
+    def test_status_shows_mongos_waiting(self):
+        """Tests when mongos accurately reports waiting status."""
+        cluster_mock = mock.Mock()
+        cluster_mock.is_mongos_running.return_value = False
+        self.harness.charm.cluster = cluster_mock
+
+        # A running config server is a requirement to start for mongos
+        self.harness.charm.on.update_status.emit()
+        self.assertTrue(isinstance(self.harness.charm.unit.status, BlockedStatus))
+
+        self.harness.add_relation("cluster", "config-server")
+        self.harness.charm.on.update_status.emit()
+        self.assertTrue(isinstance(self.harness.charm.unit.status, WaitingStatus))
