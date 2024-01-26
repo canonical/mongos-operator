@@ -1,10 +1,10 @@
 # Charmed Mongos Documentation
 
-[mongos](https://www.mongodb.com/docs/v6.0/reference/program/mongos/) is a popular NoSQL database application. It stores its data with JSON-like documents creating a flexible user experience with easy-to-use data aggregation for data analytics. In addition, it is a distributed database, so vertical and horizontal scaling come naturally.
+[mongos](https://www.mongodb.com/docs/v6.0/reference/program/mongos/) is a router for connecting client applications to a sharded MongoDB clusters. It is the only way to access a sharded MongoDB cluster from the client perspective. It stores a small cache of data that reflects the state and organisation of a sharded MongoDB cluster, this data is then used to route queries from client applications to the sharded MongoDB cluster.
 
 Applications like mongos must be managed and operated in the production environment. This means that mongos proxy administrators and analysts who run workloads in various infrastructures should be able to automate tasks for repeatable operational work. Technologies such as software operators encapsulate the knowledge, wisdom and expertise of a real-world operations team and codify it into a computer program that helps to operate complex server applications like MongoDB and other databases.
 
-Canonical has developed an open-source operator called Charmed Mongos, which make it easier to operate mongos. The Charmed mongos Virtual Machine (VM) operator deploys and operates mongos on physical, Virtual Machines (VM) and other wide range of cloud and cloud-like environments, including AWS, Azure, OpenStack and VMWare.
+Canonical has developed an open-source operator called Charmed Mongos, which make it easier to operate mongos. The Charmed mongos Virtual Machine (VM) operator deploys and operates mongos on physical, Virtual Machines (VM) and other wide range of cloud and cloud-like environments, including AWS, Azure, OpenStack and VMWare. It provides straightforward and intelligent integrations with Sharded [Charmed MongoDB](https://charmhub.io/mongodb) deployments and client applications.
 
 Charmed monogs(VM Operator) is an enhanced, open source and fully-compatible drop-in replacement for the MongoDB Community Edition of mongos with advanced mongos enterprise features. It simplifies the deployment, scaling, design and management of mongos in production in a reliable way.
 
@@ -52,4 +52,3 @@ See [LICENSE](https://github.com/canonical/mongos-operator/blob/main/LICENSE) fo
 
 ## Trademark notice
 MongoDB' is a trademark or registered trademark of MongoDB Inc. Other trademarks are property of their respective owners.
-
