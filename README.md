@@ -23,7 +23,7 @@ To see the Charmed MongoDB features and releases, visit our [Release Notes page]
 
 A charm version is a combination of both the application version and / (slash) the channel, e.g. 6/stable, 6/candidate, 6/edge. The channels are ordered from the most stable to the least stable, candidate, and edge. More risky channels like edge are always implicitly available. So, if the candidate is listed, you can pull the candidate and edge. When stable is listed, all three are available. 
 
-You can deploy the charm a stand-alone machine or cloud and cloud-like environments, including AWS, Azure, OpenStack and VMWare.
+You can deploy the charm in a stand-alone machine or in a cloud and cloud-like environments, including AWS, Azure, OpenStack and VMWare.
 
 The upper portion of this page describes the Operating System (OS) where the charm can run e.g. 6/edge is compatible and should run in a machine with Ubuntu 22.04 OS.
 
