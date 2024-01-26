@@ -10,3 +10,4 @@ __pycache__/
 *.py[cod]
 .idea
 .vscode/
+coverage.xml
