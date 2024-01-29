@@ -22,7 +22,7 @@ from charms.mongodb.v1.users import (
 from config import Config
 
 import ops
-from ops.model import BlockedStatus, MaintenanceStatus, Relation
+from ops.model import BlockedStatus, MaintenanceStatus, WaitingStatus, Relation
 from ops.charm import InstallEvent, StartEvent, RelationDepartedEvent
 
 import logging
@@ -48,6 +48,7 @@ class MongosOperatorCharm(ops.CharmBase):
         super().__init__(*args)
         self.framework.observe(self.on.install, self._on_install)
         self.framework.observe(self.on.start, self._on_start)
+        self.framework.observe(self.on.update_status, self._on_update_status)
 
         self.cluster = ClusterRequirer(self)
         self.secrets = SecretCache(self)
@@ -76,6 +77,21 @@ class MongosOperatorCharm(ops.CharmBase):
         # order to start. Wait to receive config-server info from the relation event before
         # starting `mongos` daemon
         self.unit.status = BlockedStatus("Missing relation to config-server.")
+
+    def _on_update_status(self, _):
+        """Handle the update status event"""
+        if not self.model.relations[Config.Relations.CLUSTER_RELATIONS_NAME]:
+            logger.info(
+                "Missing integration to config-server. mongos cannot run unless connected to config-server."
+            )
+            self.unit.status = BlockedStatus("Missing relation to config-server.")
+            return
+
+            # restart on high loaded databases can be very slow (e.g. up to 10-20 minutes).
+        if not self.cluster.is_mongos_running():
+            logger.info("mongos has not started yet")
+            self.unit.status = WaitingStatus("Waiting for mongos to start.")
+            return
 
     # END: hook functions
 
