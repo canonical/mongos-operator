@@ -16,7 +16,7 @@ from charms.mongodb.v1.helpers import add_args_to_env, get_mongos_args
 from charms.mongodb.v1.mongos import MongosConnection
 from ops.charm import CharmBase, EventBase, RelationBrokenEvent
 from ops.framework import Object
-from ops.model import ActiveStatus, MaintenanceStatus, WaitingStatus
+from ops.model import ActiveStatus, BlockedStatus, MaintenanceStatus, WaitingStatus
 
 from config import Config
 
@@ -35,7 +35,7 @@ LIBAPI = 0
 
 # Increment this PATCH version before using `charmcraft publish-lib` or reset
 # to 0 if you are raising the major API version
-LIBPATCH = 4
+LIBPATCH = 6
 
 
 class ClusterProvider(Object):
@@ -64,25 +64,39 @@ class ClusterProvider(Object):
 
     def pass_hook_checks(self, event: EventBase) -> bool:
         """Runs the pre-hooks checks for ClusterProvider, returns True if all pass."""
-        if not self.charm.is_role(Config.Role.CONFIG_SERVER):
+        if not self.charm.db_initialised:
+            logger.info("Deferring %s. db is not initialised.", type(event))
+            event.defer()
+            return False
+
+        is_integrated_to_mongos = len(
+            self.charm.model.relations[Config.Relations.CLUSTER_RELATIONS_NAME]
+        )
+        if not self.charm.is_role(Config.Role.CONFIG_SERVER) and is_integrated_to_mongos:
             logger.info(
-                "Skipping %s. ShardingProvider is only be executed by config-server", type(event)
+                "Skipping %s. ClusterProvider is only be executed by config-server", type(event)
             )
             return False
 
         if not self.charm.unit.is_leader():
             return False
 
-        if not self.charm.db_initialised:
-            logger.info("Deferring %s. db is not initialised.", type(event))
-            event.defer()
-            return False
-
         return True
+
+    def set_blocked_status_impossible_integration(self) -> None:
+        """Sets the status of the charm in the case that the integration is not possible."""
+        is_integrated_to_mongos = len(
+            self.charm.model.relations[Config.Relations.CLUSTER_RELATIONS_NAME]
+        )
+        if not self.charm.is_role(Config.Role.CONFIG_SERVER) and is_integrated_to_mongos:
+            self.charm.unit.status = BlockedStatus(
+                "Relation to mongos not supported, config role must be config-server"
+            )
 
     def _on_relation_changed(self, event) -> None:
         """Handles providing mongos with KeyFile and hosts."""
         if not self.pass_hook_checks(event):
+            self.set_blocked_status_impossible_integration()
             logger.info("Skipping relation joined event: hook checks did not pass")
             return
 
@@ -208,7 +222,6 @@ class ClusterRequirer(Object):
             event.relation.id, CONFIG_SERVER_DB_KEY
         )
         if not key_file_contents or not config_server_db:
-            event.defer()
             self.charm.unit.status = WaitingStatus("Waiting for secrets from config-server")
             return
 
