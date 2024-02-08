@@ -20,6 +20,7 @@ logger = logging.getLogger(__name__)
 DATABASE_KEY = "database"
 USER_ROLES_KEY = "extra-user-roles"
 MONGOS_RELATION_NAME = "mongos_proxy"
+EXTERNAL_CONNECTIVITY_TAG = "external-connectivity"  # todo change this
 
 # TODO - the below LIBID, LIBAPI, and LIBPATCH are not valid and were made manually. These will be
 # created automatically once the charm has been published. The charm has not yet been published
@@ -95,6 +96,7 @@ class MongosProvider(Object):
         relation_data = event.relation.data[event.app]
         new_database_name = relation_data.get(DATABASE_KEY, self.charm.database)
         new_extra_user_roles = relation_data.get(USER_ROLES_KEY, self.charm.extra_user_roles)
+        external_connectivity = relation_data.get(EXTERNAL_CONNECTIVITY_TAG, False)
 
         if new_database_name != self.charm.database:
             self.charm.set_database(new_database_name)
@@ -104,6 +106,8 @@ class MongosProvider(Object):
                 new_extra_user_roles = [new_extra_user_roles]
 
             self.charm.set_user_roles(new_extra_user_roles)
+
+        self.charm.set_external_connectivity(external_connectivity)
 
     def remove_connection_info(self) -> None:
         """Sends the URI to the related parent application"""

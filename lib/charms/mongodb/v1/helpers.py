@@ -84,6 +84,7 @@ def get_mongos_args(
     config,
     snap_install: bool = False,
     config_server_db: str = None,
+    external_connectivity: bool = True,
 ) -> str:
     """Returns the arguments used for starting mongos on a config-server side application.
 
@@ -92,9 +93,9 @@ def get_mongos_args(
     """
     # suborinate charm which provides its own config_server_db, should only use unix domain socket
     binding_ips = (
-        f"--bind_ip {MONGODB_COMMON_DIR}/var/mongodb-27018.sock"
-        if config_server_db
-        else "--bind_ip_all"
+        "--bind_ip_all"
+        if external_connectivity
+        else f"--bind_ip {MONGODB_COMMON_DIR}/var/mongodb-27018.sock"
     )
 
     # mongos running on the config server communicates through localhost
