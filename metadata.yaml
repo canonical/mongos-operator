@@ -24,6 +24,7 @@ requires:
   mongos_proxy:
     interface: mongos_client
     scope: container
+    limit: 1
   cluster:
     interface: config-server
     limit: 1

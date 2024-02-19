@@ -5,6 +5,7 @@
 import os
 import json
 import pwd
+import subprocess
 from charms.mongodb.v1.helpers import copy_licenses_to_unit, KEY_FILE
 from charms.operator_libs_linux.v1 import snap
 from pathlib import Path
@@ -366,6 +367,14 @@ class MongosOperatorCharm(ops.CharmBase):
         # raise exception if host not found
         else:
             raise ApplicationHostNotFoundError
+
+    def open_mongos_port():
+        try:
+            logger.debug("opening tcp port")
+            subprocess.check_call(["open-port", "{}/TCP".format(Config.MONGOS_PORT)])
+        except subprocess.CalledProcessError as e:
+            logger.exception("failed opening port: %s", str(e))
+            raise
 
     # END: helper functions
 

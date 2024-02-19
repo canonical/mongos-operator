@@ -11,7 +11,7 @@ from ops.framework import Object
 from ops.charm import CharmBase
 from charms.data_platform_libs.v0.data_interfaces import (
     DatabaseProvides,
-    DatabaseRequires,
+    DatabaseRequestedEvent,
 )
 
 from charms.mongodb.v1.mongos import MongosConfiguration
@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 DATABASE_KEY = "database"
 USER_ROLES_KEY = "extra-user-roles"
 MONGOS_RELATION_NAME = "mongos_proxy"
-EXTERNAL_CONNECTIVITY_TAG = "external-connectivity"  # todo change this
+EXTERNAL_CONNECTIVITY_TAG = "external-node-connectivity"
 
 # TODO - the below LIBID, LIBAPI, and LIBPATCH are not valid and were made manually. These will be
 # created automatically once the charm has been published. The charm has not yet been published
@@ -93,10 +93,19 @@ class MongosProvider(Object):
         if not self.charm.unit.is_leader():
             return
 
-        relation_data = event.relation.data[event.app]
-        new_database_name = relation_data.get(DATABASE_KEY, self.charm.database)
-        new_extra_user_roles = relation_data.get(USER_ROLES_KEY, self.charm.extra_user_roles)
-        external_connectivity = relation_data.get(EXTERNAL_CONNECTIVITY_TAG, False)
+        new_database_name = (
+            self.database_provides.fetch_relation_field(event.relation.id, DATABASE_KEY)
+            or self.charm.database
+        )
+        new_extra_user_roles = (
+            self.database_provides.fetch_relation_field(event.relation.id, USER_ROLES_KEY)
+            or self.charm.extra_user_roles
+        )
+        external_connectivity = bool(
+            self.database_provides.fetch_relation_field(
+                event.relation.id, EXTERNAL_CONNECTIVITY_TAG
+            )
+        )
 
         if new_database_name != self.charm.database:
             self.charm.set_database(new_database_name)
@@ -108,6 +117,8 @@ class MongosProvider(Object):
             self.charm.set_user_roles(new_extra_user_roles)
 
         self.charm.set_external_connectivity(external_connectivity)
+        if external_connectivity:
+            self.charm.open_mongos_port
 
     def remove_connection_info(self) -> None:
         """Sends the URI to the related parent application"""
@@ -127,31 +138,3 @@ class MongosProvider(Object):
                 relation.id,
                 config.uri,
             )
-
-
-class MongosRequirer(Object):
-    """Manage relations between the mongos router and the application on the application side."""
-
-    def __init__(
-        self,
-        charm: CharmBase,
-        database_name: str,
-        extra_user_roles: str,
-        relation_name: str = MONGOS_RELATION_NAME,
-    ) -> None:
-        """Constructor for MongosRequirer object."""
-        self.relation_name = relation_name
-        self.charm = charm
-
-        if not database_name:
-            database_name = f"{self.charm.app}"
-
-        self.database_requires = DatabaseRequires(
-            self.charm,
-            relation_name=self.relation_name,
-            database_name=database_name,
-            extra_user_roles=extra_user_roles,
-        )
-
-        super().__init__(charm, self.relation_name)
-        # TODO Future PRs handle relation broken
