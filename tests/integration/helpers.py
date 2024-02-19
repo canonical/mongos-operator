@@ -4,6 +4,7 @@ import ops
 import json
 import yaml
 from typing import Optional, Dict
+import subprocess
 
 MONGOS_SOCKET = "%2Fvar%2Fsnap%2Fcharmed-mongodb%2Fcommon%2Fvar%2Fmongodb-27018.sock"
 MONGOS_APP_NAME = "mongos"
@@ -11,18 +12,23 @@ PING_CMD = "db.runCommand({ping: 1})"
 
 
 async def generate_mongos_command(
-    ops_test: OpsTest, auth: bool, uri: str = None
+    ops_test: OpsTest, auth: bool, app_name: Optional[str], uri: str = None, external: bool = False
 ) -> str:
     """Generates a command which verifies mongos is running."""
-    mongodb_uri = uri or await generate_mongos_uri(ops_test, auth)
+    mongodb_uri = uri or await generate_mongos_uri(ops_test, auth, app_name, external)
     return f"{MONGO_SHELL} '{mongodb_uri}'  --eval '{PING_CMD}'"
 
 
 async def check_mongos(
-    ops_test: OpsTest, unit: ops.model.Unit, auth: bool, uri: str = None
+    ops_test: OpsTest,
+    unit: ops.model.Unit,
+    auth: bool,
+    app_name: Optional[str],
+    uri: str = None,
+    external: bool = False,
 ) -> bool:
     """Returns whether mongos is running on the provided unit."""
-    mongos_check = await generate_mongos_command(ops_test, auth, uri)
+    mongos_check = await generate_mongos_command(ops_test, auth, app_name, uri, external)
 
     # since mongos is communicating only via the unix domain socket, we cannot connect to it via
     # traditional pymongo methods
@@ -53,14 +59,17 @@ async def run_mongos_command(ops_test: OpsTest, unit: ops.model.Unit, mongos_cmd
     return (return_code, std_output, std_err)
 
 
-async def generate_mongos_uri(ops_test: OpsTest, auth: bool) -> str:
+async def generate_mongos_uri(
+    ops_test: OpsTest, auth: bool, app_name: Optional[str], external: bool = False
+) -> str:
     """Generates a URI for accessing mongos."""
-    if not auth:
-        return f"mongodb://{MONGOS_SOCKET}"
-
-    secret_uri = await get_application_relation_data(
-        ops_test, "application", "mongos_proxy", "secret-user"
+    host = (
+        MONGOS_SOCKET if not external else await get_ip_address(ops_test, app_name=MONGOS_APP_NAME)
     )
+    if not auth:
+        return f"mongodb://{host}:27018"
+
+    secret_uri = await get_application_relation_data(ops_test, app_name, "mongos", "secret-user")
 
     secret_data = await get_secret_data(ops_test, secret_uri)
     return secret_data.get("uris")
@@ -102,16 +111,12 @@ async def get_application_relation_data(
     """
     unit = ops_test.model.applications[application_name].units[0]
     raw_data = (await ops_test.juju("show-unit", unit.name))[1]
-
     if not raw_data:
         raise ValueError(f"no unit info could be grabbed for { unit.name}")
     data = yaml.safe_load(raw_data)
 
     # Filter the data based on the relation name.
-    relation_data = [
-        v for v in data[unit.name]["relation-info"] if v["endpoint"] == relation_name
-    ]
-
+    relation_data = [v for v in data[unit.name]["relation-info"] if v["endpoint"] == relation_name]
     if relation_id:
         # Filter the data based on the relation id.
         relation_data = [v for v in relation_data if v["relation-id"] == relation_id]
@@ -130,3 +135,9 @@ async def get_application_relation_data(
         )
 
     return relation_data[0]["application-data"].get(key)
+
+
+async def get_ip_address(ops_test, app_name=MONGOS_APP_NAME) -> str:
+    """Returns an IP address of the fist unit of a provided application."""
+    app_unit = ops_test.model.applications[app_name].units[0]
+    return await app_unit.get_public_address()

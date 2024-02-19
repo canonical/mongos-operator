@@ -120,7 +120,9 @@ async def test_mongos_starts_with_config_server(ops_test: OpsTest) -> None:
 async def test_mongos_has_user(ops_test: OpsTest) -> None:
     # prepare sharded cluster
     mongos_unit = ops_test.model.applications[MONGOS_APP_NAME].units[0]
-    mongos_running = await check_mongos(ops_test, mongos_unit, auth=True)
+    mongos_running = await check_mongos(
+        ops_test, mongos_unit, app_name=APPLICATION_APP_NAME, auth=True
+    )
     assert mongos_running, "Mongos is not currently running."
 
 
@@ -147,7 +149,9 @@ async def test_mongos_updates_config_db(ops_test: OpsTest) -> None:
 
     # prepare sharded cluster
     mongos_unit = ops_test.model.applications[MONGOS_APP_NAME].units[0]
-    mongos_running = await check_mongos(ops_test, mongos_unit, auth=True)
+    mongos_running = await check_mongos(
+        ops_test, mongos_unit, app_name=APPLICATION_APP_NAME, auth=True
+    )
     assert mongos_running, "Mongos is not currently running."
 
 
@@ -162,7 +166,9 @@ async def test_user_with_extra_roles(ops_test: OpsTest) -> None:
     ), f"mongos user does not have correct permissions to create new user, error: {std_err}"
 
     test_user_uri = f"mongodb://{TEST_USER_NAME}:{TEST_USER_PWD}@{MONGOS_SOCKET}/{TEST_DB_NAME}"
-    mongos_running = await check_mongos(ops_test, mongos_unit, auth=True, uri=test_user_uri)
+    mongos_running = await check_mongos(
+        ops_test, mongos_unit, app_name=APPLICATION_APP_NAME, auth=True, uri=test_user_uri
+    )
     assert mongos_running, "User created is not accessible."
 
 
@@ -179,7 +185,9 @@ async def test_mongos_can_scale(ops_test: OpsTest) -> None:
     )
 
     for mongos_unit in ops_test.model.applications[MONGOS_APP_NAME].units:
-        mongos_running = await check_mongos(ops_test, mongos_unit, auth=True)
+        mongos_running = await check_mongos(
+            ops_test, mongos_unit, app_name=APPLICATION_APP_NAME, auth=True
+        )
         assert mongos_running, "Mongos is not currently running."
 
     # destroy the unit we were initially connected to
@@ -194,7 +202,9 @@ async def test_mongos_can_scale(ops_test: OpsTest) -> None:
 
     # prepare sharded cluster
     mongos_unit = ops_test.model.applications[MONGOS_APP_NAME].units[0]
-    mongos_running = await check_mongos(ops_test, mongos_unit, auth=True)
+    mongos_running = await check_mongos(
+        ops_test, mongos_unit, app_name=APPLICATION_APP_NAME, auth=True
+    )
     assert mongos_running, "Mongos is not currently running."
 
 
@@ -219,7 +229,9 @@ async def test_mongos_stops_without_config_server(ops_test: OpsTest) -> None:
     )
 
     mongos_unit = ops_test.model.applications[MONGOS_APP_NAME].units[0]
-    mongos_running = await check_mongos(ops_test, mongos_unit, auth=False)
+    mongos_running = await check_mongos(
+        ops_test, mongos_unit, app_name=APPLICATION_APP_NAME, auth=False
+    )
     assert not mongos_running, "Mongos is running without a config server."
 
     secrets = await get_application_relation_data(
