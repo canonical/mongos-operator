@@ -31,7 +31,9 @@ class TestConfigServerInterface(unittest.TestCase):
             # related to duplicated events.
             delattr(DatabaseRequiresEvents, f"{CLUSTER_ALIAS}_database_created")
             delattr(DatabaseRequiresEvents, f"{CLUSTER_ALIAS}_endpoints_changed")
-            delattr(DatabaseRequiresEvents, f"{CLUSTER_ALIAS}_read_only_endpoints_changed")
+            delattr(
+                DatabaseRequiresEvents, f"{CLUSTER_ALIAS}_read_only_endpoints_changed"
+            )
         except AttributeError:
             # Ignore the events not existing before the first test.
             pass

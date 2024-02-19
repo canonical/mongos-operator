@@ -118,7 +118,7 @@ class MongosProvider(Object):
 
         self.charm.set_external_connectivity(external_connectivity)
         if external_connectivity:
-            self.charm.open_mongos_port
+            self.charm.open_mongos_port()
 
     def remove_connection_info(self) -> None:
         """Sends the URI to the related parent application"""

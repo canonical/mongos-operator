@@ -11,7 +11,6 @@ from charms.operator_libs_linux.v1 import snap
 from pathlib import Path
 
 from typing import Set, List, Optional, Dict
-from exceptions import ApplicationHostNotFoundError
 
 from charms.mongodb.v0.mongodb_secrets import SecretCache
 from charms.mongos.v0.mongos_client_interface import MongosProvider
@@ -25,7 +24,7 @@ from charms.mongodb.v1.users import (
 from config import Config
 
 import ops
-from ops.model import BlockedStatus, MaintenanceStatus, WaitingStatus, Relation, Unit
+from ops.model import BlockedStatus, MaintenanceStatus, WaitingStatus, Relation
 from ops.charm import InstallEvent, StartEvent, RelationDepartedEvent
 
 import logging
@@ -355,7 +354,7 @@ class MongosOperatorCharm(ops.CharmBase):
         the client wishes to connect to mongos (inside Juju or outside).
         """
         if self.is_external_client:
-            return self._unit_ip(self.unit)
+            return self._unit_ip
         else:
             return Config.MONGOS_SOCKET_URI_FMT
 
@@ -364,21 +363,7 @@ class MongosOperatorCharm(ops.CharmBase):
         """Generates the relation departed key for a specified relation id."""
         return f"relation_{rel_id}_departed"
 
-    def _unit_ip(self, unit: Unit) -> str:
-        """Returns the ip address of a given unit."""
-        # check if host is current host
-        if unit == self.unit:
-            return str(
-                self.model.get_binding(Config.Relations.PEERS).network.bind_address
-            )
-        # check if host is a peer
-        elif unit in self._peers.data:
-            return str(self._peers.data[unit].get("private-address"))
-        # raise exception if host not found
-        else:
-            raise ApplicationHostNotFoundError
-
-    def open_mongos_port():
+    def open_mongos_port(self):
         try:
             logger.debug("opening tcp port")
             subprocess.check_call(["open-port", "{}/TCP".format(Config.MONGOS_PORT)])
@@ -389,6 +374,11 @@ class MongosOperatorCharm(ops.CharmBase):
     # END: helper functions
 
     # BEGIN: properties
+    @property
+    def _unit_ip(self) -> str:
+        """Returns the ip address of the unit."""
+        return str(self.model.get_binding(Config.Relations.PEERS).network.bind_address)
+
     @property
     def is_external_client(self) -> Optional[str]:
         """Returns the database requested by the hosting application of the subordinate charm."""

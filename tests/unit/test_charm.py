@@ -11,17 +11,21 @@ import json
 from parameterized import parameterized
 from unittest import mock
 
+
 from charms.operator_libs_linux.v1 import snap
 from ops.model import BlockedStatus, WaitingStatus
 from ops.testing import Harness
 
-from charm import MongosOperatorCharm
+from charm import MongosOperatorCharm, subprocess
 
 from .helpers import patch_network_get
 
 from charms.data_platform_libs.v0.data_interfaces import DatabaseRequiresEvents
 
 CLUSTER_ALIAS = "cluster"
+MONGOS_SOCKET_URI_FMT = (
+    "%2Fvar%2Fsnap%2Fcharmed-mongodb%2Fcommon%2Fvar%2Fmongodb-27018.sock"
+)
 
 
 class TestCharm(unittest.TestCase):
@@ -143,3 +147,32 @@ class TestCharm(unittest.TestCase):
         self.harness.add_relation("cluster", "config-server")
         self.harness.charm.on.update_status.emit()
         self.assertTrue(isinstance(self.harness.charm.unit.status, WaitingStatus))
+
+    @patch_network_get(private_address="1.1.1.1")
+    def test_mongos_host(self):
+        """TBD."""
+        self.harness.charm.app_peer_data["external-connectivity"] = json.dumps(False)
+        mongos_host = self.harness.charm.get_mongos_host()
+        self.assertEqual(mongos_host, MONGOS_SOCKET_URI_FMT)
+
+        self.harness.charm.app_peer_data["external-connectivity"] = json.dumps(True)
+        mongos_host = self.harness.charm.get_mongos_host()
+        self.assertEqual(mongos_host, "1.1.1.1")
+
+    @patch("subprocess.check_call")
+    def test_set_port(self, _call):
+        """Test verifies operation of set port."""
+        self.harness.charm.open_mongos_port()
+
+        # Make sure the port is opened and the service is started
+        self.assertEqual(_call.call_args_list, [mock.call(["open-port", "27018/TCP"])])
+
+    @patch("subprocess.check_call")
+    def test_set_port_failure(self, _call):
+        """Test verifies that we raise the correct errors when we fail to open a port."""
+        _call.side_effect = subprocess.CalledProcessError(
+            cmd="open-port 27018/TCP", returncode=1
+        )
+
+        with self.assertRaises(subprocess.CalledProcessError):
+            self.harness.charm.open_mongos_port()
