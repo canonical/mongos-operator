@@ -34,7 +34,7 @@ class ApplicationCharm(CharmBase):
         # relation events for mongos client
         self.database = DatabaseRequires(
             self,
-            relation_name="mongos_proxy",
+            relation_name="mongos",
             database_name="my-test-db",
             extra_user_roles=EXTRA_USER_ROLES,
         )

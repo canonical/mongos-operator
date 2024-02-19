@@ -26,7 +26,7 @@ async def check_mongos(
     ops_test: OpsTest,
     unit: ops.model.Unit,
     auth: bool,
-    app_name: Optional[str],
+    app_name: Optional[str] = None,
     uri: str = None,
     external: bool = False,
 ) -> bool:
@@ -71,10 +71,10 @@ async def generate_mongos_uri(
     host = (
         MONGOS_SOCKET
         if not external
-        else await get_ip_address(ops_test, app_name=MONGOS_APP_NAME)
+        else f"{await get_ip_address(ops_test, app_name=MONGOS_APP_NAME)}:27018"
     )
     if not auth:
-        return f"mongodb://{host}:27018"
+        return f"mongodb://{host}"
 
     secret_uri = await get_application_relation_data(
         ops_test, app_name, "mongos", "secret-user"
