@@ -31,9 +31,7 @@ class TestConfigServerInterface(unittest.TestCase):
             # related to duplicated events.
             delattr(DatabaseRequiresEvents, f"{CLUSTER_ALIAS}_database_created")
             delattr(DatabaseRequiresEvents, f"{CLUSTER_ALIAS}_endpoints_changed")
-            delattr(
-                DatabaseRequiresEvents, f"{CLUSTER_ALIAS}_read_only_endpoints_changed"
-            )
+            delattr(DatabaseRequiresEvents, f"{CLUSTER_ALIAS}_read_only_endpoints_changed")
         except AttributeError:
             # Ignore the events not existing before the first test.
             pass
@@ -48,14 +46,18 @@ class TestConfigServerInterface(unittest.TestCase):
     @patch("ops.framework.EventBase.defer")
     @patch("charm.ClusterRequirer.update_keyfile")
     def test_on_relation_changed_waits_keyfile(self, update_keyfile, defer):
-        """Tests that relation changed waits for keyfile."""
+        """Tests that relation changed does not wait for keyfile.
+
+        When mongos is incorrectly integrated with a non-config server (ie shard), it can end up
+        waiting forever for a keyfile
+        """
 
         # fails due to being run on non-config-server
-        relation_id = self.harness.add_relation("cluster", "config-server")
-        self.harness.add_relation_unit(relation_id, "config-server/0")
-        self.harness.update_relation_data(relation_id, "config-server/0", PEER_ADDR)
+        relation_id = self.harness.add_relation("cluster", "shard")
+        self.harness.add_relation_unit(relation_id, "shard/0")
+        self.harness.update_relation_data(relation_id, "shard/0", PEER_ADDR)
         update_keyfile.assert_not_called()
-        defer.assert_called()
+        defer.assert_not_called()
 
     @patch("charm.MongosOperatorCharm.push_file_to_unit")
     @patch("charm.MongosOperatorCharm.get_keyfile_contents")

@@ -100,7 +100,9 @@ async def test_mongos_starts_with_config_server(ops_test: OpsTest) -> None:
     )
 
     mongos_unit = ops_test.model.applications[MONGOS_APP_NAME].units[0]
-    mongos_running = await check_mongos(ops_test, mongos_unit, auth=False, external=True)
+    mongos_running = await check_mongos(
+        ops_test, mongos_unit, auth=False, external=True
+    )
     assert mongos_running, "Mongos is not currently running."
 
 
@@ -110,6 +112,10 @@ async def test_mongos_has_user(ops_test: OpsTest) -> None:
     """Verify mongos has user and is able to connect externally via IP-address."""
     mongos_unit = ops_test.model.applications[MONGOS_APP_NAME].units[0]
     mongos_running = await check_mongos(
-        ops_test, mongos_unit, app_name=DATA_INTEGRATOR_APP_NAME, auth=True, external=True
+        ops_test,
+        mongos_unit,
+        app_name=DATA_INTEGRATOR_APP_NAME,
+        auth=True,
+        external=True,
     )
     assert mongos_running, "Mongos is not currently running."

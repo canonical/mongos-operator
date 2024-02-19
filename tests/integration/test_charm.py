@@ -165,9 +165,15 @@ async def test_user_with_extra_roles(ops_test: OpsTest) -> None:
         return_code == 0
     ), f"mongos user does not have correct permissions to create new user, error: {std_err}"
 
-    test_user_uri = f"mongodb://{TEST_USER_NAME}:{TEST_USER_PWD}@{MONGOS_SOCKET}/{TEST_DB_NAME}"
+    test_user_uri = (
+        f"mongodb://{TEST_USER_NAME}:{TEST_USER_PWD}@{MONGOS_SOCKET}/{TEST_DB_NAME}"
+    )
     mongos_running = await check_mongos(
-        ops_test, mongos_unit, app_name=APPLICATION_APP_NAME, auth=True, uri=test_user_uri
+        ops_test,
+        mongos_unit,
+        app_name=APPLICATION_APP_NAME,
+        auth=True,
+        uri=test_user_uri,
     )
     assert mongos_running, "User created is not accessible."
 
@@ -237,7 +243,9 @@ async def test_mongos_stops_without_config_server(ops_test: OpsTest) -> None:
     secrets = await get_application_relation_data(
         ops_test, "application", "mongos_proxy", "secret-user"
     )
-    assert secrets is None, "mongos still has connection info without being connected to cluster."
+    assert (
+        secrets is None
+    ), "mongos still has connection info without being connected to cluster."
 
     # verify that Charmed MongoDB is blocked waiting for config-server
     await ops_test.model.wait_for_idle(
