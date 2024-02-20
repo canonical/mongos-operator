@@ -42,13 +42,15 @@ async def check_mongos(
     return return_code == 0
 
 
-async def run_mongos_command(ops_test: OpsTest, unit: ops.model.Unit, mongos_cmd: str):
+async def run_mongos_command(
+    ops_test: OpsTest, unit: ops.model.Unit, mongos_cmd: str, app_name: str
+):
     """Runs the provided mongos command.
 
     The mongos charm uses the unix domain socket to communicate, and therefore we cannot run
     MongoDB commands from outside the unit and we must use `juju exec` instead.
     """
-    mongodb_uri = await generate_mongos_uri(ops_test, auth=True)
+    mongodb_uri = await generate_mongos_uri(ops_test, auth=True, app_name=app_name)
 
     check_cmd = [
         "exec",
@@ -65,7 +67,10 @@ async def run_mongos_command(ops_test: OpsTest, unit: ops.model.Unit, mongos_cmd
 
 
 async def generate_mongos_uri(
-    ops_test: OpsTest, auth: bool, app_name: Optional[str], external: bool = False
+    ops_test: OpsTest,
+    auth: bool,
+    app_name: Optional[str] = None,
+    external: bool = False,
 ) -> str:
     """Generates a URI for accessing mongos."""
     host = (

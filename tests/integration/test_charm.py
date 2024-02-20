@@ -160,7 +160,9 @@ async def test_mongos_updates_config_db(ops_test: OpsTest) -> None:
 async def test_user_with_extra_roles(ops_test: OpsTest) -> None:
     cmd = f'db.createUser({{user: "{TEST_USER_NAME}", pwd: "{TEST_USER_PWD}", roles: [{{role: "readWrite", db: "{TEST_DB_NAME}"}}]}});'
     mongos_unit = ops_test.model.applications[MONGOS_APP_NAME].units[0]
-    return_code, _, std_err = await run_mongos_command(ops_test, mongos_unit, cmd)
+    return_code, _, std_err = await run_mongos_command(
+        ops_test, mongos_unit, cmd, app_name=APPLICATION_APP_NAME
+    )
     assert (
         return_code == 0
     ), f"mongos user does not have correct permissions to create new user, error: {std_err}"
@@ -241,7 +243,7 @@ async def test_mongos_stops_without_config_server(ops_test: OpsTest) -> None:
     assert not mongos_running, "Mongos is running without a config server."
 
     secrets = await get_application_relation_data(
-        ops_test, "application", "mongos_proxy", "secret-user"
+        ops_test, "application", "mongos", "secret-user"
     )
     assert (
         secrets is None
