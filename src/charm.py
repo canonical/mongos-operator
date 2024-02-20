@@ -355,8 +355,7 @@ class MongosOperatorCharm(ops.CharmBase):
         """
         if self.is_external_client:
             return self._unit_ip
-        else:
-            return Config.MONGOS_SOCKET_URI_FMT
+        return Config.MONGOS_SOCKET_URI_FMT
 
     @staticmethod
     def _generate_relation_departed_key(rel_id: int) -> str:
