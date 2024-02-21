@@ -362,7 +362,8 @@ class MongosOperatorCharm(ops.CharmBase):
         """Generates the relation departed key for a specified relation id."""
         return f"relation_{rel_id}_departed"
 
-    def open_mongos_port(self):
+    def open_mongos_port(self) -> None:
+        """Opens the mongos port for TCP connections."""
         try:
             logger.debug("opening tcp port")
             subprocess.check_call(["open-port", "{}/TCP".format(Config.MONGOS_PORT)])

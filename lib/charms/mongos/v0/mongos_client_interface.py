@@ -101,10 +101,11 @@ class MongosProvider(Object):
             self.database_provides.fetch_relation_field(event.relation.id, USER_ROLES_KEY)
             or self.charm.extra_user_roles
         )
-        external_connectivity = bool(
+        external_connectivity = (
             self.database_provides.fetch_relation_field(
                 event.relation.id, EXTERNAL_CONNECTIVITY_TAG
             )
+            == "true"
         )
 
         if new_database_name != self.charm.database:
