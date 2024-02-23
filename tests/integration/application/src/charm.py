@@ -15,7 +15,7 @@ from ops.main import main
 from ops.model import ActiveStatus
 
 
-from charms.mongos.v0.mongos_client_interface import MongosRequirer
+from charms.data_platform_libs.v0.data_interfaces import DatabaseRequires
 
 logger = logging.getLogger(__name__)
 
@@ -32,8 +32,9 @@ class ApplicationCharm(CharmBase):
         self.framework.observe(self.on.start, self._on_start)
 
         # relation events for mongos client
-        self._mongos_client = MongosRequirer(
+        self.database = DatabaseRequires(
             self,
+            relation_name="mongos",
             database_name="my-test-db",
             extra_user_roles=EXTRA_USER_ROLES,
         )

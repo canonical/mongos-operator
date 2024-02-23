@@ -9,9 +9,10 @@ from charms.mongodb.v1.helpers import copy_licenses_to_unit, KEY_FILE
 from charms.operator_libs_linux.v1 import snap
 from pathlib import Path
 
+from typing import Set, List, Optional, Dict
+
 from charms.mongodb.v0.mongodb_secrets import SecretCache
 from charms.mongos.v0.mongos_client_interface import MongosProvider
-from typing import Set, List, Optional, Dict
 from charms.mongodb.v0.mongodb_secrets import generate_secret_label
 from charms.mongodb.v1.mongos import MongosConfiguration
 from charms.mongodb.v0.config_server_interface import ClusterRequirer
@@ -39,6 +40,7 @@ MONGOS_VAR = "MONGOS_ARGS"
 CONFIG_ARG = "--configdb"
 USER_ROLES_TAG = "extra-user-roles"
 DATABASE_TAG = "database"
+EXTERNAL_CONNECTIVITY_TAG = "external-connectivity"
 
 
 class MongosOperatorCharm(ops.CharmBase):
@@ -286,6 +288,12 @@ class MongosOperatorCharm(ops.CharmBase):
             config_server_rel.id, {DATABASE_TAG: database}
         )
 
+    def set_external_connectivity(self, external_connectivity: bool) -> None:
+        """Sets the connectivity type for mongos."""
+        self.app_peer_data[EXTERNAL_CONNECTIVITY_TAG] = json.dumps(
+            external_connectivity
+        )
+
     def check_relation_broken_or_scale_down(self, event: RelationDepartedEvent) -> None:
         """Checks relation departed event is the result of removed relation or scale down.
 
@@ -338,14 +346,37 @@ class MongosOperatorCharm(ops.CharmBase):
 
         return True
 
+    def get_mongos_host(self) -> str:
+        """Returns the host for mongos as a str.
+
+        The host for mongos can be either the Unix Domain Socket or an IP address depending on how
+        the client wishes to connect to mongos (inside Juju or outside).
+        """
+        if self.is_external_client:
+            return self._unit_ip
+        return Config.MONGOS_SOCKET_URI_FMT
+
     @staticmethod
     def _generate_relation_departed_key(rel_id: int) -> str:
         """Generates the relation departed key for a specified relation id."""
         return f"relation_{rel_id}_departed"
 
+    def open_mongos_port(self) -> None:
+        """Opens the mongos port for TCP connections."""
+        self.unit.open_port("tcp", Config.MONGOS_PORT)
+
     # END: helper functions
 
     # BEGIN: properties
+    @property
+    def _unit_ip(self) -> str:
+        """Returns the ip address of the unit."""
+        return str(self.model.get_binding(Config.Relations.PEERS).network.bind_address)
+
+    @property
+    def is_external_client(self) -> Optional[str]:
+        """Returns the database requested by the hosting application of the subordinate charm."""
+        return json.loads(self.app_peer_data.get(EXTERNAL_CONNECTIVITY_TAG))
 
     @property
     def database(self) -> Optional[str]:
@@ -370,12 +401,8 @@ class MongosOperatorCharm(ops.CharmBase):
     @property
     def mongos_config(self) -> MongosConfiguration:
         """Generates a MongoDBConfiguration object for mongos in the deployment of MongoDB."""
-        # TODO future PR - use ip addresses for hosts for data-integrator as that charm will not
-        # communicate to mongos via the Unix Domain Socket.
-        hosts = [Config.MONGOS_SOCKET_URI_FMT]
-        # mongos using Unix Domain Socket to communicate do not use port, Future PR - use port
-        # when suborinate charm of data-integrator.
-        port = None
+        hosts = [self.get_mongos_host()]
+        port = Config.MONGOS_PORT if self.is_external_client else None
 
         return MongosConfiguration(
             database=self.database,
@@ -387,15 +414,6 @@ class MongosOperatorCharm(ops.CharmBase):
             tls_external=None,  # Future PR will support TLS
             tls_internal=None,  # Future PR will support TLS
         )
-
-    @property
-    def _peers(self) -> Optional[Relation]:
-        """Fetch the peer relation.
-
-        Returns:
-             An `ops.model.Relation` object representing the peer relation.
-        """
-        return self.model.get_relation(Config.Relations.PEERS)
 
     @property
     def _peers(self) -> Optional[Relation]:

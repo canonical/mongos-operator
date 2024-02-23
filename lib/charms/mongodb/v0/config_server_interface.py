@@ -16,7 +16,7 @@ from charms.mongodb.v1.helpers import add_args_to_env, get_mongos_args
 from charms.mongodb.v1.mongos import MongosConnection
 from ops.charm import CharmBase, EventBase, RelationBrokenEvent
 from ops.framework import Object
-from ops.model import ActiveStatus, MaintenanceStatus, WaitingStatus
+from ops.model import ActiveStatus, BlockedStatus, MaintenanceStatus, WaitingStatus
 
 from config import Config
 
@@ -35,7 +35,7 @@ LIBAPI = 0
 
 # Increment this PATCH version before using `charmcraft publish-lib` or reset
 # to 0 if you are raising the major API version
-LIBPATCH = 4
+LIBPATCH = 7
 
 
 class ClusterProvider(Object):
@@ -64,18 +64,29 @@ class ClusterProvider(Object):
 
     def pass_hook_checks(self, event: EventBase) -> bool:
         """Runs the pre-hooks checks for ClusterProvider, returns True if all pass."""
-        if not self.charm.is_role(Config.Role.CONFIG_SERVER):
+        if not self.charm.db_initialised:
+            logger.info("Deferring %s. db is not initialised.", type(event))
+            event.defer()
+            return False
+
+        if not self.is_valid_mongos_integration():
             logger.info(
-                "Skipping %s. ShardingProvider is only be executed by config-server", type(event)
+                "Skipping %s. ClusterProvider is only be executed by config-server", type(event)
             )
             return False
 
         if not self.charm.unit.is_leader():
             return False
 
-        if not self.charm.db_initialised:
-            logger.info("Deferring %s. db is not initialised.", type(event))
-            event.defer()
+        return True
+
+    def is_valid_mongos_integration(self) -> bool:
+        """Returns true if the integration to mongos is valid."""
+        is_integrated_to_mongos = len(
+            self.charm.model.relations[Config.Relations.CLUSTER_RELATIONS_NAME]
+        )
+
+        if not self.charm.is_role(Config.Role.CONFIG_SERVER) and is_integrated_to_mongos:
             return False
 
         return True
@@ -83,6 +94,10 @@ class ClusterProvider(Object):
     def _on_relation_changed(self, event) -> None:
         """Handles providing mongos with KeyFile and hosts."""
         if not self.pass_hook_checks(event):
+            if not self.is_valid_mongos_integration():
+                self.charm.unit.status = BlockedStatus(
+                    "Relation to mongos not supported, config role must be config-server"
+                )
             logger.info("Skipping relation joined event: hook checks did not pass")
             return
 
@@ -208,7 +223,6 @@ class ClusterRequirer(Object):
             event.relation.id, CONFIG_SERVER_DB_KEY
         )
         if not key_file_contents or not config_server_db:
-            event.defer()
             self.charm.unit.status = WaitingStatus("Waiting for secrets from config-server")
             return
 
@@ -261,7 +275,13 @@ class ClusterRequirer(Object):
 
     def is_mongos_running(self) -> bool:
         """Returns true if mongos service is running."""
-        with MongosConnection(None, f"mongodb://{MONGOS_SOCKET_URI_FMT}") as mongo:
+        connection_uri = f"mongodb://{self.charm.get_mongos_host()}"
+
+        # when running internally, connections through Unix Domain sockets do not need port.
+        if self.charm.is_external_client:
+            connection_uri = connection_uri + f":{Config.MONGOS_PORT}"
+
+        with MongosConnection(None, connection_uri) as mongo:
             return mongo.is_ready
 
     def update_config_server_db(self, config_server_db) -> bool:
@@ -271,7 +291,10 @@ class ClusterRequirer(Object):
 
         mongos_config = self.charm.mongos_config
         mongos_start_args = get_mongos_args(
-            mongos_config, snap_install=True, config_server_db=config_server_db
+            mongos_config,
+            snap_install=True,
+            config_server_db=config_server_db,
+            external_connectivity=self.charm.is_external_client,
         )
         add_args_to_env("MONGOS_ARGS", mongos_start_args)
         return True
