@@ -14,6 +14,11 @@ tenacity = "^8.1.0"
 pymongo = "^4.3.3"
 ops = "^2.4.1"
 parameterized = "^0.9.0"
+cryptography = "^39.0.0"
+pure-sasl = ">=0.6.2"
+cosl = ">=0.0.5"
+cffi = "^1.16.0"
+pyopenssl = "22.0.0"
 
 [tool.poetry.group.charm-libs.dependencies]
 # data_platform_libs/v0/data_interfaces.py

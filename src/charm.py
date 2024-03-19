@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import Set, List, Optional, Dict
 
 from charms.mongodb.v0.mongodb_secrets import SecretCache
+from charms.mongodb.v0.mongodb_tls import MongoDBTLS
 from charms.mongos.v0.mongos_client_interface import MongosProvider
 from charms.mongodb.v0.mongodb_secrets import generate_secret_label
 from charms.mongodb.v1.mongos import MongosConfiguration
@@ -52,8 +53,10 @@ class MongosOperatorCharm(ops.CharmBase):
         self.framework.observe(self.on.start, self._on_start)
         self.framework.observe(self.on.update_status, self._on_update_status)
 
+        self.role = Config.Role.MONGOS_ROLE
         self.cluster = ClusterRequirer(self)
         self.secrets = SecretCache(self)
+        self.tls = MongoDBTLS(self)
         self.mongos_provider = MongosProvider(self)
         # 1. add users for related application (to be done on config-server charm side)
         # 2. update status indicates missing relations
@@ -178,9 +181,7 @@ class MongosOperatorCharm(ops.CharmBase):
         content = secret.get_content()
 
         if not content.get(key) or content[key] == Config.Secrets.SECRET_DELETED_LABEL:
-            logger.error(
-                f"Non-existing secret {scope}:{key} was attempted to be removed."
-            )
+            logger.error(f"Non-existing secret {scope}:{key} was attempted to be removed.")
             return
 
         content[key] = Config.Secrets.SECRET_DELETED_LABEL
@@ -266,9 +267,7 @@ class MongosOperatorCharm(ops.CharmBase):
             return
 
         # a mongos shard can only be related to one config server
-        config_server_rel = self.model.relations[
-            Config.Relations.CLUSTER_RELATIONS_NAME
-        ][0]
+        config_server_rel = self.model.relations[Config.Relations.CLUSTER_RELATIONS_NAME][0]
         self.cluster.database_requires.update_relation_data(
             config_server_rel.id, {USER_ROLES_TAG: roles_str}
         )
@@ -281,18 +280,14 @@ class MongosOperatorCharm(ops.CharmBase):
             return
 
         # a mongos shard can only be related to one config server
-        config_server_rel = self.model.relations[
-            Config.Relations.CLUSTER_RELATIONS_NAME
-        ][0]
+        config_server_rel = self.model.relations[Config.Relations.CLUSTER_RELATIONS_NAME][0]
         self.cluster.database_requires.update_relation_data(
             config_server_rel.id, {DATABASE_TAG: database}
         )
 
     def set_external_connectivity(self, external_connectivity: bool) -> None:
         """Sets the connectivity type for mongos."""
-        self.app_peer_data[EXTERNAL_CONNECTIVITY_TAG] = json.dumps(
-            external_connectivity
-        )
+        self.app_peer_data[EXTERNAL_CONNECTIVITY_TAG] = json.dumps(external_connectivity)
 
     def check_relation_broken_or_scale_down(self, event: RelationDepartedEvent) -> None:
         """Checks relation departed event is the result of removed relation or scale down.
@@ -364,6 +359,18 @@ class MongosOperatorCharm(ops.CharmBase):
     def open_mongos_port(self) -> None:
         """Opens the mongos port for TCP connections."""
         self.unit.open_port("tcp", Config.MONGOS_PORT)
+
+    def is_role(self, role_name: str) -> bool:
+        """Checks if application is running in provided role."""
+        return self.role == role_name
+
+    def get_config_server_name(self) -> Optional[str]:
+        """Returns the name of the Juju Application that mongos is using as a config server."""
+        return self.cluster.get_config_server_name()
+
+    def has_config_server(self) -> bool:
+        """Returns True is the mongos router is integrated to a config-server."""
+        return self.cluster.get_config_server_name() is not None
 
     # END: helper functions
 
