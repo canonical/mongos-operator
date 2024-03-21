@@ -53,10 +53,10 @@ class MongosOperatorCharm(ops.CharmBase):
         self.framework.observe(self.on.start, self._on_start)
         self.framework.observe(self.on.update_status, self._on_update_status)
 
-        self.role = Config.Role.MONGOS_ROLE
+        self.role = Config.Role.MONGOS
         self.cluster = ClusterRequirer(self)
         self.secrets = SecretCache(self)
-        self.tls = MongoDBTLS(self)
+        self.tls = MongoDBTLS(self, Config.Relations.PEERS, substrate=Config.SUBSTRATE)
         self.mongos_provider = MongosProvider(self)
         # 1. add users for related application (to be done on config-server charm side)
         # 2. update status indicates missing relations

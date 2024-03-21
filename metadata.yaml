@@ -21,6 +21,9 @@ peers:
     interface: mongos-peers
 
 requires:
+  certificates:
+    interface: tls-certificates
+    limit: 1
   mongos_proxy:
     interface: mongos_client
     scope: container
