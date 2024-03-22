@@ -166,6 +166,13 @@ class MongoDBTLS(Object):
 
     def _on_certificate_available(self, event: CertificateAvailableEvent) -> None:
         """Enable TLS when TLS certificate available."""
+        if self.charm.is_role(Config.Role.MONGOS) and not self.charm.config_server_db:
+            logger.debug(
+                "mongos requires config-server in order to start, do not restart with TLS until integrated to config-server"
+            )
+            event.defer()
+            return
+
         int_csr = self.get_tls_secret(internal=True, label_name=Config.TLS.SECRET_CSR_LABEL)
         ext_csr = self.get_tls_secret(internal=False, label_name=Config.TLS.SECRET_CSR_LABEL)
 
