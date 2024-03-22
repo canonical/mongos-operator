@@ -66,10 +66,10 @@ class TestConfigServerInterface(unittest.TestCase):
     @patch("charm.MongosOperatorCharm.set_secret")
     @patch("charm.ClusterRequirer.update_config_server_db")
     @patch("charm.ClusterRequirer.is_mongos_running")
-    @patch("charm.MongosOperatorCharm.restart_mongos_service")
+    @patch("charm.MongosOperatorCharm.restart_charm_services")
     def test_same_keyfile(
         self,
-        restart_mongos_service,
+        restart_charm_services,
         is_mongos_running,
         update_config_server_db,
         set_secret,
@@ -90,10 +90,10 @@ class TestConfigServerInterface(unittest.TestCase):
     @patch("charm.MongosOperatorCharm.set_secret")
     @patch("charm.ClusterRequirer.update_config_server_db", return_value=False)
     @patch("charm.ClusterRequirer.is_mongos_running")
-    @patch("charm.MongosOperatorCharm.restart_mongos_service")
+    @patch("charm.MongosOperatorCharm.restart_charm_services")
     def test_non_leader_doesnt_set_keyfile_secret(
         self,
-        restart_mongos_service,
+        restart_charm_services,
         is_mongos_running,
         update_config_server_db,
         set_secret,
@@ -114,7 +114,7 @@ class TestConfigServerInterface(unittest.TestCase):
     @patch("charm.MongosOperatorCharm.get_keyfile_contents")
     @patch("charm.MongosOperatorCharm.set_secret")
     @patch("charm.ClusterRequirer.is_mongos_running")
-    @patch("charm.MongosOperatorCharm.restart_mongos_service")
+    @patch("charm.MongosOperatorCharm.restart_charm_services")
     @patch("charms.mongodb.v0.config_server_interface.add_args_to_env")
     @patch("builtins.open", new_callable=mock_open, read_data=MONGOS_VAR)
     @patch("charm.Path")
@@ -123,7 +123,7 @@ class TestConfigServerInterface(unittest.TestCase):
         path,
         open,
         add_args_to_env,
-        restart_mongos_service,
+        restart_charm_services,
         is_mongos_running,
         set_secret,
         get_keyfile_contents,
@@ -143,7 +143,7 @@ class TestConfigServerInterface(unittest.TestCase):
     @patch("charm.MongosOperatorCharm.set_secret")
     @patch("charm.ClusterRequirer.is_mongos_running", return_value=False)
     @patch("ops.framework.EventBase.defer")
-    @patch("charm.MongosOperatorCharm.restart_mongos_service")
+    @patch("charm.MongosOperatorCharm.restart_charm_services")
     def retry_restart_mongos(
         self,
         restart_mongos,

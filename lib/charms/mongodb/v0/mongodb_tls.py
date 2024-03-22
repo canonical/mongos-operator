@@ -161,7 +161,7 @@ class MongoDBTLS(Object):
         logger.info("Restarting mongod with TLS disabled.")
         self.charm.unit.status = MaintenanceStatus("disabling TLS")
         self.charm.delete_tls_certificate_from_workload()
-        self.charm.restart_mongod_service()
+        self.charm.restart_charm_services()
         self.charm.unit.status = ActiveStatus()
 
     def _on_certificate_available(self, event: CertificateAvailableEvent) -> None:
@@ -203,7 +203,7 @@ class MongoDBTLS(Object):
         self.charm.delete_tls_certificate_from_workload()
         self.charm.push_tls_certificate_to_workload()
         self.charm.unit.status = MaintenanceStatus("enabling TLS")
-        self.charm.restart_mongod_service()
+        self.charm.restart_charm_services()
 
         with MongoDBConnection(self.charm.mongodb_config) as mongo:
             if not mongo.is_ready:
@@ -335,6 +335,6 @@ class MongoDBTLS(Object):
         if not self.charm.is_role(Config.Role.CONFIG_SERVER):
             # until integrated with config-server use current app name as
             # subject name
-            return self.charm.shard.get_config_server_name() or self.charm.app.name
+            return self.charm.get_config_server_name() or self.charm.app.name
 
         return self.charm.app.name
