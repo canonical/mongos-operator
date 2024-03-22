@@ -24,8 +24,8 @@ from charms.mongodb.v0.mongodb_secrets import SecretCache
 from charms.mongodb.v0.mongodb_tls import MongoDBTLS
 from charms.mongos.v0.mongos_client_interface import MongosProvider
 from charms.mongodb.v0.mongodb_secrets import generate_secret_label
-from charms.mongodb.v1.mongos import MongosConfiguration
-from charms.mongodb.v0.config_server_interface import ClusterRequirer, CONFIG_SERVER_DB_KEY
+from charms.mongodb.v1.mongos import MongosConfiguration, MongosConnection
+from charms.mongodb.v0.config_server_interface import ClusterRequirer
 from charms.mongodb.v1.users import (
     MongoDBUser,
 )
@@ -448,6 +448,11 @@ class MongosOperatorCharm(ops.CharmBase):
         """Remove file from vm unit."""
         if os.path.exists(f"{parent_dir}/{file_name}"):
             os.remove(f"{parent_dir}/{file_name}")
+
+    def is_db_service_ready(self) -> bool:
+        """Returns True if the underlying database service is ready."""
+        with MongosConnection(self.mongos_config) as mongos:
+            return mongos.is_ready
 
     # END: helper functions
 

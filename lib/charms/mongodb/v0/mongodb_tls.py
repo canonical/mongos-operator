@@ -205,11 +205,10 @@ class MongoDBTLS(Object):
         self.charm.unit.status = MaintenanceStatus("enabling TLS")
         self.charm.restart_charm_services()
 
-        with MongoDBConnection(self.charm.mongodb_config) as mongo:
-            if not mongo.is_ready:
-                self.charm.unit.status = WaitingStatus("Waiting for MongoDB to start")
-            else:
-                self.charm.unit.status = ActiveStatus()
+        if not self.charm.is_db_service_ready():
+            self.charm.unit.status = WaitingStatus("Waiting for MongoDB to start")
+        else:
+            self.charm.unit.status = ActiveStatus()
 
     def waiting_for_certs(self):
         """Returns a boolean indicating whether additional certs are needed."""
@@ -281,6 +280,7 @@ class MongoDBTLS(Object):
             socket.getfqdn(),
             f"{self.charm.app.name}-{unit_id}.{self.charm.app.name}-endpoints",
             str(self.charm.model.get_binding(self.peer_relation).network.bind_address),
+            "localhost",
         ]
 
     def get_tls_files(self, internal: bool) -> Tuple[Optional[str], Optional[str]]:
