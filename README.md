@@ -1,4 +1,7 @@
 # Charmed MongoDB Operator
+[![Charmhub](https://charmhub.io/mongos/badge.svg)](https://charmhub.io/mongos)
+[![Release to 6/edge](https://github.com/canonical/mongos-operator/actions/workflows/release.yaml/badge.svg)](https://github.com/canonical/mongos-operator/actions/workflows/release.yaml)
+[![Tests](https://github.com/canonical/mongos-operator/actions/workflows/ci.yaml/badge.svg)](https://github.com/canonical/mongos-operator/actions/workflows/ci.yaml)
 
 ## Overview
 
