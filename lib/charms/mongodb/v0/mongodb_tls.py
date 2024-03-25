@@ -13,7 +13,6 @@ import re
 import socket
 from typing import List, Optional, Tuple
 
-from charms.mongodb.v0.mongodb import MongoDBConnection
 from charms.tls_certificates_interface.v1.tls_certificates import (
     CertificateAvailableEvent,
     CertificateExpiringEvent,
@@ -39,7 +38,7 @@ LIBAPI = 0
 
 # Increment this PATCH version before using `charmcraft publish-lib` or reset
 # to 0 if you are raising the major API version
-LIBPATCH = 10
+LIBPATCH = 11
 
 logger = logging.getLogger(__name__)
 
@@ -77,7 +76,7 @@ class MongoDBTLS(Object):
         logger.debug("Request to set TLS private key received.")
         if self.charm.is_role(Config.Role.MONGOS) and not self.charm.has_config_server():
             logger.error(
-                "mongos is not running (not integrated to config-server) deferring renewal of certficates."
+                "mongos is not running (not integrated to config-server) deferring renewal of certificates."
             )
             event.fail("Mongos cannot set TLS keys until integrated to config-server.")
             return
@@ -137,7 +136,7 @@ class MongoDBTLS(Object):
         """Request certificate when TLS relation joined."""
         if self.charm.is_role(Config.Role.MONGOS) and not self.charm.has_config_server():
             logger.info(
-                "mongos is not running (not integrated to config-server) deferring renewal of certficates."
+                "mongos is not running (not integrated to config-server) deferring renewal of certificates."
             )
             event.defer()
             return
@@ -214,7 +213,8 @@ class MongoDBTLS(Object):
 
         if not self.charm.is_db_service_ready():
             self.charm.unit.status = WaitingStatus("Waiting for MongoDB to start")
-        else:
+        elif self.charm.unit.status == WaitingStatus("Waiting for MongoDB to start"):
+            # clear waiting status if db service is ready
             self.charm.unit.status = ActiveStatus()
 
     def waiting_for_certs(self):
@@ -232,7 +232,7 @@ class MongoDBTLS(Object):
         """Request the new certificate when old certificate is expiring."""
         if self.charm.is_role(Config.Role.MONGOS) and not self.charm.has_config_server():
             logger.info(
-                "mongos is not running (not integrated to config-server) deferring renewal of certficates."
+                "mongos is not running (not integrated to config-server) deferring renewal of certificates."
             )
             event.defer()
             return

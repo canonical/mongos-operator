@@ -7,6 +7,7 @@ This class handles the sharing of secrets between sharded components, adding sha
 shards.
 """
 import logging
+from typing import Optional
 
 from charms.data_platform_libs.v0.data_interfaces import (
     DatabaseProvides,
@@ -37,7 +38,7 @@ LIBAPI = 0
 
 # Increment this PATCH version before using `charmcraft publish-lib` or reset
 # to 0 if you are raising the major API version
-LIBPATCH = 7
+LIBPATCH = 8
 
 
 class ClusterProvider(Object):
@@ -122,8 +123,7 @@ class ClusterProvider(Object):
         if int_tls_ca:
             relation_data[INT_TLS_CA_KEY] = int_tls_ca
 
-        if self.charm.unit.is_leader():
-            self.database_provides.update_relation_data(event.relation.id, relation_data)
+        self.database_provides.update_relation_data(event.relation.id, relation_data)
 
     def _on_relation_broken(self, event) -> None:
         # Only relation_deparated events can check if scaling down
@@ -334,9 +334,6 @@ class ClusterRequirer(Object):
             return None
 
         # metadata.yaml prevents having multiple config servers
-        return self.charm.model.relations[self.relation_name][0].app.name
-
-    def get_config_server_connection_str(self) -> Optional[str]:
-        """Returns the connection string that mongos uses to connect to the config-server"""
+        return self.model.get_relation(self.relation_name).app.name
 
     # END: helper functions
