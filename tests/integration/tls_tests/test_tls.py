@@ -43,14 +43,6 @@ async def test_mongos_tls_enabled(ops_test: OpsTest) -> None:
     await check_mongos_tls_enabled(ops_test)
 
 
-@pytest.skip("Wait new MongoDB charm is published.")
-@pytest.skip("Wait until TLS sanity check functionality is implemented")
-@pytest.mark.group(1)
-@pytest.mark.abort_on_fail
-async def test_mongos_tls_rotated(ops_test: OpsTest) -> None:
-    """Tests that mongos charm can rotate TLS certs."""
-
-
 @pytest.skip("Wait until TLS sanity check functionality is implemented")
 @pytest.mark.group(1)
 @pytest.mark.abort_on_fail
