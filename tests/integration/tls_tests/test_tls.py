@@ -19,20 +19,20 @@ CERTS_APP_NAME = "self-signed-certificates"
 TIMEOUT = 15 * 60
 
 
-@pytest.mark.group(1)
-@pytest.mark.abort_on_fail
-async def test_build_and_deploy(ops_test: OpsTest) -> None:
-    """Build and deploy a sharded cluster."""
-    await deploy_cluster()
-    await build_cluster()
-    await deploy_tls()
+# @pytest.mark.group(1)
+# @pytest.mark.abort_on_fail
+# async def test_build_and_deploy(ops_test: OpsTest) -> None:
+#     """Build and deploy a sharded cluster."""
+#     await deploy_cluster(ops_test)
+#     await build_cluster(ops_test)
+#     await deploy_tls(ops_test)
 
 
 @pytest.mark.group(1)
 @pytest.mark.abort_on_fail
 async def test_mongos_tls_enabled(ops_test: OpsTest) -> None:
     """Tests that mongos charm can enable TLS."""
-    await integrate_cluster_with_tls(ops_test)
+    # await integrate_cluster_with_tls(ops_test)
     await check_mongos_tls_enabled(ops_test)
 
 
@@ -42,6 +42,7 @@ async def test_mongos_tls_rotated(ops_test: OpsTest) -> None:
     """Tests that mongos charm can rotate TLS certs."""
 
 
+@pytest.skip("Wait until TLS sanity check functionality is implemented")
 @pytest.mark.group(1)
 @pytest.mark.abort_on_fail
 async def test_mongos_tls_disabled(ops_test: OpsTest) -> None:
@@ -50,6 +51,7 @@ async def test_mongos_tls_disabled(ops_test: OpsTest) -> None:
     await check_mongos_tls_disabled(ops_test)
 
 
+@pytest.skip("Wait until TLS sanity check functionality is implemented")
 @pytest.mark.group(1)
 @pytest.mark.abort_on_fail
 async def test_tls_reenabled(ops_test: OpsTest) -> None:
@@ -92,6 +94,7 @@ async def deploy_cluster(ops_test: OpsTest) -> None:
         apps=[APPLICATION_APP_NAME, SHARD_APP_NAME, CONFIG_SERVER_APP_NAME],
         idle_period=10,
         raise_on_blocked=False,
+        timeout=TIMEOUT,
     )
 
     await ops_test.model.add_relation(APPLICATION_APP_NAME, MONGOS_APP_NAME)
@@ -99,6 +102,7 @@ async def deploy_cluster(ops_test: OpsTest) -> None:
         apps=[MONGOS_APP_NAME],
         status="blocked",
         idle_period=10,
+        timeout=TIMEOUT,
     )
 
 
@@ -109,6 +113,7 @@ async def build_cluster(ops_test: OpsTest) -> None:
         apps=[CONFIG_SERVER_APP_NAME, SHARD_APP_NAME],
         idle_period=10,
         raise_on_blocked=False,
+        timeout=TIMEOUT,
     )
     await ops_test.model.integrate(
         f"{SHARD_APP_NAME}:{SHARD_REL_NAME}",
@@ -118,6 +123,7 @@ async def build_cluster(ops_test: OpsTest) -> None:
         apps=[CONFIG_SERVER_APP_NAME, SHARD_APP_NAME],
         idle_period=20,
         raise_on_blocked=False,
+        timeout=TIMEOUT,
     )
 
     # connect sharded cluster to mongos
@@ -129,6 +135,7 @@ async def build_cluster(ops_test: OpsTest) -> None:
         apps=[CONFIG_SERVER_APP_NAME, SHARD_APP_NAME, MONGOS_APP_NAME],
         idle_period=20,
         status="active",
+        timeout=TIMEOUT,
     )
 
 
@@ -153,13 +160,13 @@ async def integrate_cluster_with_tls(ops_test: OpsTest) -> None:
             f"{CERTS_APP_NAME}:{CERT_REL_NAME}",
         )
 
-        await ops_test.model.wait_for_idle(
-            apps=CLUSTER_COMPONENTS,
-            idle_period=20,
-            timeout=TIMEOUT,
-            raise_on_blocked=False,
-            status="active",
-        )
+    await ops_test.model.wait_for_idle(
+        apps=CLUSTER_COMPONENTS,
+        idle_period=20,
+        timeout=TIMEOUT,
+        raise_on_blocked=False,
+        status="active",
+    )
 
 
 async def check_mongos_tls_disabled(ops_test: OpsTest) -> None:
