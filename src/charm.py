@@ -267,6 +267,7 @@ class MongosOperatorCharm(ops.CharmBase):
         self.start_mongos_service()
 
     def update_mongos_args(self, config_server_db: Optional[str] = None):
+        """Updates the starting arguments for the mongos daemon."""
         config_server_db = config_server_db or self.config_server_db
         if config_server_db is None:
             logger.error("cannot start mongos without a config_server_db")

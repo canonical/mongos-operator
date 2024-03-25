@@ -24,7 +24,7 @@ CERTS_APP_NAME = "self-signed-certificates"
 TIMEOUT = 15 * 60
 
 
-@pytest.skip("Wait new MongoDB charm is published.")
+@pytest.mark.skip("Wait new MongoDB charm is published.")
 @pytest.mark.group(1)
 @pytest.mark.abort_on_fail
 async def test_build_and_deploy(ops_test: OpsTest) -> None:
@@ -34,7 +34,7 @@ async def test_build_and_deploy(ops_test: OpsTest) -> None:
     await deploy_tls(ops_test)
 
 
-@pytest.skip("Wait new MongoDB charm is published.")
+@pytest.mark.skip("Wait new MongoDB charm is published.")
 @pytest.mark.group(1)
 @pytest.mark.abort_on_fail
 async def test_mongos_tls_enabled(ops_test: OpsTest) -> None:
@@ -43,7 +43,7 @@ async def test_mongos_tls_enabled(ops_test: OpsTest) -> None:
     await check_mongos_tls_enabled(ops_test)
 
 
-@pytest.skip("Wait until TLS sanity check functionality is implemented")
+@pytest.mark.skip("Wait until TLS sanity check functionality is implemented")
 @pytest.mark.group(1)
 @pytest.mark.abort_on_fail
 async def test_mongos_tls_disabled(ops_test: OpsTest) -> None:
@@ -52,7 +52,7 @@ async def test_mongos_tls_disabled(ops_test: OpsTest) -> None:
     await check_mongos_tls_disabled(ops_test)
 
 
-@pytest.skip("Wait until TLS sanity check functionality is implemented")
+@pytest.mark.skip("Wait until TLS sanity check functionality is implemented")
 @pytest.mark.group(1)
 @pytest.mark.abort_on_fail
 async def test_tls_reenabled(ops_test: OpsTest) -> None:
