@@ -5,16 +5,26 @@
 import os
 import json
 import pwd
-from charms.mongodb.v1.helpers import copy_licenses_to_unit, KEY_FILE
+from charms.mongodb.v1.helpers import (
+    add_args_to_env,
+    get_mongos_args,
+    copy_licenses_to_unit,
+    KEY_FILE,
+    TLS_EXT_CA_FILE,
+    TLS_EXT_PEM_FILE,
+    TLS_INT_CA_FILE,
+    TLS_INT_PEM_FILE,
+)
 from charms.operator_libs_linux.v1 import snap
 from pathlib import Path
 
 from typing import Set, List, Optional, Dict
 
 from charms.mongodb.v0.mongodb_secrets import SecretCache
+from charms.mongodb.v0.mongodb_tls import MongoDBTLS
 from charms.mongos.v0.mongos_client_interface import MongosProvider
 from charms.mongodb.v0.mongodb_secrets import generate_secret_label
-from charms.mongodb.v1.mongos import MongosConfiguration
+from charms.mongodb.v1.mongos import MongosConfiguration, MongosConnection
 from charms.mongodb.v0.config_server_interface import ClusterRequirer
 from charms.mongodb.v1.users import (
     MongoDBUser,
@@ -43,6 +53,10 @@ DATABASE_TAG = "database"
 EXTERNAL_CONNECTIVITY_TAG = "external-connectivity"
 
 
+class MissingConfigServerError(Exception):
+    """Raised when mongos expects to be connected to a config-server but is not."""
+
+
 class MongosOperatorCharm(ops.CharmBase):
     """Charm the service."""
 
@@ -52,8 +66,10 @@ class MongosOperatorCharm(ops.CharmBase):
         self.framework.observe(self.on.start, self._on_start)
         self.framework.observe(self.on.update_status, self._on_update_status)
 
+        self.role = Config.Role.MONGOS
         self.cluster = ClusterRequirer(self)
         self.secrets = SecretCache(self)
+        self.tls = MongoDBTLS(self, Config.Relations.PEERS, substrate=Config.SUBSTRATE)
         self.mongos_provider = MongosProvider(self)
         # 1. add users for related application (to be done on config-server charm side)
         # 2. update status indicates missing relations
@@ -240,14 +256,30 @@ class MongosOperatorCharm(ops.CharmBase):
         mongodb_snap = snap_cache["charmed-mongodb"]
         mongodb_snap.stop(services=["mongos"])
 
-    def restart_mongos_service(self) -> None:
+    def restart_charm_services(self) -> None:
         """Retarts the mongos service.
 
         Raises:
             snap.SnapError
         """
         self.stop_mongos_service()
+        self.update_mongos_args()
         self.start_mongos_service()
+
+    def update_mongos_args(self, config_server_db: Optional[str] = None):
+        """Updates the starting arguments for the mongos daemon."""
+        config_server_db = config_server_db or self.config_server_db
+        if config_server_db is None:
+            logger.error("cannot start mongos without a config_server_db")
+            raise MissingConfigServerError()
+
+        mongos_start_args = get_mongos_args(
+            self.mongos_config,
+            snap_install=True,
+            config_server_db=config_server_db,
+            external_connectivity=self.is_external_client,
+        )
+        add_args_to_env(MONGOS_VAR, mongos_start_args)
 
     def remove_connection_info(self) -> None:
         """Remove: URI, username, and password from the host-app"""
@@ -365,6 +397,72 @@ class MongosOperatorCharm(ops.CharmBase):
         """Opens the mongos port for TCP connections."""
         self.unit.open_port("tcp", Config.MONGOS_PORT)
 
+    def is_role(self, role_name: str) -> bool:
+        """Checks if application is running in provided role."""
+        return self.role == role_name
+
+    def get_config_server_name(self) -> Optional[str]:
+        """Returns the name of the Juju Application that mongos is using as a config server."""
+        return self.cluster.get_config_server_name()
+
+    def has_config_server(self) -> bool:
+        """Returns True is the mongos router is integrated to a config-server."""
+        return self.cluster.get_config_server_name() is not None
+
+    def push_tls_certificate_to_workload(self) -> None:
+        """Uploads certificate to the workload container."""
+        external_ca, external_pem = self.tls.get_tls_files(internal=False)
+        if external_ca is not None:
+            self.push_file_to_unit(
+                parent_dir=Config.MONGOD_CONF_DIR,
+                file_name=TLS_EXT_CA_FILE,
+                file_contents=external_ca,
+            )
+
+        if external_pem is not None:
+            self.push_file_to_unit(
+                parent_dir=Config.MONGOD_CONF_DIR,
+                file_name=TLS_EXT_PEM_FILE,
+                file_contents=external_pem,
+            )
+
+        internal_ca, internal_pem = self.tls.get_tls_files(internal=True)
+        if internal_ca is not None:
+            self.push_file_to_unit(
+                parent_dir=Config.MONGOD_CONF_DIR,
+                file_name=TLS_INT_CA_FILE,
+                file_contents=internal_ca,
+            )
+
+        if internal_pem is not None:
+            self.push_file_to_unit(
+                parent_dir=Config.MONGOD_CONF_DIR,
+                file_name=TLS_INT_PEM_FILE,
+                file_contents=internal_pem,
+            )
+
+    def delete_tls_certificate_from_workload(self) -> None:
+        """Deletes certificate from VM."""
+        logger.info("Deleting TLS certificate from VM")
+
+        for file in [
+            Config.TLS.EXT_CA_FILE,
+            Config.TLS.EXT_PEM_FILE,
+            Config.TLS.INT_CA_FILE,
+            Config.TLS.INT_PEM_FILE,
+        ]:
+            self.remove_file_from_unit(Config.MONGOD_CONF_DIR, file)
+
+    def remove_file_from_unit(self, parent_dir, file_name) -> None:
+        """Remove file from vm unit."""
+        if os.path.exists(f"{parent_dir}/{file_name}"):
+            os.remove(f"{parent_dir}/{file_name}")
+
+    def is_db_service_ready(self) -> bool:
+        """Returns True if the underlying database service is ready."""
+        with MongosConnection(self.mongos_config) as mongos:
+            return mongos.is_ready
+
     # END: helper functions
 
     # BEGIN: properties
@@ -403,6 +501,8 @@ class MongosOperatorCharm(ops.CharmBase):
         """Generates a MongoDBConfiguration object for mongos in the deployment of MongoDB."""
         hosts = [self.get_mongos_host()]
         port = Config.MONGOS_PORT if self.is_external_client else None
+        external_ca, _ = self.tls.get_tls_files(internal=False)
+        internal_ca, _ = self.tls.get_tls_files(internal=True)
 
         return MongosConfiguration(
             database=self.database,
@@ -411,8 +511,8 @@ class MongosOperatorCharm(ops.CharmBase):
             hosts=hosts,
             port=port,
             roles=self.extra_user_roles,
-            tls_external=None,  # Future PR will support TLS
-            tls_internal=None,  # Future PR will support TLS
+            tls_external=external_ca is not None,
+            tls_internal=internal_ca is not None,
         )
 
     @property
