@@ -115,14 +115,14 @@ class TestConfigServerInterface(unittest.TestCase):
     @patch("charm.MongosOperatorCharm.set_secret")
     @patch("charm.ClusterRequirer.is_mongos_running")
     @patch("charm.MongosOperatorCharm.restart_charm_services")
-    @patch("charms.mongodb.v0.config_server_interface.add_args_to_env")
+    @patch("charm.MongosOperatorCharm.update_mongos_args")
     @patch("builtins.open", new_callable=mock_open, read_data=MONGOS_VAR)
     @patch("charm.Path")
     def test_same_config_db(
         self,
         path,
         open,
-        add_args_to_env,
+        update_mongos_args,
         restart_charm_services,
         is_mongos_running,
         set_secret,
@@ -136,7 +136,7 @@ class TestConfigServerInterface(unittest.TestCase):
         self.harness.add_relation_unit(relation_id, "config-server/0")
         self.harness.update_relation_data(relation_id, "config-server", REL_DATA)
 
-        add_args_to_env.assert_not_called()
+        update_mongos_args.assert_not_called()
 
     @patch("charm.MongosOperatorCharm.push_file_to_unit")
     @patch("charm.MongosOperatorCharm.get_keyfile_contents")
