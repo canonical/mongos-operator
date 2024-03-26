@@ -138,6 +138,7 @@ class TestCharm(unittest.TestCase):
         """Tests when mongos accurately reports waiting status."""
         cluster_mock = mock.Mock()
         cluster_mock.is_mongos_running.return_value = False
+        cluster_mock.get_tls_statuses.return_value = None
         self.harness.charm.cluster = cluster_mock
 
         # A running config server is a requirement to start for mongos

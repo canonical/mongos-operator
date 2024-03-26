@@ -33,7 +33,13 @@ from charms.mongodb.v1.users import (
 from config import Config
 
 import ops
-from ops.model import BlockedStatus, MaintenanceStatus, WaitingStatus, Relation
+from ops.model import (
+    BlockedStatus,
+    MaintenanceStatus,
+    WaitingStatus,
+    Relation,
+    ActiveStatus,
+)
 from ops.charm import InstallEvent, StartEvent, RelationDepartedEvent
 
 import logging
@@ -105,11 +111,17 @@ class MongosOperatorCharm(ops.CharmBase):
             self.unit.status = BlockedStatus("Missing relation to config-server.")
             return
 
-            # restart on high loaded databases can be very slow (e.g. up to 10-20 minutes).
+        if self.cluster.get_tls_statuses():
+            self.unit.status = self.cluster.get_tls_statuses()
+            return
+
+        # restart on high loaded databases can be very slow (e.g. up to 10-20 minutes).
         if not self.cluster.is_mongos_running():
             logger.info("mongos has not started yet")
             self.unit.status = WaitingStatus("Waiting for mongos to start.")
             return
+
+        self.unit.status = ActiveStatus()
 
     # END: hook functions
 
@@ -267,7 +279,6 @@ class MongosOperatorCharm(ops.CharmBase):
         self.start_mongos_service()
 
     def update_mongos_args(self, config_server_db: Optional[str] = None):
-        """Updates the starting arguments for the mongos daemon."""
         config_server_db = config_server_db or self.config_server_db
         if config_server_db is None:
             logger.error("cannot start mongos without a config_server_db")
