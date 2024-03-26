@@ -29,17 +29,19 @@ async def check_mongos_tls_enabled(ops_test: OpsTest) -> None:
         await check_tls(ops_test, unit, enabled=True)
 
 
-async def toggle_tls_mongos(ops_test: OpsTest, enable: bool) -> None:
+async def toggle_tls_mongos(
+    ops_test: OpsTest, enable: bool, certs_app_name: str = CERTS_APP_NAME
+) -> None:
     """Toggles TLS on mongos application to the specified enabled state."""
     if enable:
         await ops_test.model.integrate(
             f"{MONGOS_APP_NAME}:{CERT_REL_NAME}",
-            f"{CERTS_APP_NAME}:{CERT_REL_NAME}",
+            f"{certs_app_name}:{CERT_REL_NAME}",
         )
     else:
         await ops_test.model.applications[MONGOS_APP_NAME].remove_relation(
             f"{MONGOS_APP_NAME}:{CERT_REL_NAME}",
-            f"{CERTS_APP_NAME}:{CERT_REL_NAME}",
+            f"{certs_app_name}:{CERT_REL_NAME}",
         )
 
 

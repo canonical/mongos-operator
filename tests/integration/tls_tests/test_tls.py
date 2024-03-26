@@ -15,35 +15,45 @@ MONGOS_APP_NAME = "mongos"
 MONGODB_CHARM_NAME = "mongodb"
 CONFIG_SERVER_APP_NAME = "config-server"
 SHARD_APP_NAME = "shard"
-CLUSTER_COMPONENTS = [MONGOS_APP_NAME, CONFIG_SERVER_APP_NAME, SHARD_APP_NAME]
+CLUSTER_COMPONENTS = [CONFIG_SERVER_APP_NAME, SHARD_APP_NAME]
 CERT_REL_NAME = "certificates"
 SHARD_REL_NAME = "sharding"
 CLUSTER_REL_NAME = "cluster"
 CONFIG_SERVER_REL_NAME = "config-server"
 CERTS_APP_NAME = "self-signed-certificates"
+DIFFERENT_CERTS_APP_NAME = "self-signed-certificates-separate"
 TIMEOUT = 15 * 60
 
 
-@pytest.mark.skip("Wait new MongoDB charm is published.")
-@pytest.mark.group(1)
-@pytest.mark.abort_on_fail
-async def test_build_and_deploy(ops_test: OpsTest) -> None:
-    """Build and deploy a sharded cluster."""
-    await deploy_cluster(ops_test)
-    await build_cluster(ops_test)
-    await deploy_tls(ops_test)
+# @pytest.mark.skip("Wait new MongoDB charm is published.")
+# @pytest.mark.group(1)
+# @pytest.mark.abort_on_fail
+# async def test_build_and_deploy(ops_test: OpsTest) -> None:
+#     """Build and deploy a sharded cluster."""
+#     await deploy_cluster(ops_test)
+#     await build_cluster(ops_test)
+#     await deploy_tls(ops_test)
 
 
-@pytest.mark.skip("Wait new MongoDB charm is published.")
+# @pytest.mark.skip("Wait new MongoDB charm is published.")
 @pytest.mark.group(1)
 @pytest.mark.abort_on_fail
 async def test_mongos_tls_enabled(ops_test: OpsTest) -> None:
     """Tests that mongos charm can enable TLS."""
-    # await integrate_cluster_with_tls(ops_test)
+    await integrate_mongos_with_tls(ops_test)
+
+    mongos_unit = ops_test.model.applications[MONGOS_APP_NAME].units[0]
+    assert (
+        mongos_unit.workload_status_message
+        == "mongos has TLS enabled, but config-server does not."
+    ), "Shard fails to report TLS inconsistencies."
+
+    await integrate_cluster_with_tls(ops_test)
+
     await check_mongos_tls_enabled(ops_test)
 
 
-@pytest.mark.skip("Wait until TLS sanity check functionality is implemented")
+# @pytest.mark.skip("Wait new MongoDB charm is published.")
 @pytest.mark.group(1)
 @pytest.mark.abort_on_fail
 async def test_mongos_tls_disabled(ops_test: OpsTest) -> None:
@@ -51,14 +61,45 @@ async def test_mongos_tls_disabled(ops_test: OpsTest) -> None:
     await toggle_tls_mongos(ops_test, enable=False)
     await check_mongos_tls_disabled(ops_test)
 
+    mongos_unit = ops_test.model.applications[MONGOS_APP_NAME].units[0]
+    assert (
+        mongos_unit.workload_status_message == "mongos requires TLS to be enabled."
+    ), "Shard fails to report TLS inconsistencies."
 
-@pytest.mark.skip("Wait until TLS sanity check functionality is implemented")
+
+# @pytest.mark.skip("Wait new MongoDB charm is published.")
 @pytest.mark.group(1)
 @pytest.mark.abort_on_fail
 async def test_tls_reenabled(ops_test: OpsTest) -> None:
     """Test that mongos can enable TLS after being integrated to cluster ."""
     await toggle_tls_mongos(ops_test, enable=True)
     await check_mongos_tls_enabled(ops_test)
+
+
+# @pytest.mark.skip("Wait new MongoDB charm is published.")
+@pytest.mark.group(1)
+@pytest.mark.abort_on_fail
+async def test_mongos_tls_ca_mismatch(ops_test: OpsTest) -> None:
+    """Tests that mongos charm can disable TLS."""
+
+    await toggle_tls_mongos(ops_test, enable=False)
+    await ops_test.model.deploy(
+        CERTS_APP_NAME, application_name=DIFFERENT_CERTS_APP_NAME, channel="stable"
+    )
+    await ops_test.model.wait_for_idle(
+        apps=[DIFFERENT_CERTS_APP_NAME],
+        idle_period=10,
+        raise_on_blocked=False,
+        timeout=TIMEOUT,
+    )
+
+    await toggle_tls_mongos(ops_test, enable=False, certs_app_name=DIFFERENT_CERTS_APP_NAME)
+
+    mongos_unit = ops_test.model.applications[MONGOS_APP_NAME].units[0]
+    assert (
+        mongos_unit.workload_status_message
+        == "mongos has TLS enabled, but config-server does not."
+    ), "mongos CA and Config-Server CA don't match."
 
 
 async def deploy_cluster(ops_test: OpsTest) -> None:
@@ -153,6 +194,22 @@ async def deploy_tls(ops_test: OpsTest) -> None:
     )
 
 
+async def integrate_mongos_with_tls(ops_test: OpsTest) -> None:
+    """Integrate mongos to the TLS interface."""
+    await ops_test.model.integrate(
+        f"{MONGOS_APP_NAME}:{CERT_REL_NAME}",
+        f"{CERTS_APP_NAME}:{CERT_REL_NAME}",
+    )
+
+    await ops_test.model.wait_for_idle(
+        apps=[MONGOS_APP_NAME],
+        idle_period=20,
+        timeout=TIMEOUT,
+        raise_on_blocked=False,
+        status="active",
+    )
+
+
 async def integrate_cluster_with_tls(ops_test: OpsTest) -> None:
     """Integrate cluster components to the TLS interface."""
     for cluster_component in CLUSTER_COMPONENTS:
@@ -162,7 +219,7 @@ async def integrate_cluster_with_tls(ops_test: OpsTest) -> None:
         )
 
     await ops_test.model.wait_for_idle(
-        apps=[CLUSTER_COMPONENTS],
+        apps=CLUSTER_COMPONENTS,
         idle_period=20,
         timeout=TIMEOUT,
         raise_on_blocked=False,
