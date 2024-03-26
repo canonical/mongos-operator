@@ -7,9 +7,14 @@ from .helpers import (
     check_mongos_tls_enabled,
     check_mongos_tls_disabled,
     toggle_tls_mongos,
+    EXTERNAL_CERT_PATH,
+    INTERNAL_CERT_PATH,
+    check_certs_correctly_distributed,
+    time_file_created,
+    time_process_started,
 )
 
-
+MONGOS_SERVICE = "snap.charmed-mongodb.mongos.service"
 APPLICATION_APP_NAME = "application"
 MONGOS_APP_NAME = "mongos"
 MONGODB_CHARM_NAME = "mongodb"
@@ -25,7 +30,6 @@ DIFFERENT_CERTS_APP_NAME = "self-signed-certificates-separate"
 TIMEOUT = 15 * 60
 
 
-@pytest.mark.skip("Wait new MongoDB charm is published.")
 @pytest.mark.group(1)
 @pytest.mark.abort_on_fail
 async def test_build_and_deploy(ops_test: OpsTest) -> None:
@@ -35,12 +39,11 @@ async def test_build_and_deploy(ops_test: OpsTest) -> None:
     await deploy_tls(ops_test)
 
 
-@pytest.mark.skip("Wait new MongoDB charm is published.")
 @pytest.mark.group(1)
 @pytest.mark.abort_on_fail
 async def test_mongos_tls_enabled(ops_test: OpsTest) -> None:
     """Tests that mongos charm can enable TLS."""
-    # await integrate_mongos_with_tls(ops_test)
+    await integrate_mongos_with_tls(ops_test)
 
     await ops_test.model.wait_for_idle(
         apps=[MONGOS_APP_NAME],
@@ -61,7 +64,12 @@ async def test_mongos_tls_enabled(ops_test: OpsTest) -> None:
     await check_mongos_tls_enabled(ops_test)
 
 
-@pytest.mark.skip("Wait new MongoDB charm is published.")
+@pytest.mark.group(1)
+@pytest.mark.abort_on_fail
+async def test_mongos_rotate_certs(ops_test: OpsTest) -> None:
+    await rotate_and_verify_certs(ops_test)
+
+
 @pytest.mark.group(1)
 @pytest.mark.abort_on_fail
 async def test_mongos_tls_disabled(ops_test: OpsTest) -> None:
@@ -75,7 +83,6 @@ async def test_mongos_tls_disabled(ops_test: OpsTest) -> None:
     ), "mongos fails to report TLS inconsistencies."
 
 
-@pytest.mark.skip("Wait new MongoDB charm is published.")
 @pytest.mark.group(1)
 @pytest.mark.abort_on_fail
 async def test_tls_reenabled(ops_test: OpsTest) -> None:
@@ -84,7 +91,6 @@ async def test_tls_reenabled(ops_test: OpsTest) -> None:
     await check_mongos_tls_enabled(ops_test)
 
 
-@pytest.mark.skip("Wait new MongoDB charm is published.")
 @pytest.mark.group(1)
 @pytest.mark.abort_on_fail
 async def test_mongos_tls_ca_mismatch(ops_test: OpsTest) -> None:
@@ -138,14 +144,14 @@ async def deploy_cluster(ops_test: OpsTest) -> None:
         MONGODB_CHARM_NAME,
         application_name=CONFIG_SERVER_APP_NAME,
         channel="6/edge",
-        revision=142,
+        revision=164,
         config={"role": "config-server"},
     )
     await ops_test.model.deploy(
         MONGODB_CHARM_NAME,
         application_name=SHARD_APP_NAME,
         channel="6/edge",
-        revision=142,
+        revision=164,
         config={"role": "shard"},
     )
 
@@ -234,3 +240,64 @@ async def integrate_cluster_with_tls(ops_test: OpsTest) -> None:
         raise_on_blocked=False,
         status="active",
     )
+
+
+async def rotate_and_verify_certs(ops_test: OpsTest) -> None:
+    """Verifies that each unit is able to rotate their TLS certificates."""
+    original_tls_times = {}
+    for unit in ops_test.model.applications[MONGOS_APP_NAME].units:
+        original_tls_times[unit.name] = {}
+        original_tls_times[unit.name]["external_cert"] = await time_file_created(
+            ops_test, unit.name, EXTERNAL_CERT_PATH
+        )
+        original_tls_times[unit.name]["internal_cert"] = await time_file_created(
+            ops_test, unit.name, INTERNAL_CERT_PATH
+        )
+        original_tls_times[unit.name]["mongos_service"] = await time_process_started(
+            ops_test, unit.name, MONGOS_SERVICE
+        )
+        check_certs_correctly_distributed(ops_test, unit)
+
+    # set external and internal key using auto-generated key for each unit
+    for unit in ops_test.model.applications[MONGOS_APP_NAME].units:
+        action = await unit.run_action(action_name="set-tls-private-key")
+        action = await action.wait()
+        assert action.status == "completed", "setting external and internal key failed."
+
+    # wait for certificate to be available and processed. Can get receive two certificate
+    # available events and restart twice so we want to ensure we are idle for at least 1 minute
+    await ops_test.model.wait_for_idle(
+        apps=[MONGOS_APP_NAME], status="active", timeout=1000, idle_period=60
+    )
+
+    # After updating both the external key and the internal key a new certificate request will be
+    # made; then the certificates should be available and updated.
+    for unit in ops_test.model.applications[MONGOS_APP_NAME].units:
+        new_external_cert_time = await time_file_created(
+            ops_test, unit.name, EXTERNAL_CERT_PATH
+        )
+        new_internal_cert_time = await time_file_created(
+            ops_test, unit.name, INTERNAL_CERT_PATH
+        )
+        new_mongos_service_time = await time_process_started(
+            ops_test, unit.name, MONGOS_SERVICE
+        )
+
+        check_certs_correctly_distributed(ops_test, unit, app_name=MONGOS_APP_NAME)
+
+        assert (
+            new_external_cert_time > original_tls_times[unit.name]["external_cert"]
+        ), f"external cert for {unit.name} was not updated."
+        assert (
+            new_internal_cert_time > original_tls_times[unit.name]["internal_cert"]
+        ), f"internal cert for {unit.name} was not updated."
+
+        # Once the certificate requests are processed and updated the mongos.service should be
+        # restarted
+        assert (
+            new_mongos_service_time > original_tls_times[unit.name]["mongos_service"]
+        ), f"mongos service for {unit.name} was not restarted."
+
+    # Verify that TLS is functioning on all units.
+    for unit in ops_test.model.applications[MONGOS_APP_NAME].units:
+        check_mongos_tls_enabled(ops_test)
