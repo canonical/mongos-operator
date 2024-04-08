@@ -11,7 +11,7 @@ authors = []
 [tool.poetry.dependencies]
 python = "^3.10"
 tenacity = "^8.1.0"
-pymongo = "^4.3.3"
+pymongo = "^4.6.3"
 ops = "^2.4.1"
 parameterized = "^0.9.0"
 
@@ -52,7 +52,7 @@ pytest-operator-cache = {git = "https://github.com/canonical/data-platform-workf
 pytest-operator-groups = {git = "https://github.com/canonical/data-platform-workflows", tag = "v8.0.0", subdirectory = "python/pytest_plugins/pytest_operator_groups"}
 pytest-asyncio ="^0.17"
 tenacity = "^8.1.0"
-pymongo = "^4.3.3"
+pymongo = "^4.6.3"
 ops = "^2.4.1"
 
 [build-system]
