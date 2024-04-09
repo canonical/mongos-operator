@@ -248,3 +248,10 @@ async def get_secret_content(ops_test, secret_id) -> Dict[str, str]:
     _, stdout, _ = await ops_test.juju(*complete_command.split())
     data = json.loads(stdout)
     return data[secret_id]["content"]["Data"]
+
+
+async def get_file_contents(ops_test: OpsTest, unit: str, filepath: str) -> str:
+    """Returns the contents of the provided filepath."""
+    mv_cmd = f"exec --unit {unit.name} sudo cat {filepath} "
+    _, stdout, _ = await ops_test.juju(*mv_cmd.split())
+    return stdout
