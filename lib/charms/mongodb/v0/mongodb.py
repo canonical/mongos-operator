@@ -1,4 +1,5 @@
 """Code for interactions with MongoDB."""
+
 # Copyright 2023 Canonical Ltd.
 # See LICENSE file for licensing details.
 
@@ -21,6 +22,8 @@ from tenacity import (
     wait_fixed,
 )
 
+from config import Config
+
 # The unique Charmhub library identifier, never change it
 LIBID = "49c69d9977574dd7942eb7b54f43355b"
 
@@ -29,10 +32,14 @@ LIBAPI = 0
 
 # Increment this PATCH version before using `charmcraft publish-lib` or reset
 # to 0 if you are raising the major API version
-LIBPATCH = 7
+LIBPATCH = 9
 
 # path to store mongodb ketFile
 logger = logging.getLogger(__name__)
+
+
+class FailedToMovePrimaryError(Exception):
+    """Raised when attempt to move a primary fails."""
 
 
 @dataclass
@@ -56,6 +63,7 @@ class MongoDBConfiguration:
     roles: Set[str]
     tls_external: bool
     tls_internal: bool
+    standalone: bool = False
 
     @property
     def uri(self):
@@ -65,6 +73,14 @@ class MongoDBConfiguration:
         auth_source = ""
         if self.database != "admin":
             auth_source = "&authSource=admin"
+
+        if self.standalone:
+            return (
+                f"mongodb://{quote_plus(self.username)}:"
+                f"{quote_plus(self.password)}@"
+                f"localhost:{Config.MONGODB_PORT}/?authSource=admin"
+            )
+
         return (
             f"mongodb://{quote_plus(self.username)}:"
             f"{quote_plus(self.password)}@"
@@ -224,7 +240,7 @@ class MongoDBConnection:
         # Such operation reduce performance of the cluster. To avoid huge performance
         # degradation, before adding new members, it is needed to check that all other
         # members finished init sync.
-        if self._is_any_sync(rs_status):
+        if self.is_any_sync(rs_status):
             # it can take a while, we should defer
             raise NotReadyError
 
@@ -273,6 +289,64 @@ class MongoDBConnection:
         ]
         logger.debug("rs_config: %r", dumps(rs_config["config"]))
         self.client.admin.command("replSetReconfig", rs_config["config"])
+
+    def step_down_primary(self) -> None:
+        """Steps down the current primary, forcing a re-election."""
+        self.client.admin.command("replSetStepDown", {"stepDownSecs": "60"})
+
+    def move_primary(self, new_primary_ip: str) -> None:
+        """Forcibly moves the primary to the new primary provided.
+
+        Args:
+            new_primary_ip: ip address of the unit chosen to be the new primary.
+        """
+        # Do not move a priary unless the cluster is in sync
+        rs_status = self.client.admin.command("replSetGetStatus")
+        if self.is_any_sync(rs_status):
+            # it can take a while, we should defer
+            raise NotReadyError
+
+        is_move_successful = True
+        self.set_replicaset_election_priority(priority=0.5, ignore_member=new_primary_ip)
+        try:
+            for attempt in Retrying(stop=stop_after_delay(180), wait=wait_fixed(3)):
+                with attempt:
+                    self.step_down_primary()
+                    if self.primary() != new_primary_ip:
+                        raise FailedToMovePrimaryError
+        except RetryError:
+            # catch all possible exceptions when failing to step down primary. We do this in order
+            # to ensure that we reset the replica set election priority.
+            is_move_successful = False
+
+        # reset all replicas to the same priority
+        self.set_replicaset_election_priority(priority=1)
+
+        if not is_move_successful:
+            raise FailedToMovePrimaryError
+
+    def set_replicaset_election_priority(self, priority: int, ignore_member: str = None) -> None:
+        """Set the election priority for the entire replica set."""
+        rs_config = self.client.admin.command("replSetGetConfig")
+        rs_config = rs_config["config"]
+        rs_config["version"] += 1
+
+        # keep track of the original configuration before setting the priority, reconfiguring the
+        # replica set can result in primary re-election, which would would like to avoid when
+        # possible.
+        original_rs_config = rs_config
+
+        for member in rs_config["members"]:
+            if member["host"] == ignore_member:
+                continue
+
+            member["priority"] = priority
+
+        if original_rs_config == rs_config:
+            return
+
+        logger.debug("rs_config: %r", rs_config)
+        self.client.admin.command("replSetReconfig", rs_config)
 
     def create_user(self, config: MongoDBConfiguration):
         """Create user.
@@ -402,7 +476,7 @@ class MongoDBConnection:
         return primary
 
     @staticmethod
-    def _is_any_sync(rs_status: Dict) -> bool:
+    def is_any_sync(rs_status: Dict) -> bool:
         """Returns true if any replica set members are syncing data.
 
         Checks if any members in replica set are syncing data. Note it is recommended to run only
