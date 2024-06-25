@@ -75,4 +75,4 @@ jobs:
     with:
       artifact-name: ${{ needs.build.outputs.artifact-name }}
       cloud: lxd
-      juju-agent-version: 3.1.6
+      juju-agent-version: 3.1.7
