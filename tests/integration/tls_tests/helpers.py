@@ -220,7 +220,7 @@ def process_systemctl_time(systemctl_output):
 
 
 async def get_secret_id(ops_test, app_or_unit: Optional[str] = None) -> str:
-    """Retrieve secert ID for an app or unit."""
+    """Retrieve secret ID for an app or unit."""
     complete_command = "list-secrets"
 
     prefix = ""
