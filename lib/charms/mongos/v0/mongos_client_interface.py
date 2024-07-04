@@ -11,7 +11,6 @@ from ops.framework import Object
 from ops.charm import CharmBase
 from charms.data_platform_libs.v0.data_interfaces import (
     DatabaseProvides,
-    DatabaseRequestedEvent,
 )
 
 from charms.mongodb.v1.mongos import MongosConfiguration
@@ -75,11 +74,15 @@ To receive the username, password, and uri:
 class MongosProvider(Object):
     """Manage relations between the mongos router and the application on the mongos side."""
 
-    def __init__(self, charm: CharmBase, relation_name: str = MONGOS_RELATION_NAME) -> None:
+    def __init__(
+        self, charm: CharmBase, relation_name: str = MONGOS_RELATION_NAME
+    ) -> None:
         """Constructor for MongosProvider object."""
         self.relation_name = relation_name
         self.charm = charm
-        self.database_provides = DatabaseProvides(self.charm, relation_name=self.relation_name)
+        self.database_provides = DatabaseProvides(
+            self.charm, relation_name=self.relation_name
+        )
 
         super().__init__(charm, self.relation_name)
         self.framework.observe(
@@ -98,7 +101,9 @@ class MongosProvider(Object):
             or self.charm.database
         )
         new_extra_user_roles = (
-            self.database_provides.fetch_relation_field(event.relation.id, USER_ROLES_KEY)
+            self.database_provides.fetch_relation_field(
+                event.relation.id, USER_ROLES_KEY
+            )
             or self.charm.extra_user_roles
         )
         external_connectivity = (
@@ -133,7 +138,9 @@ class MongosProvider(Object):
         """Sends the URI to the related parent application"""
         logger.info("Sharing connection information to host application.")
         for relation in self.model.relations[MONGOS_RELATION_NAME]:
-            self.database_provides.set_credentials(relation.id, config.username, config.password)
+            self.database_provides.set_credentials(
+                relation.id, config.username, config.password
+            )
             self.database_provides.set_database(relation.id, config.database)
             self.database_provides.set_uris(
                 relation.id,
