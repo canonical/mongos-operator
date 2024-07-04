@@ -108,9 +108,7 @@ async def test_mongos_tls_ca_mismatch(ops_test: OpsTest) -> None:
         timeout=TIMEOUT,
     )
 
-    await toggle_tls_mongos(
-        ops_test, enable=True, certs_app_name=DIFFERENT_CERTS_APP_NAME
-    )
+    await toggle_tls_mongos(ops_test, enable=True, certs_app_name=DIFFERENT_CERTS_APP_NAME)
 
     await ops_test.model.wait_for_idle(
         apps=[MONGOS_APP_NAME],
@@ -121,8 +119,7 @@ async def test_mongos_tls_ca_mismatch(ops_test: OpsTest) -> None:
 
     mongos_unit = ops_test.model.applications[MONGOS_APP_NAME].units[0]
     assert (
-        mongos_unit.workload_status_message
-        == "mongos CA and Config-Server CA don't match."
+        mongos_unit.workload_status_message == "mongos CA and Config-Server CA don't match."
     ), "mongos fails to report mismatch in CA."
 
 
@@ -145,14 +142,14 @@ async def deploy_cluster(ops_test: OpsTest) -> None:
         MONGODB_CHARM_NAME,
         application_name=CONFIG_SERVER_APP_NAME,
         channel="6/edge",
-        revision=164,
+        revision=173,
         config={"role": "config-server"},
     )
     await ops_test.model.deploy(
         MONGODB_CHARM_NAME,
         application_name=SHARD_APP_NAME,
         channel="6/edge",
-        revision=164,
+        revision=173,
         config={"role": "shard"},
     )
 
@@ -249,12 +246,12 @@ async def rotate_and_verify_certs(ops_test: OpsTest) -> None:
     for unit in ops_test.model.applications[MONGOS_APP_NAME].units:
         original_tls_info[unit.name] = {}
 
-        original_tls_info[unit.name][
-            "external_cert_contents"
-        ] = await get_file_contents(ops_test, unit, EXTERNAL_CERT_PATH)
-        original_tls_info[unit.name][
-            "internal_cert_contents"
-        ] = await get_file_contents(ops_test, unit, INTERNAL_CERT_PATH)
+        original_tls_info[unit.name]["external_cert_contents"] = await get_file_contents(
+            ops_test, unit, EXTERNAL_CERT_PATH
+        )
+        original_tls_info[unit.name]["internal_cert_contents"] = await get_file_contents(
+            ops_test, unit, INTERNAL_CERT_PATH
+        )
         original_tls_info[unit.name]["external_cert_time"] = await time_file_created(
             ops_test, unit.name, EXTERNAL_CERT_PATH
         )
@@ -284,15 +281,9 @@ async def rotate_and_verify_certs(ops_test: OpsTest) -> None:
         new_external_cert = await get_file_contents(ops_test, unit, EXTERNAL_CERT_PATH)
         new_internal_cert = await get_file_contents(ops_test, unit, INTERNAL_CERT_PATH)
 
-        new_external_cert_time = await time_file_created(
-            ops_test, unit.name, EXTERNAL_CERT_PATH
-        )
-        new_internal_cert_time = await time_file_created(
-            ops_test, unit.name, INTERNAL_CERT_PATH
-        )
-        new_mongos_service_time = await time_process_started(
-            ops_test, unit.name, MONGOS_SERVICE
-        )
+        new_external_cert_time = await time_file_created(ops_test, unit.name, EXTERNAL_CERT_PATH)
+        new_internal_cert_time = await time_file_created(ops_test, unit.name, INTERNAL_CERT_PATH)
+        new_mongos_service_time = await time_process_started(ops_test, unit.name, MONGOS_SERVICE)
 
         check_certs_correctly_distributed(ops_test, unit, app_name=MONGOS_APP_NAME)
 
