@@ -19,6 +19,7 @@ from charms.operator_libs_linux.v1 import snap
 from pathlib import Path
 
 from typing import Set, List, Optional, Dict
+from upgrades.mongos_upgrade import MongosUpgrade
 
 from charms.mongodb.v0.mongodb_secrets import SecretCache
 from charms.mongodb.v0.mongodb_tls import MongoDBTLS
@@ -77,8 +78,7 @@ class MongosOperatorCharm(ops.CharmBase):
         self.secrets = SecretCache(self)
         self.tls = MongoDBTLS(self, Config.Relations.PEERS, substrate=Config.SUBSTRATE)
         self.mongos_provider = MongosProvider(self)
-        # 1. add users for related application (to be done on config-server charm side)
-        # 2. update status indicates missing relations
+        self.upgrade = MongosUpgrade(self)
 
     # BEGIN: hook functions
     def _on_install(self, event: InstallEvent) -> None:
@@ -206,9 +206,7 @@ class MongosOperatorCharm(ops.CharmBase):
         content = secret.get_content()
 
         if not content.get(key) or content[key] == Config.Secrets.SECRET_DELETED_LABEL:
-            logger.error(
-                f"Non-existing secret {scope}:{key} was attempted to be removed."
-            )
+            logger.error(f"Non-existing secret {scope}:{key} was attempted to be removed.")
             return
 
         content[key] = Config.Secrets.SECRET_DELETED_LABEL
@@ -309,9 +307,7 @@ class MongosOperatorCharm(ops.CharmBase):
             return
 
         # a mongos shard can only be related to one config server
-        config_server_rel = self.model.relations[
-            Config.Relations.CLUSTER_RELATIONS_NAME
-        ][0]
+        config_server_rel = self.model.relations[Config.Relations.CLUSTER_RELATIONS_NAME][0]
         self.cluster.database_requires.update_relation_data(
             config_server_rel.id, {USER_ROLES_TAG: roles_str}
         )
@@ -324,18 +320,14 @@ class MongosOperatorCharm(ops.CharmBase):
             return
 
         # a mongos shard can only be related to one config server
-        config_server_rel = self.model.relations[
-            Config.Relations.CLUSTER_RELATIONS_NAME
-        ][0]
+        config_server_rel = self.model.relations[Config.Relations.CLUSTER_RELATIONS_NAME][0]
         self.cluster.database_requires.update_relation_data(
             config_server_rel.id, {DATABASE_TAG: database}
         )
 
     def set_external_connectivity(self, external_connectivity: bool) -> None:
         """Sets the connectivity type for mongos."""
-        self.app_peer_data[EXTERNAL_CONNECTIVITY_TAG] = json.dumps(
-            external_connectivity
-        )
+        self.app_peer_data[EXTERNAL_CONNECTIVITY_TAG] = json.dumps(external_connectivity)
 
     def check_relation_broken_or_scale_down(self, event: RelationDepartedEvent) -> None:
         """Checks relation departed event is the result of removed relation or scale down.

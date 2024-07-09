@@ -25,3 +25,6 @@ parts:
       - pkg-config
       - rustc
       - cargo
+    prime:
+      - charm_version
+      - workload_version
