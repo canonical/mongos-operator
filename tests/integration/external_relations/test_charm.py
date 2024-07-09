@@ -100,7 +100,9 @@ async def test_mongos_starts_with_config_server(ops_test: OpsTest) -> None:
     )
 
     mongos_unit = ops_test.model.applications[MONGOS_APP_NAME].units[0]
-    mongos_running = await check_mongos(ops_test, mongos_unit, auth=False, external=True)
+    mongos_running = await check_mongos(
+        ops_test, mongos_unit, auth=False, external=True
+    )
     assert mongos_running, "Mongos is not currently running."
 
 

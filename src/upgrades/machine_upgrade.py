@@ -29,7 +29,8 @@ class Upgrade(upgrade.Upgrade):
         """Returns the unit state."""
         if (
             self._unit_workload_container_version is not None
-            and self._unit_workload_container_version != self._app_workload_container_version
+            and self._unit_workload_container_version
+            != self._app_workload_container_version
         ):
             logger.debug("Unit upgrade state: outdated")
             return upgrade.UnitState.OUTDATED
@@ -41,7 +42,10 @@ class Upgrade(upgrade.Upgrade):
         upgrade.Upgrade.unit_state.fset(self, value)
 
     def _get_unit_healthy_status(self) -> ops.StatusBase:
-        if self._unit_workload_container_version == self._app_workload_container_version:
+        if (
+            self._unit_workload_container_version
+            == self._app_workload_container_version
+        ):
             return ops.ActiveStatus(
                 f'MongoDB {self._unit_workload_version} running; Snap rev {self._unit_workload_container_version}; Charmed operator {self._current_versions["charm"]}'
             )
@@ -113,7 +117,9 @@ class Upgrade(upgrade.Upgrade):
     def upgrade_resumed(self, value: bool):
         # Trigger peer relation_changed event even if value does not change
         # (Needed when leader sets value to False during `ops.UpgradeCharmEvent`)
-        self._app_databag["-unused-timestamp-upgrade-resume-last-updated"] = str(time.time())
+        self._app_databag["-unused-timestamp-upgrade-resume-last-updated"] = str(
+            time.time()
+        )
 
         self._app_databag["upgrade-resumed"] = json.dumps(value)
         logger.debug(f"Set upgrade-resumed to {value=}")
@@ -127,7 +133,10 @@ class Upgrade(upgrade.Upgrade):
         Raises:
             PrecheckFailed: App is not ready to upgrade
         """
-        assert self._unit_workload_container_version != self._app_workload_container_version
+        assert (
+            self._unit_workload_container_version
+            != self._app_workload_container_version
+        )
         assert self.versions_set
         for index, unit in enumerate(self._sorted_units):
             if unit.name == self._unit.name:
@@ -143,10 +152,14 @@ class Upgrade(upgrade.Upgrade):
                         # Run pre-upgrade check
                         # (in case user forgot to run pre-upgrade-check action)
                         self.pre_upgrade_check()
-                        logger.debug("Pre-upgrade check after `juju refresh` successful")
+                        logger.debug(
+                            "Pre-upgrade check after `juju refresh` successful"
+                        )
                 elif index == 1:
                     # User confirmation needed to resume upgrade (i.e. upgrade second unit)
-                    logger.debug(f"Second unit authorized to upgrade if {self.upgrade_resumed=}")
+                    logger.debug(
+                        f"Second unit authorized to upgrade if {self.upgrade_resumed=}"
+                    )
                     return self.upgrade_resumed
                 return True
             state = self._peer_relation.data[unit].get("state")

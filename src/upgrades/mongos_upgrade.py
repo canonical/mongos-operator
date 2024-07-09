@@ -33,13 +33,16 @@ class MongosUpgrade(Object):
             self._on_upgrade_peer_relation_created,
         )
         self.framework.observe(
-            charm.on[upgrade.PEER_RELATION_ENDPOINT_NAME].relation_changed, self._reconcile_upgrade
+            charm.on[upgrade.PEER_RELATION_ENDPOINT_NAME].relation_changed,
+            self._reconcile_upgrade,
         )
         self.framework.observe(charm.on.upgrade_charm, self._on_upgrade_charm)
         self.framework.observe(
             charm.on[upgrade.RESUME_ACTION_NAME].action, self._on_resume_upgrade_action
         )
-        self.framework.observe(charm.on["force-upgrade"].action, self._on_force_upgrade_action)
+        self.framework.observe(
+            charm.on["force-upgrade"].action, self._on_force_upgrade_action
+        )
 
     # BEGIN: Event handlers
     def _on_upgrade_peer_relation_created(self, _) -> None:
@@ -152,7 +155,9 @@ class MongosUpgrade(Object):
     def set_mongos_feature_compatibilty_version(self, feature_version) -> None:
         """Sets the mongos feature compatibility version."""
         with MongosConnection(self.charm.mongos_config) as mongos:
-            mongos.client.admin.command("setFeatureCompatibilityVersion", feature_version)
+            mongos.client.admin.command(
+                "setFeatureCompatibilityVersion", feature_version
+            )
 
     # END: helpers
 
