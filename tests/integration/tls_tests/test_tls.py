@@ -3,6 +3,7 @@
 # See LICENSE file for licensing details.
 import pytest
 from pytest_operator.plugin import OpsTest
+from ..helpers import wait_for_mongos_units_blocked
 from .helpers import (
     check_mongos_tls_enabled,
     check_mongos_tls_disabled,
@@ -46,13 +47,7 @@ async def test_mongos_tls_enabled(ops_test: OpsTest) -> None:
     """Tests that mongos charm can enable TLS."""
     await integrate_mongos_with_tls(ops_test)
 
-    await ops_test.model.wait_for_idle(
-        apps=[MONGOS_APP_NAME],
-        idle_period=20,
-        timeout=TIMEOUT,
-        raise_on_blocked=False,
-        status="blocked",
-    )
+    await wait_for_mongos_units_blocked(ops_test, MONGOS_APP_NAME, timeout=300)
 
     mongos_unit = ops_test.model.applications[MONGOS_APP_NAME].units[0]
     assert (
@@ -164,12 +159,7 @@ async def deploy_cluster(ops_test: OpsTest) -> None:
     )
 
     await ops_test.model.add_relation(APPLICATION_APP_NAME, MONGOS_APP_NAME)
-    await ops_test.model.wait_for_idle(
-        apps=[MONGOS_APP_NAME],
-        status="blocked",
-        idle_period=10,
-        timeout=TIMEOUT,
-    )
+    await wait_for_mongos_units_blocked(ops_test, MONGOS_APP_NAME, timeout=300)
 
 
 async def build_cluster(ops_test: OpsTest) -> None:
