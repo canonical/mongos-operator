@@ -47,13 +47,12 @@ async def test_mongos_tls_enabled(ops_test: OpsTest) -> None:
     """Tests that mongos charm can enable TLS."""
     await integrate_mongos_with_tls(ops_test)
 
-    await wait_for_mongos_units_blocked(ops_test, MONGOS_APP_NAME, timeout=300)
-
-    mongos_unit = ops_test.model.applications[MONGOS_APP_NAME].units[0]
-    assert (
-        mongos_unit.workload_status_message
-        == "mongos has TLS enabled, but config-server does not."
-    ), "mongos fails to report TLS inconsistencies."
+    await wait_for_mongos_units_blocked(
+        ops_test,
+        MONGOS_APP_NAME,
+        status="mongos has TLS enabled, but config-server does not.",
+        timeout=TIMEOUT,
+    )
 
     await integrate_cluster_with_tls(ops_test)
 
@@ -159,7 +158,7 @@ async def deploy_cluster(ops_test: OpsTest) -> None:
     )
 
     await ops_test.model.add_relation(APPLICATION_APP_NAME, MONGOS_APP_NAME)
-    await wait_for_mongos_units_blocked(ops_test, MONGOS_APP_NAME, timeout=300)
+    await wait_for_mongos_units_blocked(ops_test, MONGOS_APP_NAME, timeout=TIMEOUT)
 
 
 async def build_cluster(ops_test: OpsTest) -> None:
