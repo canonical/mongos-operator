@@ -1,5 +1,11 @@
 # Copyright 2024 Canonical Ltd.
 # See LICENSE file for licensing details.
+# TODO Future PR remove this as we don't plan to support resume-upgrade on router
+resume-upgrade:
+  description: Upgrade remaining units (after you manually verified that upgraded units are healthy).
+
+force-upgrade:
+  description: Force upgrade of this unit.
 
 set-tls-private-key:
   description: Set the privates key, which will be used for certificate signing requests (CSR). Run for each unit separately.

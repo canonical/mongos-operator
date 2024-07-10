@@ -3,7 +3,15 @@ from pytest_operator.plugin import OpsTest
 import ops
 import json
 import yaml
+import subprocess
+
 from typing import Optional, Dict
+
+from tenacity import (
+    Retrying,
+    stop_after_delay,
+    wait_fixed,
+)
 
 MONGOS_SOCKET = "%2Fvar%2Fsnap%2Fcharmed-mongodb%2Fcommon%2Fvar%2Fmongodb-27018.sock"
 MONGOS_APP_NAME = "mongos"
@@ -157,3 +165,64 @@ async def get_ip_address(ops_test, app_name=MONGOS_APP_NAME) -> str:
     """Returns an IP address of the fist unit of a provided application."""
     app_unit = ops_test.model.applications[app_name].units[0]
     return await app_unit.get_public_address()
+
+
+async def get_unit_hostname(ops_test: OpsTest, unit_id: int, app: str) -> str:
+    """Get the hostname of a specific unit."""
+    _, hostname, _ = await ops_test.juju("ssh", f"{app}/{unit_id}", "hostname")
+    return hostname.strip()
+
+
+async def check_all_units_blocked_with_status(
+    ops_test: OpsTest, app_name: str, status: Optional[str]
+) -> None:
+    """Checks if all units are blocked with a provided status.
+
+    The command juju status --model {model-name} {app-name} --json does not provide information
+    for statuses for subordinate charms like it does for normal charms. Specifically when
+    converting to json it lose this information. To get this information we must parse the status
+    manually.
+    """
+    juju_status = (
+        subprocess.check_output(
+            f"juju status --model {ops_test.model.info.name} {app_name}".split()
+        )
+        .decode("utf-8")
+        .split("\n")
+    )
+
+    for status_item in juju_status:
+        if app_name not in status_item:
+            continue
+        # no need to check that status of the application since the application can have a
+        # different status than the units.
+        is_app = "/" not in status_item
+        if is_app:
+            continue
+
+        status_item = status_item.split()
+        unit_name = status_item[0]
+        status_type = status_item[1]
+        status_message = " ".join(status_item[4:])
+        assert (
+            status_type == "blocked"
+        ), f"unit {unit_name} not in blocked state, in {status_type}"
+
+        if status:
+            assert (
+                status_message == status
+            ), f"unit {unit_name} does not show the status {status}"
+
+
+async def wait_for_mongos_units_blocked(
+    ops_test: OpsTest, app_name: str, status: Optional[str] = None, timeout=20
+) -> None:
+    """Waits for units of mongos to be in the blocked state.
+
+    This is necessary because the MongoDB app can report a different status than the units.
+    """
+    for attempt in Retrying(
+        stop=stop_after_delay(timeout), wait=wait_fixed(1), reraise=True
+    ):
+        with attempt:
+            await check_all_units_blocked_with_status(ops_test, app_name, status)

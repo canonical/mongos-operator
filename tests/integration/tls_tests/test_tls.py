@@ -3,6 +3,7 @@
 # See LICENSE file for licensing details.
 import pytest
 from pytest_operator.plugin import OpsTest
+from ..helpers import wait_for_mongos_units_blocked
 from .helpers import (
     check_mongos_tls_enabled,
     check_mongos_tls_disabled,
@@ -46,19 +47,12 @@ async def test_mongos_tls_enabled(ops_test: OpsTest) -> None:
     """Tests that mongos charm can enable TLS."""
     await integrate_mongos_with_tls(ops_test)
 
-    await ops_test.model.wait_for_idle(
-        apps=[MONGOS_APP_NAME],
-        idle_period=20,
+    await wait_for_mongos_units_blocked(
+        ops_test,
+        MONGOS_APP_NAME,
+        status="mongos has TLS enabled, but config-server does not.",
         timeout=TIMEOUT,
-        raise_on_blocked=False,
-        status="blocked",
     )
-
-    mongos_unit = ops_test.model.applications[MONGOS_APP_NAME].units[0]
-    assert (
-        mongos_unit.workload_status_message
-        == "mongos has TLS enabled, but config-server does not."
-    ), "mongos fails to report TLS inconsistencies."
 
     await integrate_cluster_with_tls(ops_test)
 
@@ -108,7 +102,9 @@ async def test_mongos_tls_ca_mismatch(ops_test: OpsTest) -> None:
         timeout=TIMEOUT,
     )
 
-    await toggle_tls_mongos(ops_test, enable=True, certs_app_name=DIFFERENT_CERTS_APP_NAME)
+    await toggle_tls_mongos(
+        ops_test, enable=True, certs_app_name=DIFFERENT_CERTS_APP_NAME
+    )
 
     await ops_test.model.wait_for_idle(
         apps=[MONGOS_APP_NAME],
@@ -119,7 +115,8 @@ async def test_mongos_tls_ca_mismatch(ops_test: OpsTest) -> None:
 
     mongos_unit = ops_test.model.applications[MONGOS_APP_NAME].units[0]
     assert (
-        mongos_unit.workload_status_message == "mongos CA and Config-Server CA don't match."
+        mongos_unit.workload_status_message
+        == "mongos CA and Config-Server CA don't match."
     ), "mongos fails to report mismatch in CA."
 
 
@@ -161,12 +158,7 @@ async def deploy_cluster(ops_test: OpsTest) -> None:
     )
 
     await ops_test.model.add_relation(APPLICATION_APP_NAME, MONGOS_APP_NAME)
-    await ops_test.model.wait_for_idle(
-        apps=[MONGOS_APP_NAME],
-        status="blocked",
-        idle_period=10,
-        timeout=TIMEOUT,
-    )
+    await wait_for_mongos_units_blocked(ops_test, MONGOS_APP_NAME, timeout=TIMEOUT)
 
 
 async def build_cluster(ops_test: OpsTest) -> None:
@@ -246,12 +238,12 @@ async def rotate_and_verify_certs(ops_test: OpsTest) -> None:
     for unit in ops_test.model.applications[MONGOS_APP_NAME].units:
         original_tls_info[unit.name] = {}
 
-        original_tls_info[unit.name]["external_cert_contents"] = await get_file_contents(
-            ops_test, unit, EXTERNAL_CERT_PATH
-        )
-        original_tls_info[unit.name]["internal_cert_contents"] = await get_file_contents(
-            ops_test, unit, INTERNAL_CERT_PATH
-        )
+        original_tls_info[unit.name][
+            "external_cert_contents"
+        ] = await get_file_contents(ops_test, unit, EXTERNAL_CERT_PATH)
+        original_tls_info[unit.name][
+            "internal_cert_contents"
+        ] = await get_file_contents(ops_test, unit, INTERNAL_CERT_PATH)
         original_tls_info[unit.name]["external_cert_time"] = await time_file_created(
             ops_test, unit.name, EXTERNAL_CERT_PATH
         )
@@ -281,9 +273,15 @@ async def rotate_and_verify_certs(ops_test: OpsTest) -> None:
         new_external_cert = await get_file_contents(ops_test, unit, EXTERNAL_CERT_PATH)
         new_internal_cert = await get_file_contents(ops_test, unit, INTERNAL_CERT_PATH)
 
-        new_external_cert_time = await time_file_created(ops_test, unit.name, EXTERNAL_CERT_PATH)
-        new_internal_cert_time = await time_file_created(ops_test, unit.name, INTERNAL_CERT_PATH)
-        new_mongos_service_time = await time_process_started(ops_test, unit.name, MONGOS_SERVICE)
+        new_external_cert_time = await time_file_created(
+            ops_test, unit.name, EXTERNAL_CERT_PATH
+        )
+        new_internal_cert_time = await time_file_created(
+            ops_test, unit.name, INTERNAL_CERT_PATH
+        )
+        new_mongos_service_time = await time_process_started(
+            ops_test, unit.name, MONGOS_SERVICE
+        )
 
         check_certs_correctly_distributed(ops_test, unit, app_name=MONGOS_APP_NAME)
 

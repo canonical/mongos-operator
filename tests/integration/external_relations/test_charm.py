@@ -3,7 +3,7 @@
 # See LICENSE file for licensing details.
 import pytest
 from pytest_operator.plugin import OpsTest
-from ..helpers import check_mongos
+from ..helpers import check_mongos, wait_for_mongos_units_blocked
 
 
 DATA_INTEGRATOR_APP_NAME = "data-integrator"
@@ -66,12 +66,7 @@ async def test_mongos_starts_with_config_server(ops_test: OpsTest) -> None:
     )
 
     await ops_test.model.add_relation(DATA_INTEGRATOR_APP_NAME, MONGOS_APP_NAME)
-    await ops_test.model.wait_for_idle(
-        apps=[MONGOS_APP_NAME],
-        status="blocked",
-        idle_period=10,
-    )
-
+    await wait_for_mongos_units_blocked(ops_test, MONGOS_APP_NAME, timeout=300)
     # prepare sharded cluster
     await ops_test.model.wait_for_idle(
         apps=[CONFIG_SERVER_APP_NAME, SHARD_APP_NAME],
@@ -100,7 +95,9 @@ async def test_mongos_starts_with_config_server(ops_test: OpsTest) -> None:
     )
 
     mongos_unit = ops_test.model.applications[MONGOS_APP_NAME].units[0]
-    mongos_running = await check_mongos(ops_test, mongos_unit, auth=False, external=True)
+    mongos_running = await check_mongos(
+        ops_test, mongos_unit, auth=False, external=True
+    )
     assert mongos_running, "Mongos is not currently running."
 
 

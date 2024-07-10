@@ -19,6 +19,7 @@ from charms.operator_libs_linux.v1 import snap
 from pathlib import Path
 
 from typing import Set, List, Optional, Dict
+from upgrades.mongos_upgrade import MongosUpgrade
 
 from charms.mongodb.v0.mongodb_secrets import SecretCache
 from charms.mongodb.v0.mongodb_tls import MongoDBTLS
@@ -77,8 +78,7 @@ class MongosOperatorCharm(ops.CharmBase):
         self.secrets = SecretCache(self)
         self.tls = MongoDBTLS(self, Config.Relations.PEERS, substrate=Config.SUBSTRATE)
         self.mongos_provider = MongosProvider(self)
-        # 1. add users for related application (to be done on config-server charm side)
-        # 2. update status indicates missing relations
+        self.upgrade = MongosUpgrade(self)
 
     # BEGIN: hook functions
     def _on_install(self, event: InstallEvent) -> None:

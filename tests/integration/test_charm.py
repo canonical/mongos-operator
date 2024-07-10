@@ -8,6 +8,7 @@ from .helpers import (
     run_mongos_command,
     get_application_relation_data,
     MONGOS_SOCKET,
+    wait_for_mongos_units_blocked,
 )
 
 APPLICATION_APP_NAME = "application"
@@ -69,15 +70,13 @@ async def test_waits_for_config_server(ops_test: OpsTest) -> None:
     """Verifies that the application and unit are active."""
     await ops_test.model.add_relation(APPLICATION_APP_NAME, MONGOS_APP_NAME)
 
-    # verify that Charmed MongoDB is blocked and reports incorrect credentials
-    await ops_test.model.wait_for_idle(
-        apps=[MONGOS_APP_NAME],
-        status="blocked",
-        idle_period=10,
+    # verify that Charmed Mongos is blocked and reports incorrect credentials
+    await wait_for_mongos_units_blocked(
+        ops_test,
+        MONGOS_APP_NAME,
+        status="Missing relation to config-server.",
+        timeout=300,
     )
-
-    mongos_unit = ops_test.model.applications[MONGOS_APP_NAME].units[0]
-    assert mongos_unit.workload_status_message == "Missing relation to config-server."
 
 
 @pytest.mark.group(1)
@@ -167,7 +166,9 @@ async def test_user_with_extra_roles(ops_test: OpsTest) -> None:
         return_code == 0
     ), f"mongos user does not have correct permissions to create new user, error: {std_err}"
 
-    test_user_uri = f"mongodb://{TEST_USER_NAME}:{TEST_USER_PWD}@{MONGOS_SOCKET}/{TEST_DB_NAME}"
+    test_user_uri = (
+        f"mongodb://{TEST_USER_NAME}:{TEST_USER_PWD}@{MONGOS_SOCKET}/{TEST_DB_NAME}"
+    )
     mongos_running = await check_mongos(
         ops_test,
         mongos_unit,
@@ -240,15 +241,17 @@ async def test_mongos_stops_without_config_server(ops_test: OpsTest) -> None:
     )
     assert not mongos_running, "Mongos is running without a config server."
 
-    secrets = await get_application_relation_data(ops_test, "application", "mongos", "secret-user")
-    assert secrets is None, "mongos still has connection info without being connected to cluster."
-
-    # verify that Charmed MongoDB is blocked waiting for config-server
-    await ops_test.model.wait_for_idle(
-        apps=[MONGOS_APP_NAME],
-        status="blocked",
-        idle_period=20,
+    secrets = await get_application_relation_data(
+        ops_test, "application", "mongos", "secret-user"
     )
+    assert (
+        secrets is None
+    ), "mongos still has connection info without being connected to cluster."
 
-    mongos_unit = ops_test.model.applications[MONGOS_APP_NAME].units[0]
-    assert mongos_unit.workload_status_message == "Missing relation to config-server."
+    # verify that Charmed Mongos is blocked waiting for config-server
+    await wait_for_mongos_units_blocked(
+        ops_test,
+        MONGOS_APP_NAME,
+        status="Missing relation to config-server.",
+        timeout=300,
+    )
