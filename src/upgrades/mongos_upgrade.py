@@ -72,7 +72,7 @@ class MongosUpgrade(Object):
                 authorized = self._upgrade.authorized
             except upgrade.PrecheckFailed as exception:
                 self._set_upgrade_status()
-                self.charm.status.set_and_share_status(exception.status)
+                self.charm.unit.status = exception.status
                 logger.debug(f"Set unit status to {self.unit.status}")
                 logger.error(exception.status.message)
                 return
@@ -148,7 +148,7 @@ class MongosUpgrade(Object):
                 "Rollback with `juju refresh`. Pre-upgrade check failed:"
             )
         ):
-            self.charm.status.set_and_share_status(
+            self.charm.unit.status = (
                 self._upgrade.get_unit_juju_status() or ActiveStatus()
             )
 
