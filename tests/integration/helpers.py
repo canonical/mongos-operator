@@ -4,9 +4,8 @@ import ops
 import json
 import yaml
 import subprocess
-from dateutil.parser import parse
 
-from typing import Optional, Dict, Any, List
+from typing import Optional, Dict
 
 from tenacity import (
     Retrying,
@@ -17,48 +16,6 @@ from tenacity import (
 MONGOS_SOCKET = "%2Fvar%2Fsnap%2Fcharmed-mongodb%2Fcommon%2Fvar%2Fmongodb-27018.sock"
 MONGOS_APP_NAME = "mongos"
 PING_CMD = "db.runCommand({ping: 1})"
-
-
-class Status:
-    """Model class for status."""
-
-    def __init__(self, value: str, since: str, message: Optional[str] = None):
-        self.value = value
-        self.since = parse(since, ignoretz=True)
-        self.message = message
-
-
-class Unit:
-    """Model class for a Unit, with properties widely used."""
-
-    def __init__(
-        self,
-        id: int,
-        name: str,
-        ip: str,
-        hostname: str,
-        is_leader: bool,
-        machine_id: int,
-        workload_status: Status,
-        agent_status: Status,
-        app_status: Status,
-    ):
-        self.id = id
-        self.name = name
-        self.ip = ip
-        self.hostname = hostname
-        self.is_leader = is_leader
-        self.machine_id = machine_id
-        self.workload_status = workload_status
-        self.agent_status = agent_status
-        self.app_status = app_status
-
-    def dump(self) -> Dict[str, Any]:
-        """To json."""
-        result = {}
-        for key, val in vars(self).items():
-            result[key] = vars(val) if isinstance(val, Status) else val
-        return result
 
 
 async def generate_mongos_command(
@@ -216,73 +173,49 @@ async def get_unit_hostname(ops_test: OpsTest, unit_id: int, app: str) -> str:
     return hostname.strip()
 
 
-def get_raw_application(ops_test: OpsTest, app: str) -> Dict[str, Any]:
-    """Get raw application details."""
-    return json.loads(
+async def check_all_units_blocked_with_status(
+    ops_test: OpsTest, app_name: str, status: Optional[str]
+) -> None:
+    """Checks if all units are blocked with a provided status.
+
+    The command juju status --model {model-name} {app-name} --json does not provide information
+    for statuses for subordinate charms like it does for normal charms. Specifically when
+    converting to json it lose this information. To get this information we must parse the status
+    manually.
+    """
+    juju_status = (
         subprocess.check_output(
-            f"juju status --model {ops_test.model.info.name} {app} --format=json".split()
+            f"juju status --model {ops_test.model.info.name} {app_name}".split()
         )
-    )["applications"][app]
+        .decode("utf-8")
+        .split("\n")
+    )
 
-
-async def get_application_units(ops_test: OpsTest, app: str) -> List[Unit]:
-    """Get fully detailed units of an application."""
-    # Juju incorrectly reports the IP addresses after the network is restored this is reported as a
-    # bug here: https://github.com/juju/python-libjuju/issues/738. Once this bug is resolved use of
-    # `get_unit_ip` should be replaced with `.public_address`
-    raw_app = get_raw_application(ops_test, app)
-    units = []
-    for u_name, unit in raw_app["units"].items():
-        unit_id = int(u_name.split("/")[-1])
-
-        if not unit.get("public-address"):
-            # unit not ready yet...
+    for status_item in juju_status:
+        if app_name not in status_item:
+            continue
+        # no need to check that status of the application since the application can have a
+        # different status than the units.
+        is_app = "/" not in status_item
+        if is_app:
             continue
 
-        unit = Unit(
-            id=unit_id,
-            name=u_name.replace("/", "-"),
-            ip=unit["public-address"],
-            hostname=await get_unit_hostname(ops_test, unit_id, app),
-            is_leader=unit.get("leader", False),
-            machine_id=int(unit["machine"]),
-            workload_status=Status(
-                value=unit["workload-status"]["current"],
-                since=unit["workload-status"]["since"],
-                message=unit["workload-status"].get("message"),
-            ),
-            agent_status=Status(
-                value=unit["juju-status"]["current"],
-                since=unit["juju-status"]["since"],
-            ),
-            app_status=Status(
-                value=raw_app["application-status"]["current"],
-                since=raw_app["application-status"]["since"],
-                message=raw_app["application-status"].get("message"),
-            ),
-        )
-
-        units.append(unit)
-
-    return units
-
-
-async def check_all_units_blocked_with_status(
-    ops_test: OpsTest, db_app_name: str, status: Optional[str]
-) -> None:
-    # this is necessary because ops_model.units does not update the unit statuses
-    for unit in await get_application_units(ops_test, db_app_name):
+        status_item = status_item.split()
+        unit_name = status_item[0]
+        status_type = status_item[1]
+        status_message = " ".join(status_item[4:])
         assert (
-            unit.workload_status.value == "blocked"
-        ), f"unit {unit.name} not in blocked state, in {unit.workload_status}"
+            status_type == "blocked"
+        ), f"unit {unit_name} not in blocked state, in {status_type}"
+
         if status:
             assert (
-                unit.workload_status.message == status
-            ), f"unit {unit.name} not in blocked state, in {unit.workload_status}"
+                status_message == status
+            ), f"unit {unit_name} does not show the status {status}"
 
 
 async def wait_for_mongos_units_blocked(
-    ops_test: OpsTest, app_name: str, status: Optional[str], timeout=20
+    ops_test: OpsTest, app_name: str, status: Optional[str] = None, timeout=20
 ) -> None:
     """Waits for units of mongos to be in the blocked state.
 
