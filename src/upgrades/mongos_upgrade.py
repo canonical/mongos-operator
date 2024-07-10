@@ -97,9 +97,7 @@ class MongosUpgrade(Object):
             if not self._upgrade.in_progress:
                 logger.info("Charm upgraded. MongoDB snap version unchanged")
 
-            # Only call `_reconcile_upgrade` on leader unit to avoid race conditions with
-            # `upgrade_resumed`
-            self._reconcile_upgrade()
+        self._reconcile_upgrade()
 
     def _on_force_upgrade_action(self, event: ActionEvent) -> None:
         if not self._upgrade or not self._upgrade.in_progress:
@@ -120,12 +118,14 @@ class MongosUpgrade(Object):
 
     def run_post_upgrade_check(self, event) -> None:
         """Runs post-upgrade checks for after mongos router upgrade."""
-        if not self.charm.is_db_service_ready():
-            logger.debug(
-                "Waiting for mongos router to be ready before finalising upgrade."
-            )
-            event.defer()
-            return
+        # The mongos service cannot be considered ready until it has a config-server.
+        if self.charm.config_server_db:
+            if not self.charm.is_db_service_ready():
+                logger.debug(
+                    "Waiting for mongos router to be ready before finalising upgrade."
+                )
+                event.defer()
+                return
 
         logger.debug("upgrade of unit succeeded.")
         self._upgrade.unit_state = upgrade.UnitState.HEALTHY

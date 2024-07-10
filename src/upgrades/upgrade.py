@@ -266,10 +266,3 @@ class Upgrade(abc.ABC):
         See https://chat.canonical.com/canonical/pl/cmf6uhm1rp8b7k8gkjkdsj4mya
         """
         logger.debug("Running pre-upgrade checks")
-
-        # TODO Future PR check mongos feature compatibility + maybe if it is a valid upgrade? via revision checker
-        # try:
-        #     self._charm.upgrade.something()
-        # except RetryError:
-        #     logger.error("something")
-        #     raise PrecheckFailed("something")

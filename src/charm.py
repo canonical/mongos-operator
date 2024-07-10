@@ -85,7 +85,7 @@ class MongosOperatorCharm(ops.CharmBase):
         """Handle the install event (fired on startup)."""
         self.unit.status = MaintenanceStatus("installing mongos")
         try:
-            self._install_snap_packages(packages=Config.SNAP_PACKAGES)
+            self.install_snap_packages(packages=Config.SNAP_PACKAGES)
 
         except snap.SnapError as e:
             logger.info("Failed to install snap, error: %s", e)
@@ -127,7 +127,7 @@ class MongosOperatorCharm(ops.CharmBase):
 
     # BEGIN: helper functions
 
-    def _install_snap_packages(self, packages: List[str]) -> None:
+    def install_snap_packages(self, packages: List[str]) -> None:
         """Installs package(s) to container.
 
         Args:
