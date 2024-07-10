@@ -76,7 +76,9 @@ class Upgrade(abc.ABC):
             "charm": "charm_version",
             "workload": "workload_version",
         }.items():
-            self._current_versions[version] = pathlib.Path(file_name).read_text().strip()
+            self._current_versions[version] = (
+                pathlib.Path(file_name).read_text().strip()
+            )
 
     @property
     def unit_state(self) -> typing.Optional[UnitState]:
@@ -108,7 +110,8 @@ class Upgrade(abc.ABC):
         current_version_strs = copy.copy(self._current_versions)
         current_version_strs["charm"] = current_version_strs["charm"].split("+")[0]
         current_versions = {
-            key: poetry_version.Version.parse(value) for key, value in current_version_strs.items()
+            key: poetry_version.Version.parse(value)
+            for key, value in current_version_strs.items()
         }
         try:
             # TODO Future PR: change this > sign to support downgrades
@@ -122,7 +125,8 @@ class Upgrade(abc.ABC):
                 return False
             if (
                 previous_versions["workload"] > current_versions["workload"]
-                or previous_versions["workload"].major != current_versions["workload"].major
+                or previous_versions["workload"].major
+                != current_versions["workload"].major
             ):
                 logger.debug(
                     f'{previous_versions["workload"]=} incompatible with {current_versions["workload"]=}'
@@ -133,7 +137,9 @@ class Upgrade(abc.ABC):
             )
             return True
         except KeyError as exception:
-            logger.debug(f"Version missing from {previous_versions=}", exc_info=exception)
+            logger.debug(
+                f"Version missing from {previous_versions=}", exc_info=exception
+            )
             return False
 
     @property
@@ -150,7 +156,9 @@ class Upgrade(abc.ABC):
     @property
     def _sorted_units(self) -> typing.List[ops.Unit]:
         """Units sorted from highest to lowest unit number."""
-        return sorted((self._unit, *self._peer_relation.units), key=unit_number, reverse=True)
+        return sorted(
+            (self._unit, *self._peer_relation.units), key=unit_number, reverse=True
+        )
 
     @abc.abstractmethod
     def _get_unit_healthy_status(self) -> ops.StatusBase:
@@ -188,9 +196,13 @@ class Upgrade(abc.ABC):
         allowed).
         """
         assert not self.in_progress
-        logger.debug(f"Setting {self._current_versions=} in upgrade peer relation app databag")
+        logger.debug(
+            f"Setting {self._current_versions=} in upgrade peer relation app databag"
+        )
         self._app_databag["versions"] = json.dumps(self._current_versions)
-        logger.debug(f"Set {self._current_versions=} in upgrade peer relation app databag")
+        logger.debug(
+            f"Set {self._current_versions=} in upgrade peer relation app databag"
+        )
 
     @property
     @abc.abstractmethod

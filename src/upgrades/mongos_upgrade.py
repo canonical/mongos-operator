@@ -6,9 +6,8 @@
 import logging
 from typing import Optional
 
-from charms.mongodb.v1.mongos import MongosConnection
 from ops.charm import ActionEvent, CharmBase
-from ops.framework import Object
+from ops.framework import Object, EventBase, EventSource
 from ops.model import ActiveStatus, BlockedStatus
 
 from upgrades import machine_upgrade, upgrade
@@ -22,8 +21,17 @@ UNHEALTHY_UPGRADE = BlockedStatus("Unhealthy after upgrade.")
 SHARD_NAME_INDEX = "_id"
 
 
+class _PostUpgradeCheckMongos(EventBase):
+    """Run post upgrade check on Mongos to verify that the cluster is healhty."""
+
+    def __init__(self, handle):
+        super().__init__(handle)
+
+
 class MongosUpgrade(Object):
     """Handlers for upgrade events."""
+
+    post_upgrade_event = EventSource(_PostUpgradeCheckMongos)
 
     def __init__(self, charm: CharmBase):
         self.charm = charm
@@ -38,7 +46,10 @@ class MongosUpgrade(Object):
         )
         self.framework.observe(charm.on.upgrade_charm, self._on_upgrade_charm)
 
-        self.framework.observe(charm.on["force-upgrade"].action, self._on_force_upgrade_action)
+        self.framework.observe(
+            charm.on["force-upgrade"].action, self._on_force_upgrade_action
+        )
+        self.framework.observe(self.post_upgrade_event, self.run_post_upgrade_check)
 
     # BEGIN: Event handlers
     def _on_upgrade_peer_relation_created(self, _) -> None:
@@ -107,6 +118,18 @@ class MongosUpgrade(Object):
         event.set_results({"result": f"Forcefully upgraded {self.charm.unit.name}"})
         logger.debug("Forced upgrade")
 
+    def run_post_upgrade_check(self, event) -> None:
+        """Runs post-upgrade checks for after mongos router upgrade."""
+        if not self.charm.is_db_service_ready():
+            logger.debug(
+                "Waiting for mongos router to be ready before finalising upgrade."
+            )
+            event.defer()
+            return
+
+        logger.debug("upgrade of unit succeeded.")
+        self._upgrade.unit_state = upgrade.UnitState.HEALTHY
+
     # END: Event handlers
 
     # BEGIN: Helpers
@@ -125,12 +148,9 @@ class MongosUpgrade(Object):
                 "Rollback with `juju refresh`. Pre-upgrade check failed:"
             )
         ):
-            self.charm.unit.status = self._upgrade.get_unit_juju_status() or ActiveStatus()
-
-    def set_mongos_feature_compatibilty_version(self, feature_version) -> None:
-        """Sets the mongos feature compatibility version."""
-        with MongosConnection(self.charm.mongos_config) as mongos:
-            mongos.client.admin.command("setFeatureCompatibilityVersion", feature_version)
+            self.charm.unit.status = (
+                self._upgrade.get_unit_juju_status() or ActiveStatus()
+            )
 
     # END: helpers
 

@@ -8,7 +8,6 @@ Derived from specification: DA058 - In-Place Upgrades - Kubernetes v2
 """
 import json
 import logging
-import time
 import typing
 
 import ops
@@ -29,7 +28,8 @@ class Upgrade(upgrade.Upgrade):
         """Returns the unit state."""
         if (
             self._unit_workload_container_version is not None
-            and self._unit_workload_container_version != self._app_workload_container_version
+            and self._unit_workload_container_version
+            != self._app_workload_container_version
         ):
             logger.debug("Unit upgrade state: outdated")
             return upgrade.UnitState.OUTDATED
@@ -41,7 +41,10 @@ class Upgrade(upgrade.Upgrade):
         upgrade.Upgrade.unit_state.fset(self, value)
 
     def _get_unit_healthy_status(self) -> ops.StatusBase:
-        if self._unit_workload_container_version == self._app_workload_container_version:
+        if (
+            self._unit_workload_container_version
+            == self._app_workload_container_version
+        ):
             return ops.ActiveStatus(
                 f'MongoDB {self._unit_workload_version} running; Snap rev {self._unit_workload_container_version}; Charmed operator {self._current_versions["charm"]}'
             )
@@ -102,7 +105,10 @@ class Upgrade(upgrade.Upgrade):
         Raises:
             PrecheckFailed: App is not ready to upgrade
         """
-        assert self._unit_workload_container_version != self._app_workload_container_version
+        assert (
+            self._unit_workload_container_version
+            != self._app_workload_container_version
+        )
         assert self.versions_set
         for index, unit in enumerate(self._sorted_units):
             if unit.name == self._unit.name:
@@ -118,7 +124,9 @@ class Upgrade(upgrade.Upgrade):
                         # Run pre-upgrade check
                         # (in case user forgot to run pre-upgrade-check action)
                         self.pre_upgrade_check()
-                        logger.debug("Pre-upgrade check after `juju refresh` successful")
+                        logger.debug(
+                            "Pre-upgrade check after `juju refresh` successful"
+                        )
 
                 return True
             state = self._peer_relation.data[unit].get("state")
@@ -144,6 +152,10 @@ class Upgrade(upgrade.Upgrade):
         self._unit_databag["snap_revision"] = _SNAP_REVISION
         self._unit_workload_version = self._current_versions["workload"]
         logger.debug(f"Saved {_SNAP_REVISION} in unit databag after upgrade")
+
+        # post upgrade check should be retried in case of failure, for this it is necessary to
+        # emit a separate event.
+        charm.upgrade.post_app_upgrade_event.emit()
 
     def save_snap_revision_after_first_install(self):
         """Set snap revision on first install."""
