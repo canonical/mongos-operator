@@ -37,12 +37,8 @@ class MongosUpgrade(Object):
             self._reconcile_upgrade,
         )
         self.framework.observe(charm.on.upgrade_charm, self._on_upgrade_charm)
-        self.framework.observe(
-            charm.on[upgrade.RESUME_ACTION_NAME].action, self._on_resume_upgrade_action
-        )
-        self.framework.observe(
-            charm.on["force-upgrade"].action, self._on_force_upgrade_action
-        )
+
+        self.framework.observe(charm.on["force-upgrade"].action, self._on_force_upgrade_action)
 
     # BEGIN: Event handlers
     def _on_upgrade_peer_relation_created(self, _) -> None:
@@ -72,7 +68,7 @@ class MongosUpgrade(Object):
                 authorized = self._upgrade.authorized
             except upgrade.PrecheckFailed as exception:
                 self._set_upgrade_status()
-                self.charm.status.set_and_share_status(exception.status)
+                self.charm.unit.status = exception.status
                 logger.debug(f"Set unit status to {self.unit.status}")
                 logger.error(exception.status.message)
                 return
@@ -90,32 +86,13 @@ class MongosUpgrade(Object):
             if not self._upgrade.in_progress:
                 logger.info("Charm upgraded. MongoDB snap version unchanged")
 
-            self._upgrade.upgrade_resumed = False
             # Only call `_reconcile_upgrade` on leader unit to avoid race conditions with
             # `upgrade_resumed`
             self._reconcile_upgrade()
 
-    def _on_resume_upgrade_action(self, event: ActionEvent) -> None:
-        if not self.charm.unit.is_leader():
-            message = f"Must run action on leader unit. (e.g. `juju run {self.charm.app.name}/leader {upgrade.RESUME_ACTION_NAME}`)"
-            logger.debug(f"Resume upgrade event failed: {message}")
-            event.fail(message)
-            return
-        if not self._upgrade or not self._upgrade.in_progress:
-            message = "No upgrade in progress"
-            logger.debug(f"Resume upgrade event failed: {message}")
-            event.fail(message)
-            return
-        self._upgrade.reconcile_partition(action_event=event)
-
     def _on_force_upgrade_action(self, event: ActionEvent) -> None:
         if not self._upgrade or not self._upgrade.in_progress:
             message = "No upgrade in progress"
-            logger.debug(f"Force upgrade event failed: {message}")
-            event.fail(message)
-            return
-        if not self._upgrade.upgrade_resumed:
-            message = f"Run `juju run {self.charm.app.name}/leader resume-upgrade` before trying to force upgrade"
             logger.debug(f"Force upgrade event failed: {message}")
             event.fail(message)
             return
@@ -148,16 +125,12 @@ class MongosUpgrade(Object):
                 "Rollback with `juju refresh`. Pre-upgrade check failed:"
             )
         ):
-            self.charm.status.set_and_share_status(
-                self._upgrade.get_unit_juju_status() or ActiveStatus()
-            )
+            self.charm.unit.status = self._upgrade.get_unit_juju_status() or ActiveStatus()
 
     def set_mongos_feature_compatibilty_version(self, feature_version) -> None:
         """Sets the mongos feature compatibility version."""
         with MongosConnection(self.charm.mongos_config) as mongos:
-            mongos.client.admin.command(
-                "setFeatureCompatibilityVersion", feature_version
-            )
+            mongos.client.admin.command("setFeatureCompatibilityVersion", feature_version)
 
     # END: helpers
 
