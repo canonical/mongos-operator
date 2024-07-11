@@ -487,6 +487,9 @@ class MongosOperatorCharm(ops.CharmBase):
     @property
     def is_external_client(self) -> Optional[str]:
         """Returns the database requested by the hosting application of the subordinate charm."""
+        if EXTERNAL_CONNECTIVITY_TAG not in self.app_peer_data:
+            return False
+
         return json.loads(self.app_peer_data.get(EXTERNAL_CONNECTIVITY_TAG))
 
     @property
