@@ -3,7 +3,7 @@
 # See LICENSE file for licensing details.
 import pytest
 from pytest_operator.plugin import OpsTest
-from .helpers import (
+from ..helpers import (
     deploy_cluster_components,
     integrate_cluster_components,
     MONGOS_APP_NAME,
