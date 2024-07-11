@@ -265,4 +265,9 @@ class Upgrade(abc.ABC):
         need to be modified).
         See https://chat.canonical.com/canonical/pl/cmf6uhm1rp8b7k8gkjkdsj4mya
         """
-        logger.debug("Running pre-upgrade checks")
+        # Until the mongos charm has a config-server there is nothing to check. Allow an upgrade.
+        if not self.charm.config_server_db:
+            return
+
+        if not self.is_mongos_able_to_read_write():
+            raise PrecheckFailed("mongos is not able to read/write.")

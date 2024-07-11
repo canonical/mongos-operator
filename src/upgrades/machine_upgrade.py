@@ -148,7 +148,9 @@ class Upgrade(upgrade.Upgrade):
         """
         logger.debug(f"Upgrading {self.authorized=}")
         self.unit_state = upgrade.UnitState.UPGRADING
+        charm.stop_mongos_service()
         charm.install_snap_packages(packages=Config.SNAP_PACKAGES)
+        charm.start_mongos_service()
         self._unit_databag["snap_revision"] = _SNAP_REVISION
         self._unit_workload_version = self._current_versions["workload"]
         logger.debug(f"Saved {_SNAP_REVISION} in unit databag after upgrade")

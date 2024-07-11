@@ -104,6 +104,9 @@ class MongosOperatorCharm(ops.CharmBase):
 
     def _on_update_status(self, _):
         """Handle the update status event"""
+        if self.unit.status == Config.Status.UNHEALTHY_UPGRADE:
+            return
+
         if not self.model.relations[Config.Relations.CLUSTER_RELATIONS_NAME]:
             logger.info(
                 "Missing integration to config-server. mongos cannot run unless connected to config-server."
@@ -126,7 +129,6 @@ class MongosOperatorCharm(ops.CharmBase):
     # END: hook functions
 
     # BEGIN: helper functions
-
     def install_snap_packages(self, packages: List[str]) -> None:
         """Installs package(s) to container.
 

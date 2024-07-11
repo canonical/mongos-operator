@@ -55,7 +55,7 @@ class TestCharm(unittest.TestCase):
     @patch_network_get(private_address="1.1.1.1")
     @patch("charm.snap.SnapCache")
     @patch("subprocess.check_call")
-    def testinstall_snap_packages_failure(self, _call, snap_cache):
+    def test_install_snap_packages_failure(self, _call, snap_cache):
         """Test verifies that install hook fails when a snap error occurs."""
         snap_cache.side_effect = snap.SnapError
         self.harness.charm.on.install.emit()

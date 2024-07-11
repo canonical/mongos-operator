@@ -5,6 +5,7 @@
 
 from typing import Literal
 from urllib.parse import quote
+from ops.model import BlockedStatus
 
 
 class Config:
@@ -57,6 +58,17 @@ class Config:
         PASSWORD = "password"
         SECRET_DELETED_LABEL = "None"
         MAX_PASSWORD_LENGTH = 4096
+
+    class Status:
+        """Status related constants.
+
+        TODO: move all status messages here.
+        """
+
+        STATUS_READY_FOR_UPGRADE = "status-shows-ready-for-upgrade"
+
+        # TODO Future PR add more status messages here as constants
+        UNHEALTHY_UPGRADE = BlockedStatus("Unhealthy after upgrade.")
 
     class Role:
         """Role config names for MongoDB Charm."""
