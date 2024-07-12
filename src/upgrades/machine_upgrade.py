@@ -8,7 +8,6 @@ Derived from specification: DA058 - In-Place Upgrades - Kubernetes v2
 """
 import json
 import logging
-import time
 import typing
 
 import ops
@@ -97,33 +96,6 @@ class Upgrade(upgrade.Upgrade):
     def _unit_workload_version(self, value: str):
         self._unit_databag["workload_version"] = value
 
-    def reconcile_partition(self, *, action_event: ops.ActionEvent = None) -> None:
-        """Handle Juju action to confirm first upgraded unit is healthy and resume upgrade."""
-        if action_event:
-            self.upgrade_resumed = True
-            message = "Upgrade resumed."
-            action_event.set_results({"result": message})
-            logger.debug(f"Resume upgrade event succeeded: {message}")
-
-    @property
-    def upgrade_resumed(self) -> bool:
-        """Whether user has resumed upgrade with Juju action.
-
-        Reset to `False` after each `juju refresh`
-        """
-        return json.loads(self._app_databag.get("upgrade-resumed", "false"))
-
-    @upgrade_resumed.setter
-    def upgrade_resumed(self, value: bool):
-        # Trigger peer relation_changed event even if value does not change
-        # (Needed when leader sets value to False during `ops.UpgradeCharmEvent`)
-        self._app_databag["-unused-timestamp-upgrade-resume-last-updated"] = str(
-            time.time()
-        )
-
-        self._app_databag["upgrade-resumed"] = json.dumps(value)
-        logger.debug(f"Set upgrade-resumed to {value=}")
-
     @property
     def authorized(self) -> bool:
         """Whether this unit is authorized to upgrade.
@@ -155,12 +127,7 @@ class Upgrade(upgrade.Upgrade):
                         logger.debug(
                             "Pre-upgrade check after `juju refresh` successful"
                         )
-                elif index == 1:
-                    # User confirmation needed to resume upgrade (i.e. upgrade second unit)
-                    logger.debug(
-                        f"Second unit authorized to upgrade if {self.upgrade_resumed=}"
-                    )
-                    return self.upgrade_resumed
+
                 return True
             state = self._peer_relation.data[unit].get("state")
             if state:
@@ -181,10 +148,16 @@ class Upgrade(upgrade.Upgrade):
         """
         logger.debug(f"Upgrading {self.authorized=}")
         self.unit_state = upgrade.UnitState.UPGRADING
+        charm.stop_mongos_service()
         charm.install_snap_packages(packages=Config.SNAP_PACKAGES)
+        charm.start_mongos_service()
         self._unit_databag["snap_revision"] = _SNAP_REVISION
         self._unit_workload_version = self._current_versions["workload"]
         logger.debug(f"Saved {_SNAP_REVISION} in unit databag after upgrade")
+
+        # post upgrade check should be retried in case of failure, for this it is necessary to
+        # emit a separate event.
+        charm.upgrade.post_upgrade_event.emit()
 
     def save_snap_revision_after_first_install(self):
         """Set snap revision on first install."""

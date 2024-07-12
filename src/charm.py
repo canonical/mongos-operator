@@ -85,7 +85,7 @@ class MongosOperatorCharm(ops.CharmBase):
         """Handle the install event (fired on startup)."""
         self.unit.status = MaintenanceStatus("installing mongos")
         try:
-            self._install_snap_packages(packages=Config.SNAP_PACKAGES)
+            self.install_snap_packages(packages=Config.SNAP_PACKAGES)
 
         except snap.SnapError as e:
             logger.info("Failed to install snap, error: %s", e)
@@ -104,6 +104,9 @@ class MongosOperatorCharm(ops.CharmBase):
 
     def _on_update_status(self, _):
         """Handle the update status event"""
+        if self.unit.status == Config.Status.UNHEALTHY_UPGRADE:
+            return
+
         if not self.model.relations[Config.Relations.CLUSTER_RELATIONS_NAME]:
             logger.info(
                 "Missing integration to config-server. mongos cannot run unless connected to config-server."
@@ -126,8 +129,7 @@ class MongosOperatorCharm(ops.CharmBase):
     # END: hook functions
 
     # BEGIN: helper functions
-
-    def _install_snap_packages(self, packages: List[str]) -> None:
+    def install_snap_packages(self, packages: List[str]) -> None:
         """Installs package(s) to container.
 
         Args:
@@ -485,6 +487,9 @@ class MongosOperatorCharm(ops.CharmBase):
     @property
     def is_external_client(self) -> Optional[str]:
         """Returns the database requested by the hosting application of the subordinate charm."""
+        if EXTERNAL_CONNECTIVITY_TAG not in self.app_peer_data:
+            return False
+
         return json.loads(self.app_peer_data.get(EXTERNAL_CONNECTIVITY_TAG))
 
     @property

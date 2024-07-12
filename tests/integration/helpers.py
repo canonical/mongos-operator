@@ -13,6 +13,16 @@ from tenacity import (
     wait_fixed,
 )
 
+APPLICATION_APP_NAME = "application"
+MONGOS_APP_NAME = "mongos"
+CLUSTER_REL_NAME = "cluster"
+MONGODB_CHARM_NAME = "mongodb"
+
+CONFIG_SERVER_APP_NAME = "config-server"
+SHARD_APP_NAME = "shard"
+SHARD_REL_NAME = "sharding"
+CONFIG_SERVER_REL_NAME = "config-server"
+
 MONGOS_SOCKET = "%2Fvar%2Fsnap%2Fcharmed-mongodb%2Fcommon%2Fvar%2Fmongodb-27018.sock"
 MONGOS_APP_NAME = "mongos"
 PING_CMD = "db.runCommand({ping: 1})"
@@ -226,3 +236,65 @@ async def wait_for_mongos_units_blocked(
     ):
         with attempt:
             await check_all_units_blocked_with_status(ops_test, app_name, status)
+
+
+async def deploy_cluster_components(ops_test: OpsTest) -> None:
+    """Deploys all cluster components and waits for idle."""
+    application_charm = await ops_test.build_charm("tests/integration/application")
+    mongos_charm = await ops_test.build_charm(".")
+
+    await ops_test.model.deploy(
+        application_charm,
+        num_units=2,
+        application_name=APPLICATION_APP_NAME,
+    )
+    await ops_test.model.deploy(
+        mongos_charm,
+        num_units=0,
+        application_name=MONGOS_APP_NAME,
+    )
+    await ops_test.model.deploy(
+        MONGODB_CHARM_NAME,
+        application_name=CONFIG_SERVER_APP_NAME,
+        channel="6/edge",
+        revision=173,
+        config={"role": "config-server"},
+    )
+    await ops_test.model.deploy(
+        MONGODB_CHARM_NAME,
+        application_name=SHARD_APP_NAME,
+        channel="6/edge",
+        revision=173,
+        config={"role": "shard"},
+    )
+
+    await ops_test.model.wait_for_idle(
+        apps=[APPLICATION_APP_NAME, SHARD_APP_NAME, CONFIG_SERVER_APP_NAME],
+        idle_period=10,
+        raise_on_blocked=False,
+    )
+
+
+async def integrate_cluster_components(ops_test: OpsTest) -> None:
+    """Integrates all cluster components and waits for idle."""
+    await ops_test.model.add_relation(APPLICATION_APP_NAME, MONGOS_APP_NAME)
+
+    await ops_test.model.wait_for_idle(
+        apps=[CONFIG_SERVER_APP_NAME, SHARD_APP_NAME],
+        idle_period=10,
+        raise_on_blocked=False,
+    )
+    await ops_test.model.integrate(
+        f"{SHARD_APP_NAME}:{SHARD_REL_NAME}",
+        f"{CONFIG_SERVER_APP_NAME}:{CONFIG_SERVER_REL_NAME}",
+    )
+
+    await ops_test.model.integrate(
+        f"{MONGOS_APP_NAME}:{CLUSTER_REL_NAME}",
+        f"{CONFIG_SERVER_APP_NAME}:{CLUSTER_REL_NAME}",
+    )
+    await ops_test.model.wait_for_idle(
+        apps=[CONFIG_SERVER_APP_NAME, SHARD_APP_NAME, MONGOS_APP_NAME],
+        idle_period=20,
+        status="active",
+    )

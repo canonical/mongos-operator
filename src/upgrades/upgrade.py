@@ -25,7 +25,6 @@ logger = logging.getLogger(__name__)
 SHARD = "shard"
 PEER_RELATION_ENDPOINT_NAME = "upgrade-version-a"
 PRECHECK_ACTION_NAME = "pre-upgrade-check"
-RESUME_ACTION_NAME = "resume-upgrade"
 
 
 def unit_number(unit_: ops.Unit) -> int:
@@ -175,15 +174,7 @@ class Upgrade(abc.ABC):
         """App upgrade status."""
         if not self.in_progress:
             return
-        if not self.upgrade_resumed:
-            # User confirmation needed to resume upgrade (i.e. upgrade second unit)
-            # Statuses over 120 characters are truncated in `juju status` as of juju 3.1.6 and
-            # 2.9.45
-            if len(self._sorted_units) > 1:
-                resume_string = "Verify highest unit is healthy & run `{RESUME_ACTION_NAME}` action. "
-            return ops.BlockedStatus(
-                f"Upgrading. {resume_string}To rollback, `juju refresh` to last revision"
-            )
+
         return ops.MaintenanceStatus(
             "Upgrading. To rollback, `juju refresh` to the previous revision"
         )
@@ -215,11 +206,6 @@ class Upgrade(abc.ABC):
 
     @property
     @abc.abstractmethod
-    def upgrade_resumed(self) -> bool:
-        """Whether user has resumed upgrade with Juju action."""
-
-    @property
-    @abc.abstractmethod
     def _unit_workload_container_versions(self) -> typing.Dict[str, str]:
         """{Unit name: unique identifier for unit's workload container version}.
 
@@ -243,10 +229,6 @@ class Upgrade(abc.ABC):
         This identifier should be comparable to `_unit_workload_container_versions` to determine if
         the app & unit are the same workload container version.
         """
-
-    @abc.abstractmethod
-    def reconcile_partition(self, *, action_event: ops.ActionEvent = None) -> None:
-        """If ready, allow next unit to upgrade."""
 
     @property
     @abc.abstractmethod
@@ -283,11 +265,9 @@ class Upgrade(abc.ABC):
         need to be modified).
         See https://chat.canonical.com/canonical/pl/cmf6uhm1rp8b7k8gkjkdsj4mya
         """
-        logger.debug("Running pre-upgrade checks")
+        # Until the mongos charm has a config-server there is nothing to check. Allow an upgrade.
+        if not self.charm.config_server_db:
+            return
 
-        # TODO Future PR check mongos feature compatibility + maybe if it is a valid upgrade? via revision checker
-        # try:
-        #     self._charm.upgrade.something()
-        # except RetryError:
-        #     logger.error("something")
-        #     raise PrecheckFailed("something")
+        if not self.is_mongos_able_to_read_write():
+            raise PrecheckFailed("mongos is not able to read/write.")
