@@ -96,7 +96,7 @@ class MongosUpgrade(Object):
                 authorized = self._upgrade.authorized
             except upgrade.PrecheckFailed as exception:
                 self._set_upgrade_status()
-                self.charm.unit.status = exception.status
+                self.charm.status.set_and_share_status(exception.status)
                 logger.debug(f"Set unit status to {self.unit.status}")
                 logger.error(exception.status.message)
                 return
@@ -137,7 +137,7 @@ class MongosUpgrade(Object):
         """Runs post-upgrade checks for after mongos router upgrade."""
         # The mongos service cannot be considered ready until it has a config-server. Therefore
         # it is not necessary to do any sophisticated checks.
-        if not self.charm.config_server_db:
+        if not self.charm.mongos_intialised:
             self._upgrade.unit_state = upgrade.UnitState.HEALTHY
             return
 
@@ -160,12 +160,12 @@ class MongosUpgrade(Object):
         if not self.is_mongos_able_to_read_write():
             logger.error("mongos is not able to read/write after upgrade.")
             logger.info(ROLLBACK_INSTRUCTIONS)
-            self.charm.unit.status = Config.Status.UNHEALTHY_UPGRADE
+            self.charm.status.set_and_share_status(Config.Status.UNHEALTHY_UPGRADE)
             event.defer()
             return
 
         if self.charm.unit.status == Config.Status.UNHEALTHY_UPGRADE:
-            self.charm.unit.status = ActiveStatus()
+            self.charm.status.set_and_share_status(ActiveStatus())
 
         logger.debug("upgrade of unit succeeded.")
         self._upgrade.unit_state = upgrade.UnitState.HEALTHY
@@ -249,7 +249,7 @@ class MongosUpgrade(Object):
                 "Rollback with `juju refresh`. Pre-upgrade check failed:"
             )
         ):
-            self.charm.unit.status = (
+            self.charm.status.set_and_share_status(
                 self._upgrade.get_unit_juju_status() or ActiveStatus()
             )
 
