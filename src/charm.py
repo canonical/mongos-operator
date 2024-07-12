@@ -104,7 +104,9 @@ class MongosOperatorCharm(ops.CharmBase):
         # start hooks are fired before relation hooks and `mongos` requires a config-server in
         # order to start. Wait to receive config-server info from the relation event before
         # starting `mongos` daemon
-        self.status.set_and_share_status(BlockedStatus("Missing relation to config-server."))
+        self.status.set_and_share_status(
+            BlockedStatus("Missing relation to config-server.")
+        )
 
     def _on_update_status(self, _):
         """Handle the update status event"""
@@ -115,7 +117,9 @@ class MongosOperatorCharm(ops.CharmBase):
             logger.info(
                 "Missing integration to config-server. mongos cannot run unless connected to config-server."
             )
-            self.status.set_and_share_status(BlockedStatus("Missing relation to config-server."))
+            self.status.set_and_share_status(
+                BlockedStatus("Missing relation to config-server.")
+            )
             return
 
         if self.cluster.get_tls_statuses():
@@ -125,7 +129,9 @@ class MongosOperatorCharm(ops.CharmBase):
         # restart on high loaded databases can be very slow (e.g. up to 10-20 minutes).
         if not self.cluster.is_mongos_running():
             logger.info("mongos has not started yet")
-            self.status.set_and_share_status(WaitingStatus("Waiting for mongos to start."))
+            self.status.set_and_share_status(
+                WaitingStatus("Waiting for mongos to start.")
+            )
             return
 
         self.status.set_and_share_status(ActiveStatus())
@@ -212,7 +218,9 @@ class MongosOperatorCharm(ops.CharmBase):
         content = secret.get_content()
 
         if not content.get(key) or content[key] == Config.Secrets.SECRET_DELETED_LABEL:
-            logger.error(f"Non-existing secret {scope}:{key} was attempted to be removed.")
+            logger.error(
+                f"Non-existing secret {scope}:{key} was attempted to be removed."
+            )
             return
 
         content[key] = Config.Secrets.SECRET_DELETED_LABEL
@@ -313,7 +321,9 @@ class MongosOperatorCharm(ops.CharmBase):
             return
 
         # a mongos shard can only be related to one config server
-        config_server_rel = self.model.relations[Config.Relations.CLUSTER_RELATIONS_NAME][0]
+        config_server_rel = self.model.relations[
+            Config.Relations.CLUSTER_RELATIONS_NAME
+        ][0]
         self.cluster.database_requires.update_relation_data(
             config_server_rel.id, {USER_ROLES_TAG: roles_str}
         )
@@ -326,14 +336,18 @@ class MongosOperatorCharm(ops.CharmBase):
             return
 
         # a mongos shard can only be related to one config server
-        config_server_rel = self.model.relations[Config.Relations.CLUSTER_RELATIONS_NAME][0]
+        config_server_rel = self.model.relations[
+            Config.Relations.CLUSTER_RELATIONS_NAME
+        ][0]
         self.cluster.database_requires.update_relation_data(
             config_server_rel.id, {DATABASE_TAG: database}
         )
 
     def set_external_connectivity(self, external_connectivity: bool) -> None:
         """Sets the connectivity type for mongos."""
-        self.app_peer_data[EXTERNAL_CONNECTIVITY_TAG] = json.dumps(external_connectivity)
+        self.app_peer_data[EXTERNAL_CONNECTIVITY_TAG] = json.dumps(
+            external_connectivity
+        )
 
     def check_relation_broken_or_scale_down(self, event: RelationDepartedEvent) -> None:
         """Checks relation departed event is the result of removed relation or scale down.
@@ -471,6 +485,19 @@ class MongosOperatorCharm(ops.CharmBase):
         """Returns True if the underlying database service is ready."""
         with MongosConnection(self.mongos_config) as mongos:
             return mongos.is_ready
+
+    @property
+    def mongos_initialised(self) -> bool:
+        """Check if mongos is initialised."""
+        return "mongos_initialised" in self.app_peer_data
+
+    @mongos_initialised.setter
+    def mongos_initialised(self, value: bool):
+        """Set the mongos_initialised flag."""
+        if value:
+            self.app_peer_data["mongos_initialised"] = str(value)
+        elif "mongos_initialised" in self.app_peer_data:
+            del self.app_peer_data["mongos_initialised"]
 
     # END: helper functions
 

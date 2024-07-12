@@ -63,7 +63,9 @@ class MongosUpgrade(Object):
         )
         self.framework.observe(charm.on.upgrade_charm, self._on_upgrade_charm)
 
-        self.framework.observe(charm.on["force-upgrade"].action, self._on_force_upgrade_action)
+        self.framework.observe(
+            charm.on["force-upgrade"].action, self._on_force_upgrade_action
+        )
         self.framework.observe(self.post_upgrade_event, self.run_post_upgrade_check)
 
     # BEGIN: Event handlers
@@ -135,7 +137,7 @@ class MongosUpgrade(Object):
         """Runs post-upgrade checks for after mongos router upgrade."""
         # The mongos service cannot be considered ready until it has a config-server. Therefore
         # it is not necessary to do any sophisticated checks.
-        if not self.charm.config_server_db:
+        if not self.charm.mongos_intialised:
             self._upgrade.unit_state = upgrade.UnitState.HEALTHY
             return
 
@@ -148,7 +150,9 @@ class MongosUpgrade(Object):
         """Runs post-upgrade checks for after a shard/config-server/replset/cluster upgrade."""
         logger.debug("-----\nchecking mongos running\n----")
         if not self.charm.cluster.is_mongos_running():
-            logger.debug("Waiting for mongos router to be ready before finalising upgrade.")
+            logger.debug(
+                "Waiting for mongos router to be ready before finalising upgrade."
+            )
             event.defer()
             return
 
@@ -188,8 +192,12 @@ class MongosUpgrade(Object):
     def get_random_write_and_collection(self) -> Tuple[str, str]:
         """Returns a tuple for a random collection name and a unique write to add to it."""
         choices = string.ascii_letters + string.digits
-        collection_name = "collection_" + "".join([secrets.choice(choices) for _ in range(32)])
-        write_value = "unique_write_" + "".join([secrets.choice(choices) for _ in range(16)])
+        collection_name = "collection_" + "".join(
+            [secrets.choice(choices) for _ in range(32)]
+        )
+        write_value = "unique_write_" + "".join(
+            [secrets.choice(choices) for _ in range(16)]
+        )
         return (collection_name, write_value)
 
     def add_write_to_sharded_cluster(self, collection_name, write_value) -> None:

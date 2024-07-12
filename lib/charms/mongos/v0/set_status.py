@@ -2,7 +2,6 @@
 """Code for handing statuses in the app and unit."""
 # Copyright 2024 Canonical Ltd.
 # See LICENSE file for licensing details.
-import json
 
 from ops.charm import CharmBase
 from ops.framework import Object

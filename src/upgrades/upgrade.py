@@ -266,7 +266,7 @@ class Upgrade(abc.ABC):
         See https://chat.canonical.com/canonical/pl/cmf6uhm1rp8b7k8gkjkdsj4mya
         """
         # Until the mongos charm has a config-server there is nothing to check. Allow an upgrade.
-        if not self.charm.config_server_db:
+        if not self.charm.mongos_intialised:
             return
 
         if not self.is_mongos_able_to_read_write():
