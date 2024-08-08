@@ -157,7 +157,7 @@ async def deploy_cluster(ops_test: OpsTest) -> None:
         timeout=TIMEOUT,
     )
 
-    await ops_test.model.add_relation(APPLICATION_APP_NAME, MONGOS_APP_NAME)
+    await ops_test.model.integrate(APPLICATION_APP_NAME, MONGOS_APP_NAME)
     await wait_for_mongos_units_blocked(ops_test, MONGOS_APP_NAME, timeout=TIMEOUT)
 
 

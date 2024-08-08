@@ -65,7 +65,7 @@ async def test_mongos_starts_with_config_server(ops_test: OpsTest) -> None:
         }
     )
 
-    await ops_test.model.add_relation(DATA_INTEGRATOR_APP_NAME, MONGOS_APP_NAME)
+    await ops_test.model.integrate(DATA_INTEGRATOR_APP_NAME, MONGOS_APP_NAME)
     await wait_for_mongos_units_blocked(ops_test, MONGOS_APP_NAME, timeout=300)
     # prepare sharded cluster
     await ops_test.model.wait_for_idle(

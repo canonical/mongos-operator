@@ -277,7 +277,7 @@ async def deploy_cluster_components(ops_test: OpsTest) -> None:
 
 async def integrate_cluster_components(ops_test: OpsTest) -> None:
     """Integrates all cluster components and waits for idle."""
-    await ops_test.model.add_relation(APPLICATION_APP_NAME, MONGOS_APP_NAME)
+    await ops_test.model.integrate(APPLICATION_APP_NAME, MONGOS_APP_NAME)
 
     await ops_test.model.wait_for_idle(
         apps=[CONFIG_SERVER_APP_NAME, SHARD_APP_NAME],
