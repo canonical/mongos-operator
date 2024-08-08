@@ -196,7 +196,7 @@ async def build_cluster(ops_test: OpsTest) -> None:
 
 async def deploy_tls(ops_test: OpsTest) -> None:
     """Deploys the self-signed certificate operator."""
-    await ops_test.model.deploy(CERTS_APP_NAME, channel="edge", revision=163)
+    await ops_test.model.deploy(CERTS_APP_NAME, channel="edge")
 
     await ops_test.model.wait_for_idle(
         apps=[CERTS_APP_NAME, CONFIG_SERVER_APP_NAME],
