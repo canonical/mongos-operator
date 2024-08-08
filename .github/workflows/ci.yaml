@@ -61,9 +61,10 @@ jobs:
 
   build:
     name: Build charms
-    uses: canonical/data-platform-workflows/.github/workflows/build_charms_with_cache.yaml@v8.0.0
-    permissions:
-      actions: write # Needed to manage GitHub Actions cache
+    uses: canonical/data-platform-workflows/.github/workflows/build_charm.yaml@v18.0.0
+    with:
+      path-to-charm-directory: .
+      cache: true
 
   integration-test:
     name: Integration test charm
@@ -71,8 +72,11 @@ jobs:
       - lint
       - unit-test
       - build
-    uses: canonical/data-platform-workflows/.github/workflows/integration_test_charm.yaml@v8.0.0
+    uses: canonical/data-platform-workflows/.github/workflows/integration_test_charm.yaml@v18.0.0
     with:
-      artifact-name: ${{ needs.build.outputs.artifact-name }}
+      artifact-prefix: packed-charm-cache-true
       cloud: lxd
-      juju-agent-version: 3.1.7
+      juju-agent-version: 3.4.4
+      _beta_allure_report: true
+    permissions:
+      contents: write

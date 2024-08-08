@@ -1,4 +1,4 @@
-# Copyright 2023 Canonical Ltd.
+# Copyright 2024 Canonical Ltd.
 # See LICENSE file for licensing details.
 
 """In this class, we manage relations between config-servers and shards.
@@ -27,14 +27,14 @@ EXTERNAL_CONNECTIVITY_TAG = "external-node-connectivity"
 # https://discourse.charmhub.io/t/request-ownership-of-reserved-mongos-charm/12735
 
 # The unique Charmhub library identifier, never change it
-LIBID = "58ad1ccca4974932ba22b97781b9b2a0"
+LIBID = "85303a4906654029af18d87a22943273"
 
 # Increment this major API version when introducing breaking changes
 LIBAPI = 0
 
 # Increment this PATCH version before using `charmcraft publish-lib` or reset
 # to 0 if you are raising the major API version
-LIBPATCH = 2
+LIBPATCH = 1
 
 """Library to manage the relation for the application between mongos and the deployed application.
 In short, this relation ensure that:
