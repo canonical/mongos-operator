@@ -60,10 +60,16 @@ jobs:
         uses: codecov/codecov-action@v3
 
   build:
+    strategy:
+      fail-fast: false
+      matrix:
+        path:
+          - .
+          - tests/integration/application
     name: Build charms
     uses: canonical/data-platform-workflows/.github/workflows/build_charm.yaml@v18.0.0
     with:
-      path-to-charm-directory: .
+      path-to-charm-directory: ${{ matrix.path }}
       cache: true
 
   integration-test:
