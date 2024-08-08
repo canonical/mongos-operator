@@ -238,12 +238,12 @@ async def rotate_and_verify_certs(ops_test: OpsTest) -> None:
     for unit in ops_test.model.applications[MONGOS_APP_NAME].units:
         original_tls_info[unit.name] = {}
 
-        original_tls_info[unit.name][
-            "external_cert_contents"
-        ] = await get_file_contents(ops_test, unit, EXTERNAL_CERT_PATH)
-        original_tls_info[unit.name][
-            "internal_cert_contents"
-        ] = await get_file_contents(ops_test, unit, INTERNAL_CERT_PATH)
+        original_tls_info[unit.name]["external_cert_contents"] = (
+            await get_file_contents(ops_test, unit, EXTERNAL_CERT_PATH)
+        )
+        original_tls_info[unit.name]["internal_cert_contents"] = (
+            await get_file_contents(ops_test, unit, INTERNAL_CERT_PATH)
+        )
         original_tls_info[unit.name]["external_cert_time"] = await time_file_created(
             ops_test, unit.name, EXTERNAL_CERT_PATH
         )
@@ -253,7 +253,7 @@ async def rotate_and_verify_certs(ops_test: OpsTest) -> None:
         original_tls_info[unit.name]["mongos_service"] = await time_process_started(
             ops_test, unit.name, MONGOS_SERVICE
         )
-        check_certs_correctly_distributed(ops_test, unit)
+        await check_certs_correctly_distributed(ops_test, unit)
 
     # set external and internal key using auto-generated key for each unit
     for unit in ops_test.model.applications[MONGOS_APP_NAME].units:
@@ -283,7 +283,9 @@ async def rotate_and_verify_certs(ops_test: OpsTest) -> None:
             ops_test, unit.name, MONGOS_SERVICE
         )
 
-        check_certs_correctly_distributed(ops_test, unit, app_name=MONGOS_APP_NAME)
+        await check_certs_correctly_distributed(
+            ops_test, unit, app_name=MONGOS_APP_NAME
+        )
 
         assert (
             new_external_cert != original_tls_info[unit.name]["external_cert_contents"]
@@ -307,4 +309,4 @@ async def rotate_and_verify_certs(ops_test: OpsTest) -> None:
 
     # Verify that TLS is functioning on all units.
     for unit in ops_test.model.applications[MONGOS_APP_NAME].units:
-        check_mongos_tls_enabled(ops_test)
+        await check_mongos_tls_enabled(ops_test)
