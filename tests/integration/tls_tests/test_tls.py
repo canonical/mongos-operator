@@ -253,7 +253,9 @@ async def rotate_and_verify_certs(ops_test: OpsTest) -> None:
         original_tls_info[unit.name]["mongos_service"] = await time_process_started(
             ops_test, unit.name, MONGOS_SERVICE
         )
-        await check_certs_correctly_distributed(ops_test, unit)
+        await check_certs_correctly_distributed(
+            ops_test, unit, app_name=MONGOS_APP_NAME
+        )
 
     # set external and internal key using auto-generated key for each unit
     for unit in ops_test.model.applications[MONGOS_APP_NAME].units:
