@@ -72,10 +72,18 @@ async def test_mongos_tls_disabled(ops_test: OpsTest) -> None:
     await toggle_tls_mongos(ops_test, enable=False)
     await check_mongos_tls_disabled(ops_test)
 
-    mongos_unit = ops_test.model.applications[MONGOS_APP_NAME].units[0]
-    assert (
-        mongos_unit.workload_status_message == "mongos requires TLS to be enabled."
-    ), "mongos fails to report TLS inconsistencies."
+    await ops_test.model.wait_for_idle(
+        apps=[MONGOS_APP_NAME],
+        status="blocked",
+        idle_period=10,
+        timeout=TIMEOUT,
+        raise_on_blocked=False,
+    )
+
+    for mongos_unit in ops_test.model.applications[MONGOS_APP_NAME].unit:
+        assert (
+            mongos_unit.workload_status_message == "mongos requires TLS to be enabled."
+        ), "mongos fails to report TLS inconsistencies."
 
 
 @pytest.mark.group(1)
