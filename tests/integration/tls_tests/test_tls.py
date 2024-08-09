@@ -79,7 +79,7 @@ async def test_mongos_tls_disabled(ops_test: OpsTest) -> None:
         raise_on_blocked=False,
     )
 
-    for mongos_unit in ops_test.model.applications[MONGOS_APP_NAME].unit:
+    for mongos_unit in ops_test.model.applications[MONGOS_APP_NAME].units:
         assert (
             mongos_unit.workload_status_message == "mongos requires TLS to be enabled."
         ), "mongos fails to report TLS inconsistencies."
