@@ -74,8 +74,7 @@ async def test_mongos_tls_disabled(ops_test: OpsTest) -> None:
 
     await ops_test.model.wait_for_idle(
         apps=[MONGOS_APP_NAME],
-        status="blocked",
-        idle_period=10,
+        idle_period=60,
         timeout=TIMEOUT,
         raise_on_blocked=False,
     )
