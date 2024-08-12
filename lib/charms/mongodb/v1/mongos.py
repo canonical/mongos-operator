@@ -1,6 +1,6 @@
-"""Code for interactions with MongoDB."""
+"""Code for interactions with MongoS."""
 
-# Copyright 2023 Canonical Ltd.
+# Copyright 2024 Canonical Ltd.
 # See LICENSE file for licensing details.
 
 import logging
@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from typing import List, Optional, Set, Tuple
 from urllib.parse import quote_plus
 
-from charms.mongodb.v0.mongodb import NotReadyError
+from charms.mongodb.v1.mongodb import NotReadyError
 from pymongo import MongoClient, collection
 from tenacity import RetryError, Retrying, stop_after_delay, wait_fixed
 
@@ -22,7 +22,7 @@ LIBAPI = 1
 
 # Increment this PATCH version before using `charmcraft publish-lib` or reset
 # to 0 if you are raising the major API version
-LIBPATCH = 5
+LIBPATCH = 6
 
 # path to store mongodb ketFile
 logger = logging.getLogger(__name__)
@@ -205,6 +205,16 @@ class MongosConnection:
 
         # starting the balancer doesn't guarantee that is is running, wait until it starts up.
         logger.info("Balancer process is not running, enabling it.")
+        self.start_and_wait_for_balancer()
+
+    def start_and_wait_for_balancer(self) -> None:
+        """Turns on the balancer and waits for it to be running.
+
+        Starting the balancer doesn't guarantee that is is running, wait until it starts up.
+
+        Raises:
+            BalancerNotEnabledError
+        """
         self.client.admin.command("balancerStart")
         for attempt in Retrying(stop=stop_after_delay(60), wait=wait_fixed(3), reraise=True):
             with attempt:

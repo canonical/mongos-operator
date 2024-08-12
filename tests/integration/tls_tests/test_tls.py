@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Copyright 2023 Canonical Ltd.
+# Copyright 2024 Canonical Ltd.
 # See LICENSE file for licensing details.
 import pytest
 from pytest_operator.plugin import OpsTest
@@ -72,10 +72,17 @@ async def test_mongos_tls_disabled(ops_test: OpsTest) -> None:
     await toggle_tls_mongos(ops_test, enable=False)
     await check_mongos_tls_disabled(ops_test)
 
-    mongos_unit = ops_test.model.applications[MONGOS_APP_NAME].units[0]
-    assert (
-        mongos_unit.workload_status_message == "mongos requires TLS to be enabled."
-    ), "mongos fails to report TLS inconsistencies."
+    await ops_test.model.wait_for_idle(
+        apps=[MONGOS_APP_NAME],
+        idle_period=60,
+        timeout=TIMEOUT,
+        raise_on_blocked=False,
+    )
+
+    for mongos_unit in ops_test.model.applications[MONGOS_APP_NAME].units:
+        assert (
+            mongos_unit.workload_status_message == "mongos requires TLS to be enabled."
+        ), "mongos fails to report TLS inconsistencies."
 
 
 @pytest.mark.group(1)
@@ -157,7 +164,7 @@ async def deploy_cluster(ops_test: OpsTest) -> None:
         timeout=TIMEOUT,
     )
 
-    await ops_test.model.add_relation(APPLICATION_APP_NAME, MONGOS_APP_NAME)
+    await ops_test.model.integrate(APPLICATION_APP_NAME, MONGOS_APP_NAME)
     await wait_for_mongos_units_blocked(ops_test, MONGOS_APP_NAME, timeout=TIMEOUT)
 
 
@@ -238,12 +245,12 @@ async def rotate_and_verify_certs(ops_test: OpsTest) -> None:
     for unit in ops_test.model.applications[MONGOS_APP_NAME].units:
         original_tls_info[unit.name] = {}
 
-        original_tls_info[unit.name][
-            "external_cert_contents"
-        ] = await get_file_contents(ops_test, unit, EXTERNAL_CERT_PATH)
-        original_tls_info[unit.name][
-            "internal_cert_contents"
-        ] = await get_file_contents(ops_test, unit, INTERNAL_CERT_PATH)
+        original_tls_info[unit.name]["external_cert_contents"] = (
+            await get_file_contents(ops_test, unit, EXTERNAL_CERT_PATH)
+        )
+        original_tls_info[unit.name]["internal_cert_contents"] = (
+            await get_file_contents(ops_test, unit, INTERNAL_CERT_PATH)
+        )
         original_tls_info[unit.name]["external_cert_time"] = await time_file_created(
             ops_test, unit.name, EXTERNAL_CERT_PATH
         )
@@ -253,7 +260,9 @@ async def rotate_and_verify_certs(ops_test: OpsTest) -> None:
         original_tls_info[unit.name]["mongos_service"] = await time_process_started(
             ops_test, unit.name, MONGOS_SERVICE
         )
-        check_certs_correctly_distributed(ops_test, unit)
+        await check_certs_correctly_distributed(
+            ops_test, unit, app_name=MONGOS_APP_NAME
+        )
 
     # set external and internal key using auto-generated key for each unit
     for unit in ops_test.model.applications[MONGOS_APP_NAME].units:
@@ -283,7 +292,9 @@ async def rotate_and_verify_certs(ops_test: OpsTest) -> None:
             ops_test, unit.name, MONGOS_SERVICE
         )
 
-        check_certs_correctly_distributed(ops_test, unit, app_name=MONGOS_APP_NAME)
+        await check_certs_correctly_distributed(
+            ops_test, unit, app_name=MONGOS_APP_NAME
+        )
 
         assert (
             new_external_cert != original_tls_info[unit.name]["external_cert_contents"]
@@ -307,4 +318,4 @@ async def rotate_and_verify_certs(ops_test: OpsTest) -> None:
 
     # Verify that TLS is functioning on all units.
     for unit in ops_test.model.applications[MONGOS_APP_NAME].units:
-        check_mongos_tls_enabled(ops_test)
+        await check_mongos_tls_enabled(ops_test)

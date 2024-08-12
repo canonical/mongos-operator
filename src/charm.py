@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Charm code for `mongos` daemon."""
-# Copyright 2023 Canonical Ltd.
+# Copyright 2024 Canonical Ltd.
 # See LICENSE file for licensing details.
 import os
 import json
@@ -26,7 +26,7 @@ from charms.mongos.v0.mongos_client_interface import MongosProvider
 from charms.mongos.v0.set_status import MongosStatusHandler
 
 from charms.mongodb.v0.mongodb_secrets import SecretCache
-from charms.mongodb.v0.mongodb_tls import MongoDBTLS
+from charms.mongodb.v1.mongodb_tls import MongoDBTLS
 from charms.mongodb.v0.mongodb_secrets import generate_secret_label
 from charms.mongodb.v1.mongos import MongosConfiguration, MongosConnection
 from charms.mongodb.v0.config_server_interface import ClusterRequirer
@@ -365,7 +365,7 @@ class MongosOperatorCharm(ops.CharmBase):
     def is_scaling_down(self, rel_id: int) -> bool:
         """Returns True if the application is scaling down."""
         rel_departed_key = self._generate_relation_departed_key(rel_id)
-        return json.loads(self.unit_peer_data[rel_departed_key])
+        return json.loads(self.unit_peer_data.get(rel_departed_key, "false"))
 
     def has_departed_run(self, rel_id: int) -> bool:
         """Returns True if the relation departed event has run."""
@@ -566,11 +566,15 @@ class MongosOperatorCharm(ops.CharmBase):
     @property
     def unit_peer_data(self) -> Dict:
         """Unit peer relation data object."""
+        if not self._peers:
+            return {}
         return self._peers.data[self.unit]
 
     @property
     def app_peer_data(self) -> Dict:
         """App peer relation data object."""
+        if not self._peers:
+            return {}
         return self._peers.data[self.app]
 
     @property
