@@ -1,0 +1,42 @@
+[32mINFO    [0m pytest_operator.plugin:plugin.py:834 Model status:
+
+Model  Controller           Cloud/Region         Version  SLA          Timestamp
+test   localhost-localhost  localhost/localhost  3.4.4    unsupported  01:33:52Z
+
+App              Version  Status  Scale  Charm            Channel      Rev  Exposed  Message
+config-server             active      1  mongodb          6/edge       173  no       
+data-integrator           active      1  data-integrator  latest/edge   41  no       
+mongos                    active      1  mongos                          0  no       
+shard                     active      1  mongodb          6/edge       173  no       Primary
+
+Unit                Workload  Agent  Machine  Public address  Ports            Message
+config-server/0*    active    idle   1        10.116.253.242  27017-27018/tcp  
+data-integrator/0*  active    idle   0        10.116.253.2                     
+  mongos/0*         active    idle            10.116.253.2    27018/tcp        
+shard/0*            active    idle   2        10.116.253.146  27017/tcp        Primary
+
+Machine  State    Address         Inst id        Base          AZ  Message
+0        started  10.116.253.2    juju-a2c47d-0  ubuntu@22.04      Running
+1        started  10.116.253.242  juju-a2c47d-1  ubuntu@22.04      Running
+2        started  10.116.253.146  juju-a2c47d-2  ubuntu@22.04      Running
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:840 Juju error logs:
+
+machine-0: 01:29:04 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-0: 01:29:04 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-data-integrator-0: 01:29:04 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+machine-2: 01:29:18 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-2: 01:29:18 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-1: 01:29:18 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-1: 01:29:18 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-shard-0: 01:29:18 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+unit-config-server-0: 01:29:19 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+unit-config-server-0: 01:30:06 ERROR unit.config-server/0.juju-log _on_secret_remove: Secret secret:cqvan2hdvi5jk5d7qlo0 seems to have no observers, could be removed
+unit-shard-0: 01:30:11 ERROR unit.shard/0.juju-log _on_secret_remove: Secret secret:cqvan41dvi5jk5d7qlog seems to have no observers, could be removed
+unit-mongos-0: 01:30:27 ERROR juju.worker.meterstatus error running "meter-status-changed": exit status 1
+unit-config-server-0: 01:30:39 ERROR unit.config-server/0.juju-log config-server:8: Failed to add shard shard to the config server, error=OperationFailure("Authentication failed., full error: {'ok': 0.0, 'errmsg': 'Authentication failed.', 'code': 18, 'codeName': 'AuthenticationFailed', '$clusterTime': {'clusterTime': Timestamp(1723771839, 1), 'signature': {'hash': b'\\xf0\\xdd\\x90?\\x8e\\x00\\x1b-\\xa2Kg\\xaeI\\xe8\\x96\\x0b\\x04A\\xc1\\x1d', 'keyId': 7403543480997249045}}, 'operationTime': Timestamp(1723771839, 1)}")
+unit-config-server-0: 01:30:39 ERROR unit.config-server/0.juju-log config-server:8: shard shard does not have the same auth as the config server.
+unit-shard-0: 01:30:48 ERROR unit.shard/0.juju-log _on_secret_remove: Secret secret:cqvan41dvi5jk5d7qlog seems to have no observers, could be removed
+unit-shard-0: 01:30:52 ERROR unit.shard/0.juju-log _on_secret_remove: Secret secret:cqvan41dvi5jk5d7qlog seems to have no observers, could be removed
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:904 Forgetting main...
