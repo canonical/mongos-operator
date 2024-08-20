@@ -99,11 +99,11 @@ async def test_mongos_tls_ca_mismatch(ops_test: OpsTest) -> None:
     """Tests that mongos charm can disable TLS."""
     await toggle_tls_mongos(ops_test, enable=False)
     await ops_test.model.deploy(
-        CERTS_APP_NAME, application_name=DIFFERENT_CERTS_APP_NAME, channel="stable"
+        CERTS_APP_NAME, application_name=DIFFERENT_CERTS_APP_NAME, channel="edge"
     )
     await ops_test.model.wait_for_idle(
         apps=[DIFFERENT_CERTS_APP_NAME],
-        idle_period=10,
+        idle_period=20,
         raise_on_blocked=False,
         status="active",
         timeout=TIMEOUT,
@@ -120,11 +120,12 @@ async def test_mongos_tls_ca_mismatch(ops_test: OpsTest) -> None:
         timeout=TIMEOUT,
     )
 
-    mongos_unit = ops_test.model.applications[MONGOS_APP_NAME].units[0]
-    assert (
-        mongos_unit.workload_status_message
-        == "mongos CA and Config-Server CA don't match."
-    ), "mongos fails to report mismatch in CA."
+    await wait_for_mongos_units_blocked(
+        ops_test,
+        MONGOS_APP_NAME,
+        status="mongos CA and Config-Server CA don't match.",
+        timeout=TIMEOUT,
+    )
 
 
 async def deploy_cluster(ops_test: OpsTest) -> None:
