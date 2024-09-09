@@ -1,0 +1,31 @@
+[32mINFO    [0m pytest_operator.plugin:plugin.py:708 Connecting to existing model localhost-localhost:test on unspecified cloud
+[32mINFO    [0m juju.model:model.py:2098 Deploying ch:amd64/jammy/data-integrator-43
+[32mINFO    [0m juju.model:model.py:2098 Deploying local:jammy/mongos-0
+[32mINFO    [0m juju.model:model.py:2098 Deploying ch:amd64/jammy/mongodb-173
+[32mINFO    [0m juju.model:model.py:2098 Deploying ch:amd64/jammy/mongodb-173
+[32mINFO    [0m juju.model:model.py:2972 Waiting for model:
+  data-integrator/0 [allocating] waiting: waiting for machine
+  shard/0 [allocating] waiting: waiting for machine
+  config-server/0 [allocating] waiting: waiting for machine
+[32mINFO    [0m juju.model:model.py:2972 Waiting for model:
+  data-integrator/0 [allocating] waiting: waiting for machine
+  shard/0 [allocating] waiting: waiting for machine
+  config-server/0 [allocating] waiting: waiting for machine
+[32mINFO    [0m juju.model:model.py:2972 Waiting for model:
+  data-integrator/0 [allocating] waiting: waiting for machine
+  shard/0 [allocating] waiting: waiting for machine
+  config-server/0 [allocating] waiting: waiting for machine
+[32mINFO    [0m juju.model:model.py:2972 Waiting for model:
+  data-integrator/0 [allocating] waiting: waiting for machine
+  shard/0 [allocating] waiting: waiting for machine
+  config-server/0 [allocating] waiting: waiting for machine
+[32mINFO    [0m juju.model:model.py:2972 Waiting for model:
+  data-integrator/0 [allocating] waiting: installing agent
+  shard/0 [allocating] waiting: waiting for machine
+  config-server/0 [allocating] waiting: waiting for machine
+[32mINFO    [0m juju.model:model.py:2972 Waiting for model:
+  shard/0 [executing] maintenance: installing MongoDB
+  config-server/0 [executing] maintenance: installing MongoDB
+[32mINFO    [0m juju.model:model.py:2972 Waiting for model:
+  shard/0 [idle] active: 
+  config-server/0 [executing] active:
