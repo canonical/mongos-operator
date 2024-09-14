@@ -1,0 +1,85 @@
+[32mINFO    [0m juju.model:model.py:2972 Waiting for model:
+  application/1 [idle] active: 
+  application/2 [idle] active: 
+  mongos/1 [executing] active: 
+  mongos/2 [executing] active: 
+  shard/0 [idle] active: Primary
+  config-server/1 [executing] active: Primary
+[32mINFO    [0m juju.model:model.py:2972 Waiting for model:
+  application/1 [idle] active: 
+  application/2 [idle] active: 
+  mongos/1 [idle] active: 
+  mongos/2 [idle] active:
+[32mINFO    [0m pytest_operator.plugin:plugin.py:834 Model status:
+
+Model  Controller           Cloud/Region         Version  SLA          Timestamp
+test   localhost-localhost  localhost/localhost  3.5.3    unsupported  01:47:09Z
+
+App            Version  Status  Scale  Charm        Channel  Rev  Exposed  Message
+application             active      2  application             0  no       
+config-server           active      1  mongodb      6/edge   173  no       Primary
+mongos                  active      2  mongos                  0  no       
+shard                   active      1  mongodb      6/edge   173  no       Primary
+
+Unit              Workload  Agent  Machine  Public address  Ports            Message
+application/1     active    idle   1        10.2.9.41                        
+  mongos/1*       blocked   idle            10.2.9.41                        Missing relation to config-server.
+application/2*    active    idle   5        10.2.9.4                         
+  mongos/2        blocked   idle            10.2.9.4                         Missing relation to config-server.
+config-server/1*  active    idle   4        10.2.9.237      27017-27018/tcp  Primary
+shard/0*          active    idle   3        10.2.9.14       27017/tcp        Primary
+
+Machine  State    Address     Inst id        Base          AZ  Message
+1        started  10.2.9.41   juju-4b42bf-1  ubuntu@22.04      Running
+3        started  10.2.9.14   juju-4b42bf-3  ubuntu@22.04      Running
+4        started  10.2.9.237  juju-4b42bf-4  ubuntu@22.04      Running
+5        started  10.2.9.4    juju-4b42bf-5  ubuntu@22.04      Running
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:840 Juju error logs:
+
+machine-0: 01:31:45 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-0: 01:31:45 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-application-0: 01:31:45 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+machine-1: 01:31:45 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-1: 01:31:45 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-application-1: 01:31:46 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+machine-3: 01:31:55 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-2: 01:31:55 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-2: 01:31:55 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-3: 01:31:55 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-config-server-0: 01:31:56 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+unit-shard-0: 01:31:56 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+unit-shard-0: 01:32:44 ERROR unit.shard/0.juju-log _on_secret_remove: Secret secret:criefa6o43ti133mh6h0 seems to have no observers, could be removed
+unit-config-server-0: 01:32:44 ERROR unit.config-server/0.juju-log _on_secret_remove: Secret secret:crief9uo43ti133mh6gg seems to have no observers, could be removed
+unit-mongos-1: 01:33:01 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+unit-mongos-0: 01:33:01 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+unit-config-server-0: 01:33:46 ERROR unit.config-server/0.juju-log config-server:7: Failed to add shard shard to the config server, error=OperationFailure("Authentication failed., full error: {'ok': 0.0, 'errmsg': 'Authentication failed.', 'code': 18, 'codeName': 'AuthenticationFailed', '$clusterTime': {'clusterTime': Timestamp(1726277625, 1), 'signature': {'hash': b'!\\x94\\xd0\\xd5\\xb9\\xeb\\x07S\\xd4qY\\\\\\xf6\\xef\\x9d\\xfb$\\xb2\\x9aF', 'keyId': 7414305625363972121}}, 'operationTime': Timestamp(1726277625, 1)}")
+unit-config-server-0: 01:33:46 ERROR unit.config-server/0.juju-log config-server:7: shard shard does not have the same auth as the config server.
+unit-shard-0: 01:33:56 ERROR unit.shard/0.juju-log _on_secret_remove: Secret secret:criefa6o43ti133mh6h0 seems to have no observers, could be removed
+unit-shard-0: 01:33:57 ERROR unit.shard/0.juju-log _on_secret_remove: Secret secret:criefa6o43ti133mh6h0 seems to have no observers, could be removed
+unit-config-server-0: 01:34:34 ERROR unit.config-server/0.juju-log _on_secret_remove: Secret secret:crieg7eo43ti133mh6ig seems to have no observers, could be removed
+unit-config-server-0: 01:34:35 ERROR unit.config-server/0.juju-log _on_secret_remove: Secret secret:crieg7eo43ti133mh6ig seems to have no observers, could be removed
+unit-config-server-0: 01:37:59 ERROR unit.config-server/0.juju-log _on_secret_remove: Secret secret:crieg7eo43ti133mh6ig seems to have no observers, could be removed
+machine-4: 01:39:46 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-4: 01:39:46 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-config-server-1: 01:39:46 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+unit-shard-0: 01:40:17 ERROR unit.shard/0.juju-log _on_secret_remove: Secret secret:criefa6o43ti133mh6h0 seems to have no observers, could be removed
+unit-shard-0: 01:40:34 ERROR unit.shard/0.juju-log _on_secret_remove: Secret secret:criefa6o43ti133mh6h0 seems to have no observers, could be removed
+unit-config-server-0: 01:40:51 ERROR unit.config-server/0.juju-log _on_secret_remove: Secret secret:crieg7eo43ti133mh6ig seems to have no observers, could be removed
+unit-config-server-1: 01:41:29 ERROR unit.config-server/1.juju-log _on_secret_remove: Secret secret:crieg7eo43ti133mh6ig seems to have no observers, could be removed
+unit-config-server-1: 01:41:30 ERROR unit.config-server/1.juju-log _on_secret_remove: Secret secret:crieg7eo43ti133mh6ig seems to have no observers, could be removed
+unit-config-server-1: 01:41:31 ERROR unit.config-server/1.juju-log _on_secret_remove: Secret secret:crieg7eo43ti133mh6ig seems to have no observers, could be removed
+unit-config-server-1: 01:41:31 ERROR unit.config-server/1.juju-log _on_secret_remove: Secret secret:crieg7eo43ti133mh6ig seems to have no observers, could be removed
+unit-shard-0: 01:41:32 ERROR unit.shard/0.juju-log _on_secret_remove: Secret secret:criefa6o43ti133mh6h0 seems to have no observers, could be removed
+unit-config-server-1: 01:41:32 ERROR unit.config-server/1.juju-log _on_secret_remove: Secret secret:crieg7eo43ti133mh6ig seems to have no observers, could be removed
+unit-config-server-1: 01:41:33 ERROR unit.config-server/1.juju-log _on_secret_remove: Secret secret:crieg7eo43ti133mh6ig seems to have no observers, could be removed
+unit-config-server-1: 01:42:26 ERROR unit.config-server/1.juju-log _on_secret_remove: Secret secret:crieg7eo43ti133mh6ig seems to have no observers, could be removed
+machine-5: 01:43:17 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-5: 01:43:17 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-application-2: 01:43:17 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+unit-mongos-2: 01:43:20 ERROR juju.worker.meterstatus error running "meter-status-changed": exit status 1
+unit-config-server-1: 01:43:44 ERROR unit.config-server/1.juju-log _on_secret_remove: Secret secret:crieg7eo43ti133mh6ig seems to have no observers, could be removed
+unit-config-server-1: 01:43:58 ERROR unit.config-server/1.juju-log _on_secret_remove: Secret secret:crieg7eo43ti133mh6ig seems to have no observers, could be removed
+unit-mongos-2: 01:45:15 ERROR juju.worker.dependency "uniter" manifold worker returned unexpected error: relation scope id "fe21e09a-1ebb-4759-8057-a5daf44b42bf:r#8#config-server": settings fe21e09a-1ebb-4759-8057-a5daf44b42bf:r#8#config-server not found (not found)
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:904 Forgetting main...
