@@ -63,7 +63,9 @@ class MongosUpgrade(GenericMongosUpgrade):
         )
         self.framework.observe(charm.on.upgrade_charm, self._on_upgrade_charm)
 
-        self.framework.observe(charm.on["force-upgrade"].action, self._on_force_upgrade_action)
+        self.framework.observe(
+            charm.on["force-upgrade"].action, self._on_force_upgrade_action
+        )
         self.framework.observe(self.post_upgrade_event, self.run_post_upgrade_check)
 
     # BEGIN: properties
@@ -178,7 +180,9 @@ class MongosUpgrade(GenericMongosUpgrade):
         """Runs post-upgrade checks for after a shard/config-server/replset/cluster upgrade."""
         logger.debug("-----\nchecking mongos running\n----")
         if not self.charm.cluster.is_mongos_running():
-            logger.debug("Waiting for mongos router to be ready before finalising upgrade.")
+            logger.debug(
+                "Waiting for mongos router to be ready before finalising upgrade."
+            )
             event.defer()
             return
 

@@ -17,7 +17,6 @@ from typing import Dict, List, Tuple, Optional
 from ops import BlockedStatus, MaintenanceStatus, StatusBase, Unit
 from ops.charm import CharmBase
 from ops.framework import Object
-from ops.model import ActiveStatus, BlockedStatus
 from tenacity import retry, stop_after_attempt, wait_fixed
 
 from charms.mongodb.v1.mongos import (
@@ -35,6 +34,7 @@ SHARD_NAME_INDEX = "_id"
 SHARD = "shard"
 PEER_RELATION_ENDPOINT_NAME = "upgrade-version-a"
 PRECHECK_ACTION_NAME = "pre-upgrade-check"
+
 
 # BEGIN: Helper functions
 def unit_number(unit_: Unit) -> int:
@@ -118,7 +118,9 @@ class AbstractUpgrade(abc.ABC):
             "charm": "charm_version",
             "workload": "workload_version",
         }.items():
-            self._current_versions[version] = pathlib.Path(file_name).read_text().strip()
+            self._current_versions[version] = (
+                pathlib.Path(file_name).read_text().strip()
+            )
 
     @property
     def unit_state(self) -> Optional[UnitState]:
@@ -135,7 +137,9 @@ class AbstractUpgrade(abc.ABC):
         """Whether upgrade is supported from previous versions."""
         assert self.versions_set
         try:
-            previous_version_strs: Dict[str, str] = json.loads(self._app_databag["versions"])
+            previous_version_strs: Dict[str, str] = json.loads(
+                self._app_databag["versions"]
+            )
         except KeyError as exception:
             logger.debug("`versions` missing from peer relation", exc_info=exception)
             return False
@@ -148,7 +152,8 @@ class AbstractUpgrade(abc.ABC):
         current_version_strs = copy.copy(self._current_versions)
         current_version_strs["charm"] = current_version_strs["charm"].split("+")[0]
         current_versions = {
-            key: poetry_version.Version.parse(value) for key, value in current_version_strs.items()
+            key: poetry_version.Version.parse(value)
+            for key, value in current_version_strs.items()
         }
         try:
             # TODO Future PR: change this > sign to support downgrades
@@ -162,7 +167,8 @@ class AbstractUpgrade(abc.ABC):
                 return False
             if (
                 previous_versions["workload"] > current_versions["workload"]
-                or previous_versions["workload"].major != current_versions["workload"].major
+                or previous_versions["workload"].major
+                != current_versions["workload"].major
             ):
                 logger.debug(
                     f'{previous_versions["workload"]=} incompatible with {current_versions["workload"]=}'
@@ -173,7 +179,9 @@ class AbstractUpgrade(abc.ABC):
             )
             return True
         except KeyError as exception:
-            logger.debug(f"Version missing from {previous_versions=}", exc_info=exception)
+            logger.debug(
+                f"Version missing from {previous_versions=}", exc_info=exception
+            )
             return False
 
     @property
@@ -190,7 +198,9 @@ class AbstractUpgrade(abc.ABC):
     @property
     def _sorted_units(self) -> List[Unit]:
         """Units sorted from highest to lowest unit number."""
-        return sorted((self._unit, *self._peer_relation.units), key=unit_number, reverse=True)
+        return sorted(
+            (self._unit, *self._peer_relation.units), key=unit_number, reverse=True
+        )
 
     @abc.abstractmethod
     def _get_unit_healthy_status(self) -> StatusBase:
@@ -207,7 +217,9 @@ class AbstractUpgrade(abc.ABC):
         if not self.in_progress:
             return
 
-        return MaintenanceStatus("Upgrading. To rollback, `juju refresh` to the previous revision")
+        return MaintenanceStatus(
+            "Upgrading. To rollback, `juju refresh` to the previous revision"
+        )
 
     @property
     def versions_set(self) -> bool:
@@ -226,9 +238,13 @@ class AbstractUpgrade(abc.ABC):
         allowed).
         """
         assert not self.in_progress
-        logger.debug(f"Setting {self._current_versions=} in upgrade peer relation app databag")
+        logger.debug(
+            f"Setting {self._current_versions=} in upgrade peer relation app databag"
+        )
         self._app_databag["versions"] = json.dumps(self._current_versions)
-        logger.debug(f"Set {self._current_versions=} in upgrade peer relation app databag")
+        logger.debug(
+            f"Set {self._current_versions=} in upgrade peer relation app databag"
+        )
 
     @property
     @abc.abstractmethod
@@ -338,8 +354,12 @@ class GenericMongosUpgrade(Object, abc.ABC):
     def get_random_write_and_collection(self) -> Tuple[str, str]:
         """Returns a tuple for a random collection name and a unique write to add to it."""
         choices = string.ascii_letters + string.digits
-        collection_name = "collection_" + "".join([secrets.choice(choices) for _ in range(32)])
-        write_value = "unique_write_" + "".join([secrets.choice(choices) for _ in range(16)])
+        collection_name = "collection_" + "".join(
+            [secrets.choice(choices) for _ in range(32)]
+        )
+        write_value = "unique_write_" + "".join(
+            [secrets.choice(choices) for _ in range(16)]
+        )
         return (collection_name, write_value)
 
     def add_write_to_sharded_cluster(self, collection_name, write_value) -> None:

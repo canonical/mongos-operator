@@ -28,7 +28,8 @@ class Upgrade(AbstractUpgrade):
         """Returns the unit state."""
         if (
             self._unit_workload_container_version is not None
-            and self._unit_workload_container_version != self._app_workload_container_version
+            and self._unit_workload_container_version
+            != self._app_workload_container_version
         ):
             logger.debug("Unit upgrade state: outdated")
             return UnitState.OUTDATED
@@ -37,10 +38,13 @@ class Upgrade(AbstractUpgrade):
     @unit_state.setter
     def unit_state(self, value: UnitState) -> None:
         # Super call
-        upgrade.Upgrade.unit_state.fset(self, value)
+        Upgrade.unit_state.fset(self, value)
 
     def _get_unit_healthy_status(self) -> ops.StatusBase:
-        if self._unit_workload_container_version == self._app_workload_container_version:
+        if (
+            self._unit_workload_container_version
+            == self._app_workload_container_version
+        ):
             return ops.ActiveStatus(
                 f'MongoDB {self._unit_workload_version} running; Snap rev {self._unit_workload_container_version}; Charmed operator {self._current_versions["charm"]}'
             )
@@ -101,7 +105,10 @@ class Upgrade(AbstractUpgrade):
         Raises:
             PrecheckFailed: App is not ready to upgrade
         """
-        assert self._unit_workload_container_version != self._app_workload_container_version
+        assert (
+            self._unit_workload_container_version
+            != self._app_workload_container_version
+        )
         assert self.versions_set
         for index, unit in enumerate(self._sorted_units):
             if unit.name == self._unit.name:
@@ -117,7 +124,9 @@ class Upgrade(AbstractUpgrade):
                         # Run pre-upgrade check
                         # (in case user forgot to run pre-upgrade-check action)
                         self.pre_upgrade_check()
-                        logger.debug("Pre-upgrade check after `juju refresh` successful")
+                        logger.debug(
+                            "Pre-upgrade check after `juju refresh` successful"
+                        )
 
                 return True
             state = self._peer_relation.data[unit].get("state")
