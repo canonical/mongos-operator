@@ -376,24 +376,5 @@ class GenericMongoDBUpgrade(Object, abc.ABC):
             db = mongos.client[self.charm.database]
             db.drop_collection(collection_name)
 
-    def _set_upgrade_status(self):
-        # In the future if we decide to support app statuses, we will need to handle this
-        # differently. Specifically ensuring that upgrade status for apps status has the lowest
-        # priority
-        if self.charm.unit.is_leader():
-            self.charm.app.status = self._upgrade.app_status or ActiveStatus()
-
-        # Set/clear upgrade unit status if no other unit status - upgrade status for units should
-        # have the lowest priority.
-        if isinstance(self.charm.unit.status, ActiveStatus) or (
-            isinstance(self.charm.unit.status, BlockedStatus)
-            and self.charm.unit.status.message.startswith(
-                "Rollback with `juju refresh`. Pre-upgrade check failed:"
-            )
-        ):
-            self.charm.status.set_and_share_status(
-                self._upgrade.get_unit_juju_status() or ActiveStatus()
-            )
-
 
 # END: Useful classes
