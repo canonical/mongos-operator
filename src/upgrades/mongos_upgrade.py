@@ -10,9 +10,9 @@ from ops.charm import ActionEvent, CharmBase
 from ops.framework import EventBase, EventSource
 from ops.model import ActiveStatus
 from overrides import override
-from charms.mongodb.v0.upgrade_helpers import (
+from charms.mongos.v0.upgrade_helpers import (
     ROLLBACK_INSTRUCTIONS,
-    GenericMongoDBUpgrade,
+    GenericMongosUpgrade,
     PEER_RELATION_ENDPOINT_NAME,
     PeerRelationNotReady,
     UnitState,
@@ -42,7 +42,7 @@ class _PostUpgradeCheckMongos(EventBase):
         super().__init__(handle)
 
 
-class MongosUpgrade(GenericMongoDBUpgrade):
+class MongosUpgrade(GenericMongosUpgrade):
     """Handlers for upgrade events."""
 
     post_upgrade_event = EventSource(_PostUpgradeCheckMongos)

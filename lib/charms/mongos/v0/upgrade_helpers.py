@@ -299,7 +299,7 @@ class AbstractUpgrade(abc.ABC):
             raise PrecheckFailed("mongos is not able to read/write.")
 
 
-class GenericMongoDBUpgrade(Object, abc.ABC):
+class GenericMongosUpgrade(Object, abc.ABC):
     """Substrate agnostif, abstract handler for upgrade events."""
 
     def __init__(self, charm: CharmBase, *args, **kwargs):
