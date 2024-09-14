@@ -1,51 +1,54 @@
-# Copyright 2024 Canonical Ltd.
-# See LICENSE file for licensing details.
-
-"""In-place upgrades.
-
-Based off specification: DA058 - In-Place Upgrades - Kubernetes v2
-(https://docs.google.com/document/d/1tLjknwHudjcHs42nzPVBNkHs98XxAOT2BXGGpP7NyEU/)
-"""
-
-import abc
-import copy
-import enum
-import json
-import logging
-import pathlib
-import typing
-
-import ops
-import poetry.core.constraints.version as poetry_version
-
-import status_exception
-
-logger = logging.getLogger(__name__)
-
 SHARD = "shard"
 PEER_RELATION_ENDPOINT_NAME = "upgrade-version-a"
 PRECHECK_ACTION_NAME = "pre-upgrade-check"
 
-
-def unit_number(unit_: ops.Unit) -> int:
+# BEGIN: Helper functions
+def unit_number(unit_: Unit) -> int:
     """Get unit number."""
     return int(unit_.name.split("/")[-1])
 
 
-class PrecheckFailed(status_exception.StatusException):
+# END: Helper functions
+
+
+# BEGIN: Exceptions
+class StatusException(Exception):
+    """Exception with ops status."""
+
+    def __init__(self, status: StatusBase) -> None:
+        super().__init__(status.message)
+        self.status = status
+
+
+class PrecheckFailed(StatusException):
     """App is not ready to upgrade."""
 
     def __init__(self, message: str):
         self.message = message
         super().__init__(
-            ops.BlockedStatus(
+            BlockedStatus(
                 f"Rollback with `juju refresh`. Pre-upgrade check failed: {self.message}"
             )
         )
 
 
+class FailedToElectNewPrimaryError(Exception):
+    """Raised when a new primary isn't elected after stepping down."""
+
+
+class ClusterNotHealthyError(Exception):
+    """Raised when the cluster is not healthy."""
+
+
+class BalancerStillRunningError(Exception):
+    """Raised when the balancer is still running after stopping it."""
+
+
 class PeerRelationNotReady(Exception):
     """Upgrade peer relation not available (to this unit)."""
+
+
+# END: Exceptions
 
 
 class UnitState(str, enum.Enum):
@@ -57,8 +60,13 @@ class UnitState(str, enum.Enum):
     OUTDATED = "outdated"  # Machines only
 
 
-class Upgrade(abc.ABC):
-    """In-place upgrades."""
+# BEGIN: Useful classes
+class AbstractUpgrade(abc.ABC):
+    """In-place upgrades abstract class (typing).
+
+    Based off specification: DA058 - In-Place Upgrades - Kubernetes v2
+    (https://docs.google.com/document/d/1tLjknwHudjcHs42nzPVBNkHs98XxAOT2BXGGpP7NyEU/)
+    """
 
     def __init__(self, charm_: ops.CharmBase) -> None:
         relations = charm_.model.relations[PEER_RELATION_ENDPOINT_NAME]
@@ -76,9 +84,7 @@ class Upgrade(abc.ABC):
             "charm": "charm_version",
             "workload": "workload_version",
         }.items():
-            self._current_versions[version] = (
-                pathlib.Path(file_name).read_text().strip()
-            )
+            self._current_versions[version] = pathlib.Path(file_name).read_text().strip()
 
     @property
     def unit_state(self) -> typing.Optional[UnitState]:
@@ -110,8 +116,7 @@ class Upgrade(abc.ABC):
         current_version_strs = copy.copy(self._current_versions)
         current_version_strs["charm"] = current_version_strs["charm"].split("+")[0]
         current_versions = {
-            key: poetry_version.Version.parse(value)
-            for key, value in current_version_strs.items()
+            key: poetry_version.Version.parse(value) for key, value in current_version_strs.items()
         }
         try:
             # TODO Future PR: change this > sign to support downgrades
@@ -125,8 +130,7 @@ class Upgrade(abc.ABC):
                 return False
             if (
                 previous_versions["workload"] > current_versions["workload"]
-                or previous_versions["workload"].major
-                != current_versions["workload"].major
+                or previous_versions["workload"].major != current_versions["workload"].major
             ):
                 logger.debug(
                     f'{previous_versions["workload"]=} incompatible with {current_versions["workload"]=}'
@@ -137,9 +141,7 @@ class Upgrade(abc.ABC):
             )
             return True
         except KeyError as exception:
-            logger.debug(
-                f"Version missing from {previous_versions=}", exc_info=exception
-            )
+            logger.debug(f"Version missing from {previous_versions=}", exc_info=exception)
             return False
 
     @property
@@ -156,9 +158,7 @@ class Upgrade(abc.ABC):
     @property
     def _sorted_units(self) -> typing.List[ops.Unit]:
         """Units sorted from highest to lowest unit number."""
-        return sorted(
-            (self._unit, *self._peer_relation.units), key=unit_number, reverse=True
-        )
+        return sorted((self._unit, *self._peer_relation.units), key=unit_number, reverse=True)
 
     @abc.abstractmethod
     def _get_unit_healthy_status(self) -> ops.StatusBase:
@@ -196,13 +196,9 @@ class Upgrade(abc.ABC):
         allowed).
         """
         assert not self.in_progress
-        logger.debug(
-            f"Setting {self._current_versions=} in upgrade peer relation app databag"
-        )
+        logger.debug(f"Setting {self._current_versions=} in upgrade peer relation app databag")
         self._app_databag["versions"] = json.dumps(self._current_versions)
-        logger.debug(
-            f"Set {self._current_versions=} in upgrade peer relation app databag"
-        )
+        logger.debug(f"Set {self._current_versions=} in upgrade peer relation app databag")
 
     @property
     @abc.abstractmethod
@@ -271,3 +267,6 @@ class Upgrade(abc.ABC):
 
         if not self.is_mongos_able_to_read_write():
             raise PrecheckFailed("mongos is not able to read/write.")
+
+
+# END: Useful classes
