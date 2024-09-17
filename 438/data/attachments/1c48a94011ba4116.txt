@@ -1,0 +1,69 @@
+[32mINFO    [0m juju.model:model.py:2972 Waiting for model:
+  mongos/0 [idle] active: 
+  mongos/1 [idle] active: 
+[32mINFO    [0m juju.model:model.py:2972 Waiting for model:
+  mongos/0 [idle] active: 
+  mongos/1 [idle] active: 
+[32mINFO    [0m juju.model:model.py:2972 Waiting for model:
+  mongos/0 [idle] active: 
+  mongos/1 [idle] active: 
+[32mINFO    [0m juju.model:model.py:2972 Waiting for model:
+  mongos/0 [idle] active: 
+  mongos/1 [idle] active: 
+[32mINFO    [0m juju.model:model.py:2972 Waiting for model:
+  mongos/0 [idle] active: 
+  mongos/1 [idle] active:
+[32mINFO    [0m pytest_operator.plugin:plugin.py:834 Model status:
+
+Model  Controller           Cloud/Region         Version  SLA          Timestamp
+test   localhost-localhost  localhost/localhost  3.5.3    unsupported  01:38:01Z
+
+App            Version  Status  Scale  Charm        Channel  Rev  Exposed  Message
+application             active      2  application             0  no       
+config-server           active      1  mongodb      6/edge   173  no       Primary
+mongos                  active      2  mongos                  1  no       
+shard                   active      1  mongodb      6/edge   173  no       Primary
+
+Unit              Workload  Agent  Machine  Public address  Ports            Message
+application/0*    active    idle   0        10.206.252.84                    
+  mongos/0*       active    idle            10.206.252.84                    
+application/1     active    idle   1        10.206.252.202                   
+  mongos/1        active    idle            10.206.252.202                   
+config-server/0*  active    idle   2        10.206.252.223  27017-27018/tcp  Primary
+shard/0*          active    idle   3        10.206.252.218  27017/tcp        Primary
+
+Machine  State    Address         Inst id        Base          AZ  Message
+0        started  10.206.252.84   juju-a53749-0  ubuntu@22.04      Running
+1        started  10.206.252.202  juju-a53749-1  ubuntu@22.04      Running
+2        started  10.206.252.223  juju-a53749-2  ubuntu@22.04      Running
+3        started  10.206.252.218  juju-a53749-3  ubuntu@22.04      Running
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:840 Juju error logs:
+
+machine-0: 01:30:05 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-0: 01:30:05 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-application-0: 01:30:05 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+machine-1: 01:30:07 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-1: 01:30:07 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-application-1: 01:30:07 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+machine-2: 01:30:14 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-2: 01:30:14 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-config-server-0: 01:30:14 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+machine-3: 01:30:18 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-3: 01:30:18 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-shard-0: 01:30:19 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+unit-config-server-0: 01:30:57 ERROR unit.config-server/0.juju-log _on_secret_remove: Secret secret:crkdnfedjsri15r6ka50 seems to have no observers, could be removed
+unit-shard-0: 01:31:05 ERROR unit.shard/0.juju-log _on_secret_remove: Secret secret:crkdnhudjsri15r6ka5g seems to have no observers, could be removed
+unit-mongos-0: 01:31:21 ERROR juju.worker.meterstatus error running "meter-status-changed": exit status 1
+unit-mongos-1: 01:31:21 ERROR juju.worker.meterstatus error running "meter-status-changed": exit status 1
+unit-config-server-0: 01:31:38 ERROR unit.config-server/0.juju-log config-server:7: Failed to add shard shard to the config server, error=OperationFailure("Authentication failed., full error: {'ok': 0.0, 'errmsg': 'Authentication failed.', 'code': 18, 'codeName': 'AuthenticationFailed', '$clusterTime': {'clusterTime': Timestamp(1726536697, 1), 'signature': {'hash': b'\\xe31\\\\GW6\\xa9\\x10_\\xc6\\x8e\\x01\\n\\xedF\\xe5\\xac|\\xa0\\xb0', 'keyId': 7415418425620561926}}, 'operationTime': Timestamp(1726536697, 1)}")
+unit-config-server-0: 01:31:38 ERROR unit.config-server/0.juju-log config-server:7: shard shard does not have the same auth as the config server.
+unit-shard-0: 01:31:53 ERROR unit.shard/0.juju-log _on_secret_remove: Secret secret:crkdnhudjsri15r6ka5g seems to have no observers, could be removed
+unit-shard-0: 01:31:54 ERROR unit.shard/0.juju-log _on_secret_remove: Secret secret:crkdnhudjsri15r6ka5g seems to have no observers, could be removed
+unit-config-server-0: 01:31:54 ERROR unit.config-server/0.juju-log _on_secret_remove: Secret secret:crkdnvudjsri15r6ka70 seems to have no observers, could be removed
+unit-config-server-0: 01:32:00 ERROR unit.config-server/0.juju-log _on_secret_remove: Secret secret:crkdnvudjsri15r6ka70 seems to have no observers, could be removed
+unit-config-server-0: 01:32:08 ERROR unit.config-server/0.juju-log _on_secret_remove: Secret secret:crkdnvudjsri15r6ka70 seems to have no observers, could be removed
+unit-config-server-0: 01:32:09 ERROR unit.config-server/0.juju-log _on_secret_remove: Secret secret:crkdnvudjsri15r6ka70 seems to have no observers, could be removed
+unit-config-server-0: 01:32:14 ERROR unit.config-server/0.juju-log _on_secret_remove: Secret secret:crkdnvudjsri15r6ka70 seems to have no observers, could be removed
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:904 Forgetting main...
