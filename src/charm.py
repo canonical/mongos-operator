@@ -602,11 +602,10 @@ class MongosOperatorCharm(ops.CharmBase):
 
     @property
     def upgrade_in_progress(self) -> bool:
-        """Returns true if an upgrade is currently in progress.
-
-        TODO implement this function once upgrades are supported.
-        """
-        return False
+        """Returns true if an upgrade is currently in progress."""
+        if not self.upgrade._upgrade:
+            return False
+        return self.upgrade._upgrade.in_progress
 
     # END: properties
 
