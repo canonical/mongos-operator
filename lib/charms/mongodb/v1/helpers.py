@@ -1,6 +1,6 @@
 """Simple functions, which can be used in both K8s and VM charms."""
 
-# Copyright 2023 Canonical Ltd.
+# Copyright 2024 Canonical Ltd.
 # See LICENSE file for licensing details.
 import json
 import logging
@@ -10,15 +10,8 @@ import string
 import subprocess
 from typing import List
 
-from charms.mongodb.v0.mongodb import MongoDBConfiguration, MongoDBConnection
-from ops.model import (
-    ActiveStatus,
-    BlockedStatus,
-    MaintenanceStatus,
-    StatusBase,
-    WaitingStatus,
-)
-from pymongo.errors import AutoReconnect, ServerSelectionTimeoutError
+from charms.mongodb.v1.mongodb import MongoDBConfiguration
+from ops.model import ActiveStatus, MaintenanceStatus, StatusBase, WaitingStatus
 
 from config import Config
 
@@ -30,7 +23,7 @@ LIBAPI = 1
 
 # Increment this PATCH version before using `charmcraft publish-lib` or reset
 # to 0 if you are raising the major API version
-LIBPATCH = 5
+LIBPATCH = 7
 
 # path to store mongodb ketFile
 KEY_FILE = "keyFile"
@@ -46,19 +39,37 @@ MONGO_SHELL = "charmed-mongodb.mongosh"
 
 DATA_DIR = "/var/lib/mongodb"
 LOG_DIR = "/var/log/mongodb"
-LOG_TO_SYSLOG = True
 CONF_DIR = "/etc/mongod"
 MONGODB_LOG_FILENAME = "mongodb.log"
 logger = logging.getLogger(__name__)
 
 
 def _get_logging_options(snap_install: bool) -> str:
-    # TODO sending logs to syslog until we have a separate mount point for logs
-    if LOG_TO_SYSLOG:
-        return ""
-    # in k8s the default logging options that are used for the vm charm are ignored and logs are
-    # the output of the container. To enable logging to a file it must be set explicitly
-    return f"--logpath={LOG_DIR}/{MONGODB_LOG_FILENAME}" if snap_install else ""
+    """Returns config option for log path.
+
+    :param snap_install: indicate that charmed-mongodb was installed from snap (VM charms)
+    :return: a path to log file to be used
+    """
+    log_path = f"{LOG_DIR}/{MONGODB_LOG_FILENAME}"
+    if snap_install:
+        log_path = f"{MONGODB_COMMON_DIR}{log_path}"
+    return f"--logpath={log_path}"
+
+
+def _get_audit_log_settings(snap_install: bool) -> List[str]:
+    """Return config options for audit log.
+
+    :param snap_install: indicate that charmed-mongodb was installed from snap (VM charms)
+    :return: a list of audit log settings for charmed MongoDB
+    """
+    audit_log_path = f"{LOG_DIR}/{Config.AuditLog.FILE_NAME}"
+    if snap_install:
+        audit_log_path = f"{MONGODB_COMMON_DIR}{audit_log_path}"
+    return [
+        f"--auditDestination={Config.AuditLog.DESTINATION}",
+        f"--auditFormat={Config.AuditLog.FORMAT}",
+        f"--auditPath={audit_log_path}",
+    ]
 
 
 # noinspection GrazieInspection
@@ -121,6 +132,8 @@ def get_mongos_args(
         f"--configdb {config_server_db}",
         # config server is already using 27017
         f"--port {Config.MONGOS_PORT}",
+        "--logRotate reopen",
+        "--logappend",
     ]
 
     # TODO : generalise these into functions to be re-used
@@ -172,6 +185,7 @@ def get_mongod_args(
     full_data_dir = f"{MONGODB_COMMON_DIR}{DATA_DIR}" if snap_install else DATA_DIR
     full_conf_dir = f"{MONGODB_SNAP_DATA_DIR}{CONF_DIR}" if snap_install else CONF_DIR
     logging_options = _get_logging_options(snap_install)
+    audit_log_settings = _get_audit_log_settings(snap_install)
     cmd = [
         # bind to localhost and external interfaces
         "--bind_ip_all",
@@ -182,10 +196,12 @@ def get_mongod_args(
         # for simplicity we run the mongod daemon on shards, configsvrs, and replicas on the same
         # port
         f"--port={Config.MONGODB_PORT}",
-        "--auditDestination=syslog",  # TODO sending logs to syslog until we have a separate mount point for logs
-        f"--auditFormat={Config.AuditLog.FORMAT}",
+        "--setParameter processUmask=037",  # required for log files perminission (g+r)
+        "--logRotate reopen",
+        "--logappend",
         logging_options,
     ]
+    cmd.extend(audit_log_settings)
     if auth:
         cmd.extend(["--auth"])
 
@@ -248,38 +264,6 @@ def generate_keyfile() -> str:
     """
     choices = string.ascii_letters + string.digits
     return "".join([secrets.choice(choices) for _ in range(1024)])
-
-
-def build_unit_status(mongodb_config: MongoDBConfiguration, unit_ip: str) -> StatusBase:
-    """Generates the status of a unit based on its status reported by mongod."""
-    try:
-        with MongoDBConnection(mongodb_config) as mongo:
-            replset_status = mongo.get_replset_status()
-
-            if unit_ip not in replset_status:
-                return WaitingStatus("Member being added..")
-
-            replica_status = replset_status[unit_ip]
-
-            if replica_status == "PRIMARY":
-                return ActiveStatus("Primary")
-            elif replica_status == "SECONDARY":
-                return ActiveStatus("")
-            elif replica_status in ["STARTUP", "STARTUP2", "ROLLBACK", "RECOVERING"]:
-                return WaitingStatus("Member is syncing...")
-            elif replica_status == "REMOVED":
-                return WaitingStatus("Member is removing...")
-            else:
-                return BlockedStatus(replica_status)
-    except ServerSelectionTimeoutError as e:
-        # ServerSelectionTimeoutError is commonly due to ReplicaSetNoPrimary
-        logger.debug("Got error: %s, while checking replica set status", str(e))
-        return WaitingStatus("Waiting for primary re-election..")
-    except AutoReconnect as e:
-        # AutoReconnect is raised when a connection to the database is lost and an attempt to
-        # auto-reconnect will be made by pymongo.
-        logger.debug("Got error: %s, while checking replica set status", str(e))
-        return WaitingStatus("Waiting to reconnect to unit..")
 
 
 def copy_licenses_to_unit():

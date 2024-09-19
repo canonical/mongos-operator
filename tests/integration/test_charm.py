@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Copyright 2023 Canonical Ltd.
+# Copyright 2024 Canonical Ltd.
 # See LICENSE file for licensing details.
 import pytest
 from pytest_operator.plugin import OpsTest
@@ -35,7 +35,7 @@ async def test_build_and_deploy(ops_test: OpsTest) -> None:
 @pytest.mark.abort_on_fail
 async def test_waits_for_config_server(ops_test: OpsTest) -> None:
     """Verifies that the application and unit are active."""
-    await ops_test.model.add_relation(APPLICATION_APP_NAME, MONGOS_APP_NAME)
+    await ops_test.model.integrate(APPLICATION_APP_NAME, MONGOS_APP_NAME)
 
     # verify that Charmed Mongos is blocked and reports incorrect credentials
     await wait_for_mongos_units_blocked(

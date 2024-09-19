@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Copyright 2023 Canonical Ltd.
+# Copyright 2024 Canonical Ltd.
 # See LICENSE file for licensing details.
 
 from pytest_operator.plugin import OpsTest
@@ -133,12 +133,8 @@ async def check_certs_correctly_distributed(
     Verifying certificates downloaded on the charm against the ones distributed by the TLS operator
     """
     app_name = app_name
-    app_secret_id = await get_secret_id(ops_test, app_name)
     unit_secret_id = await get_secret_id(ops_test, unit.name)
-    app_secret_content = await get_secret_content(ops_test, app_secret_id)
     unit_secret_content = await get_secret_content(ops_test, unit_secret_id)
-    app_current_crt = app_secret_content["csr-secret"]
-    unit_current_crt = unit_secret_content["csr-secret"]
 
     # Get the values for certs from the relation, as provided by TLS Charm
     certificates_raw_data = await get_application_relation_data(
@@ -146,60 +142,35 @@ async def check_certs_correctly_distributed(
     )
     certificates_data = json.loads(certificates_raw_data)
 
-    external_item = [
-        data
-        for data in certificates_data
-        if data["certificate_signing_request"].rstrip() == unit_current_crt.rstrip()
-    ][0]
-    internal_item = [
-        data
-        for data in certificates_data
-        if data["certificate_signing_request"].rstrip() == app_current_crt.rstrip()
-    ][0]
+    # compare the TLS resources stored on the disk of the unit with the ones from the TLS relation
+    for cert_type, cert_path in [
+        ("int", INTERNAL_CERT_PATH),
+        ("ext", EXTERNAL_CERT_PATH),
+    ]:
+        unit_csr = unit_secret_content[f"{cert_type}-csr-secret"]
+        tls_item = [
+            data
+            for data in certificates_data
+            if data["certificate_signing_request"].rstrip() == unit_csr.rstrip()
+        ][0]
 
-    # Get a local copy of the external cert
-    external_copy_path = await scp_file_preserve_ctime(
-        ops_test, unit.name, EXTERNAL_CERT_PATH
-    )
+        # Read the content of the cert file stored in the unit
+        cert_file_content = await get_file_content(ops_test, unit.name, cert_path)
 
-    # Get the external cert value from the relation
-    relation_external_cert = "\n".join(external_item["chain"])
+        # Get the external cert value from the relation
+        relation_cert = "\n".join(tls_item["chain"]).strip()
 
-    # CHECK: Compare if they are the same
-    with open(external_copy_path) as f:
-        external_contents_file = f.read()
-        assert relation_external_cert == external_contents_file
-
-    # Get a local copy of the internal cert
-    internal_copy_path = await scp_file_preserve_ctime(
-        ops_test, unit.name, INTERNAL_CERT_PATH
-    )
-
-    # Get the external cert value from the relation
-    relation_internal_cert = "\n".join(internal_item["chain"])
-
-    # CHECK: Compare if they are the same
-    with open(internal_copy_path) as f:
-        internal_contents_file = f.read()
-        assert relation_internal_cert == internal_contents_file
+        # confirm that they match
+        assert (
+            relation_cert == cert_file_content
+        ), f"Relation Content for {cert_type}-cert:\n{relation_cert}\nFile Content:\n{cert_file_content}\nMismatch."
 
 
-async def scp_file_preserve_ctime(ops_test: OpsTest, unit_name: str, path: str) -> int:
-    """Returns the unix timestamp of when a file was created on a specified unit."""
-    # Retrieving the file
-    filename = path.split("/")[-1]
-    complete_command = f"scp --container mongod {unit_name}:{path} {filename}"
-    return_code, _, stderr = await ops_test.juju(*complete_command.split())
-
-    if return_code != 0:
-        raise ProcessError(
-            "Expected command %s to succeed instead it failed: %s; %s",
-            complete_command,
-            return_code,
-            stderr,
-        )
-
-    return f"{filename}"
+async def get_file_content(ops_test: OpsTest, unit_name: str, filepath: str) -> str:
+    """Returns the contents of the provided filepath."""
+    cat_cmd = f"exec --unit {unit_name} -- sudo cat {filepath}"
+    _, stdout, _ = await ops_test.juju(*cat_cmd.split(), check=True)
+    return stdout.strip()
 
 
 def process_ls_time(ls_output):
@@ -223,22 +194,19 @@ async def get_secret_id(ops_test, app_or_unit: Optional[str] = None) -> str:
     """Retrieve secret ID for an app or unit."""
     complete_command = "list-secrets"
 
-    prefix = ""
     if app_or_unit:
-        if app_or_unit[-1].isdigit():
-            # it's a unit
-            app_or_unit = "-".join(app_or_unit.split("/"))
-            prefix = "unit-"
-        else:
-            prefix = "application-"
-        complete_command += f" --owner {prefix}{app_or_unit}"
+        prefix = "unit" if app_or_unit[-1].isdigit() else "application"
+        formated_app_or_unit = f"{prefix}-{app_or_unit}"
+        if prefix == "unit":
+            formated_app_or_unit = formated_app_or_unit.replace("/", "-")
+        complete_command += f" --owner {formated_app_or_unit}"
 
     _, stdout, _ = await ops_test.juju(*complete_command.split())
-    output_lines_split = [line.split() for line in stdout.split("\n")]
+    output_lines_split = [line.split() for line in stdout.strip().split("\n")]
     if app_or_unit:
         return [line[0] for line in output_lines_split if app_or_unit in line][0]
-    else:
-        return output_lines_split[1][0]
+
+    return output_lines_split[1][0]
 
 
 async def get_secret_content(ops_test, secret_id) -> Dict[str, str]:

@@ -1,6 +1,6 @@
 """Code for interactions with MongoDB."""
 
-# Copyright 2023 Canonical Ltd.
+# Copyright 2024 Canonical Ltd.
 # See LICENSE file for licensing details.
 
 import logging
@@ -28,11 +28,11 @@ from config import Config
 LIBID = "49c69d9977574dd7942eb7b54f43355b"
 
 # Increment this major API version when introducing breaking changes
-LIBAPI = 0
+LIBAPI = 1
 
 # Increment this PATCH version before using `charmcraft publish-lib` or reset
 # to 0 if you are raising the major API version
-LIBPATCH = 9
+LIBPATCH = 2
 
 # path to store mongodb ketFile
 logger = logging.getLogger(__name__)

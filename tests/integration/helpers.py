@@ -231,11 +231,17 @@ async def wait_for_mongos_units_blocked(
 
     This is necessary because the MongoDB app can report a different status than the units.
     """
-    for attempt in Retrying(
-        stop=stop_after_delay(timeout), wait=wait_fixed(1), reraise=True
-    ):
-        with attempt:
-            await check_all_units_blocked_with_status(ops_test, app_name, status)
+    hook_interval_key = "update-status-hook-interval"
+    try:
+        old_interval = (await ops_test.model.get_config())[hook_interval_key]
+        await ops_test.model.set_config({hook_interval_key: "1m"})
+        for attempt in Retrying(
+            stop=stop_after_delay(timeout), wait=wait_fixed(1), reraise=True
+        ):
+            with attempt:
+                await check_all_units_blocked_with_status(ops_test, app_name, status)
+    finally:
+        await ops_test.model.set_config({hook_interval_key: old_interval})
 
 
 async def deploy_cluster_components(ops_test: OpsTest) -> None:
@@ -277,7 +283,7 @@ async def deploy_cluster_components(ops_test: OpsTest) -> None:
 
 async def integrate_cluster_components(ops_test: OpsTest) -> None:
     """Integrates all cluster components and waits for idle."""
-    await ops_test.model.add_relation(APPLICATION_APP_NAME, MONGOS_APP_NAME)
+    await ops_test.model.integrate(APPLICATION_APP_NAME, MONGOS_APP_NAME)
 
     await ops_test.model.wait_for_idle(
         apps=[CONFIG_SERVER_APP_NAME, SHARD_APP_NAME],

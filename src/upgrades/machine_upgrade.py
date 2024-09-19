@@ -1,4 +1,4 @@
-# Copyright 2023 Canonical Ltd.
+# Copyright 2024 Canonical Ltd.
 # See LICENSE file for licensing details.
 
 """In-place upgrades on machines.
@@ -13,18 +13,18 @@ import typing
 import ops
 
 from config import Config
-from upgrades import upgrade
+from charms.mongos.v0.upgrade_helpers import AbstractUpgrade, UnitState
 
 logger = logging.getLogger(__name__)
 
 _SNAP_REVISION = str(Config.SNAP_PACKAGES[0][2])
 
 
-class Upgrade(upgrade.Upgrade):
+class Upgrade(AbstractUpgrade):
     """In-place upgrades on machines."""
 
     @property
-    def unit_state(self) -> typing.Optional[upgrade.UnitState]:
+    def unit_state(self) -> typing.Optional[UnitState]:
         """Returns the unit state."""
         if (
             self._unit_workload_container_version is not None
@@ -32,13 +32,13 @@ class Upgrade(upgrade.Upgrade):
             != self._app_workload_container_version
         ):
             logger.debug("Unit upgrade state: outdated")
-            return upgrade.UnitState.OUTDATED
+            return UnitState.OUTDATED
         return super().unit_state
 
     @unit_state.setter
-    def unit_state(self, value: upgrade.UnitState) -> None:
+    def unit_state(self, value: UnitState) -> None:
         # Super call
-        upgrade.Upgrade.unit_state.fset(self, value)
+        Upgrade.unit_state.fset(self, value)
 
     def _get_unit_healthy_status(self) -> ops.StatusBase:
         if (
@@ -131,11 +131,11 @@ class Upgrade(upgrade.Upgrade):
                 return True
             state = self._peer_relation.data[unit].get("state")
             if state:
-                state = upgrade.UnitState(state)
+                state = UnitState(state)
             if (
                 self._unit_workload_container_versions.get(unit.name)
                 != self._app_workload_container_version
-                or state is not upgrade.UnitState.HEALTHY
+                or state is not UnitState.HEALTHY
             ):
                 # Waiting for higher number units to upgrade
                 return False
@@ -147,7 +147,7 @@ class Upgrade(upgrade.Upgrade):
         Only applies to machine charm.
         """
         logger.debug(f"Upgrading {self.authorized=}")
-        self.unit_state = upgrade.UnitState.UPGRADING
+        self.unit_state = UnitState.UPGRADING
         charm.stop_mongos_service()
         charm.install_snap_packages(packages=Config.SNAP_PACKAGES)
         charm.start_mongos_service()

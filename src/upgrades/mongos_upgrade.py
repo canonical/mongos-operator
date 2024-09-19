@@ -4,29 +4,26 @@
 """Manager for handling Mongos in-place upgrades."""
 
 import logging
-import secrets
-import string
-from typing import Optional, Tuple
-
+from typing import Optional
+from ops import BlockedStatus
 from ops.charm import ActionEvent, CharmBase
-from ops.framework import Object, EventBase, EventSource
-from ops.model import ActiveStatus, BlockedStatus
-from tenacity import retry, stop_after_attempt, wait_fixed
-
-from charms.mongodb.v1.mongos import (
-    MongosConnection,
+from ops.framework import EventBase, EventSource
+from ops.model import ActiveStatus
+from overrides import override
+from charms.mongos.v0.upgrade_helpers import (
+    ROLLBACK_INSTRUCTIONS,
+    GenericMongosUpgrade,
+    PEER_RELATION_ENDPOINT_NAME,
+    PeerRelationNotReady,
+    UnitState,
+    PrecheckFailed,
 )
 
 from config import Config
-from upgrades import machine_upgrade, upgrade
+from upgrades import machine_upgrade
 
 logger = logging.getLogger(__name__)
 
-
-WRITE_KEY = "write_value"
-ROLLBACK_INSTRUCTIONS = "To rollback, `juju refresh` to the previous revision"
-
-SHARD_NAME_INDEX = "_id"
 
 # BEGIN: Exceptions
 
@@ -45,20 +42,23 @@ class _PostUpgradeCheckMongos(EventBase):
         super().__init__(handle)
 
 
-class MongosUpgrade(Object):
+class MongosUpgrade(GenericMongosUpgrade):
     """Handlers for upgrade events."""
 
     post_upgrade_event = EventSource(_PostUpgradeCheckMongos)
 
     def __init__(self, charm: CharmBase):
         self.charm = charm
-        super().__init__(charm, upgrade.PEER_RELATION_ENDPOINT_NAME)
+        super().__init__(charm, PEER_RELATION_ENDPOINT_NAME)
+
+    @override
+    def _observe_events(self, charm: CharmBase) -> None:
         self.framework.observe(
-            charm.on[upgrade.PEER_RELATION_ENDPOINT_NAME].relation_created,
+            charm.on[PEER_RELATION_ENDPOINT_NAME].relation_created,
             self._on_upgrade_peer_relation_created,
         )
         self.framework.observe(
-            charm.on[upgrade.PEER_RELATION_ENDPOINT_NAME].relation_changed,
+            charm.on[PEER_RELATION_ENDPOINT_NAME].relation_changed,
             self._reconcile_upgrade,
         )
         self.framework.observe(charm.on.upgrade_charm, self._on_upgrade_charm)
@@ -67,6 +67,17 @@ class MongosUpgrade(Object):
             charm.on["force-upgrade"].action, self._on_force_upgrade_action
         )
         self.framework.observe(self.post_upgrade_event, self.run_post_upgrade_check)
+
+    # BEGIN: properties
+    @property
+    @override
+    def _upgrade(self) -> Optional[machine_upgrade.Upgrade]:
+        try:
+            return machine_upgrade.Upgrade(self.charm)
+        except PeerRelationNotReady:
+            return None
+
+    # END: properties
 
     # BEGIN: Event handlers
     def _on_upgrade_peer_relation_created(self, _) -> None:
@@ -91,10 +102,10 @@ class MongosUpgrade(Object):
         if not self._upgrade.is_compatible:
             self._set_upgrade_status()
             return
-        if self._upgrade.unit_state is upgrade.UnitState.OUTDATED:
+        if self._upgrade.unit_state is UnitState.OUTDATED:
             try:
                 authorized = self._upgrade.authorized
-            except upgrade.PrecheckFailed as exception:
+            except PrecheckFailed as exception:
                 self._set_upgrade_status()
                 self.charm.status.set_and_share_status(exception.status)
                 logger.debug(f"Set unit status to {self.unit.status}")
@@ -138,7 +149,7 @@ class MongosUpgrade(Object):
         # The mongos service cannot be considered ready until it has a config-server. Therefore
         # it is not necessary to do any sophisticated checks.
         if not self.charm.mongos_intialised:
-            self._upgrade.unit_state = upgrade.UnitState.HEALTHY
+            self._upgrade.unit_state = UnitState.HEALTHY
             return
 
         self.run_post_upgrade_checks(event)
@@ -146,6 +157,25 @@ class MongosUpgrade(Object):
     # END: Event handlers
 
     # BEGIN: Helpers
+    def _set_upgrade_status(self):
+        # In the future if we decide to support app statuses, we will need to handle this
+        # differently. Specifically ensuring that upgrade status for apps status has the lowest
+        # priority
+        if self.charm.unit.is_leader():
+            self.charm.app.status = self._upgrade.app_status or ActiveStatus()
+
+        # Set/clear upgrade unit status if no other unit status - upgrade status for units should
+        # have the lowest priority.
+        if isinstance(self.charm.unit.status, ActiveStatus) or (
+            isinstance(self.charm.unit.status, BlockedStatus)
+            and self.charm.unit.status.message.startswith(
+                "Rollback with `juju refresh`. Pre-upgrade check failed:"
+            )
+        ):
+            self.charm.status.set_and_share_status(
+                self._upgrade.get_unit_juju_status() or ActiveStatus()
+            )
+
     def run_post_upgrade_checks(self, event) -> None:
         """Runs post-upgrade checks for after a shard/config-server/replset/cluster upgrade."""
         logger.debug("-----\nchecking mongos running\n----")
@@ -168,99 +198,6 @@ class MongosUpgrade(Object):
             self.charm.status.set_and_share_status(ActiveStatus())
 
         logger.debug("upgrade of unit succeeded.")
-        self._upgrade.unit_state = upgrade.UnitState.HEALTHY
-
-    def is_mongos_able_to_read_write(self) -> bool:
-        """Returns True if mongos is able to read and write."""
-        collection_name, write_value = self.get_random_write_and_collection()
-        logger.debug("-----\add_write_to_sharded_cluster\n----")
-        self.add_write_to_sharded_cluster(collection_name, write_value)
-
-        logger.debug("-----\nchecking write \n----")
-        write_replicated = self.confirm_excepted_write_cluster(
-            collection_name,
-            write_value,
-        )
-
-        self.clear_tmp_collection(collection_name)
-        if not write_replicated:
-            logger.debug("Test read/write to cluster failed.")
-            return False
-
-        return True
-
-    def get_random_write_and_collection(self) -> Tuple[str, str]:
-        """Returns a tuple for a random collection name and a unique write to add to it."""
-        choices = string.ascii_letters + string.digits
-        collection_name = "collection_" + "".join(
-            [secrets.choice(choices) for _ in range(32)]
-        )
-        write_value = "unique_write_" + "".join(
-            [secrets.choice(choices) for _ in range(16)]
-        )
-        return (collection_name, write_value)
-
-    def add_write_to_sharded_cluster(self, collection_name, write_value) -> None:
-        """Adds a the provided write to the provided database with the provided collection."""
-        with MongosConnection(self.charm.mongos_config) as mongos:
-            db = mongos.client[self.charm.database]
-            test_collection = db[collection_name]
-            write = {WRITE_KEY: write_value}
-            test_collection.insert_one(write)
-
-    @retry(
-        stop=stop_after_attempt(10),
-        wait=wait_fixed(1),
-        reraise=True,
-    )
-    def confirm_excepted_write_cluster(
-        self,
-        collection_name: str,
-        expected_write_value: str,
-    ) -> None:
-        """Returns True if the replica contains the expected write in the provided collection."""
-        with MongosConnection(self.charm.mongos_config) as mongos:
-            db = mongos.client[self.charm.database]
-            test_collection = db[collection_name]
-            query = test_collection.find({}, {WRITE_KEY: 1})
-            if query[0][WRITE_KEY] != expected_write_value:
-                return False
-
-        return True
-
-    def clear_tmp_collection(self, collection_name: str) -> None:
-        """Clears the temporary collection."""
-        with MongosConnection(self.charm.mongos_config) as mongos:
-            db = mongos.client[self.charm.database]
-            db.drop_collection(collection_name)
-
-    def _set_upgrade_status(self):
-        # In the future if we decide to support app statuses, we will need to handle this
-        # differently. Specifically ensuring that upgrade status for apps status has the lowest
-        # priority
-        if self.charm.unit.is_leader():
-            self.charm.app.status = self._upgrade.app_status or ActiveStatus()
-
-        # Set/clear upgrade unit status if no other unit status - upgrade status for units should
-        # have the lowest priority.
-        if isinstance(self.charm.unit.status, ActiveStatus) or (
-            isinstance(self.charm.unit.status, BlockedStatus)
-            and self.charm.unit.status.message.startswith(
-                "Rollback with `juju refresh`. Pre-upgrade check failed:"
-            )
-        ):
-            self.charm.status.set_and_share_status(
-                self._upgrade.get_unit_juju_status() or ActiveStatus()
-            )
+        self._upgrade.unit_state = UnitState.HEALTHY
 
     # END: helpers
-
-    # BEGIN: properties
-    @property
-    def _upgrade(self) -> Optional[machine_upgrade.Upgrade]:
-        try:
-            return machine_upgrade.Upgrade(self.charm)
-        except upgrade.PeerRelationNotReady:
-            pass
-
-    # END: properties
