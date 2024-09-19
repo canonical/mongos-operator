@@ -12,6 +12,7 @@ authors = []
 python = "^3.10.12"
 ops = "^2.15.0"
 pymongo = "^4.7.3"
+overrides = "^7.7.0"
 tenacity = "^8.2.3"
 pyyaml = "^6.0.1"
 cffi = "^1.16.0"
