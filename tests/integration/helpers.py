@@ -244,10 +244,15 @@ async def wait_for_mongos_units_blocked(
         await ops_test.model.set_config({hook_interval_key: old_interval})
 
 
-async def deploy_cluster_components(ops_test: OpsTest) -> None:
+async def deploy_cluster_components(
+    ops_test: OpsTest, channel: str | None = None
+) -> None:
     """Deploys all cluster components and waits for idle."""
     application_charm = await ops_test.build_charm("tests/integration/application")
-    mongos_charm = await ops_test.build_charm(".")
+    if not channel:
+        mongos_charm = await ops_test.build_charm(".")
+    else:
+        mongos_charm = channel
 
     await ops_test.model.deploy(
         application_charm,
@@ -263,14 +268,14 @@ async def deploy_cluster_components(ops_test: OpsTest) -> None:
         MONGODB_CHARM_NAME,
         application_name=CONFIG_SERVER_APP_NAME,
         channel="6/edge",
-        revision=173,
+        revision=192,
         config={"role": "config-server"},
     )
     await ops_test.model.deploy(
         MONGODB_CHARM_NAME,
         application_name=SHARD_APP_NAME,
         channel="6/edge",
-        revision=173,
+        revision=192,
         config={"role": "shard"},
     )
 
