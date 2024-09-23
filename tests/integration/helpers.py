@@ -1,3 +1,4 @@
+from ops.model import Unit
 from charms.mongodb.v1.helpers import MONGO_SHELL
 from pytest_operator.plugin import OpsTest
 import ops
@@ -252,7 +253,7 @@ async def deploy_cluster_components(
     if not channel:
         mongos_charm = await ops_test.build_charm(".")
     else:
-        mongos_charm = channel
+        mongos_charm = MONGOS_APP_NAME
 
     await ops_test.model.deploy(
         application_charm,
@@ -262,6 +263,7 @@ async def deploy_cluster_components(
     await ops_test.model.deploy(
         mongos_charm,
         num_units=0,
+        channel=channel,
         application_name=MONGOS_APP_NAME,
     )
     await ops_test.model.deploy(

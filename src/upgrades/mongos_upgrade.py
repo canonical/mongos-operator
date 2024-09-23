@@ -148,7 +148,7 @@ class MongosUpgrade(GenericMongosUpgrade):
         """Runs post-upgrade checks for after mongos router upgrade."""
         # The mongos service cannot be considered ready until it has a config-server. Therefore
         # it is not necessary to do any sophisticated checks.
-        if not self.charm.mongos_intialised:
+        if not self.charm.mongos_initialised:
             self._upgrade.unit_state = UnitState.HEALTHY
             return
 

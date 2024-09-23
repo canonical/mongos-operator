@@ -38,7 +38,7 @@ class Upgrade(AbstractUpgrade):
     @unit_state.setter
     def unit_state(self, value: UnitState) -> None:
         # Super call
-        Upgrade.unit_state.fset(self, value)
+        AbstractUpgrade.unit_state.fset(self, value)
 
     def _get_unit_healthy_status(self) -> ops.StatusBase:
         if (

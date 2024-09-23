@@ -32,7 +32,7 @@ LIBAPI = 0
 
 # Increment this PATCH version before using `charmcraft publish-lib` or reset
 # to 0 if you are raising the major API version
-LIBPATCH = 1
+LIBPATCH = 2
 
 logger = logging.getLogger(__name__)
 
@@ -319,7 +319,7 @@ class AbstractUpgrade(abc.ABC):
         See https://chat.canonical.com/canonical/pl/cmf6uhm1rp8b7k8gkjkdsj4mya
         """
         # Until the mongos charm has a config-server there is nothing to check. Allow an upgrade.
-        if not self.charm.mongos_intialised:
+        if not self.charm.mongos_initialised:
             return
 
         if not self.is_mongos_able_to_read_write():

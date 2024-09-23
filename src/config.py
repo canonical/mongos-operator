@@ -1,4 +1,5 @@
 """Configuration for MongoDB Charm."""
+
 # Copyright 2024 Canonical Ltd.
 # See LICENSE file for licensing details.
 
@@ -69,6 +70,12 @@ class Config:
 
         # TODO Future PR add more status messages here as constants
         UNHEALTHY_UPGRADE = BlockedStatus("Unhealthy after upgrade.")
+
+    class Substrate:
+        """Substrate related constants."""
+
+        VM = "vm"
+        K8S = "k8s"
 
     class Role:
         """Role config names for MongoDB Charm."""
