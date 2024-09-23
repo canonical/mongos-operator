@@ -1,4 +1,3 @@
-from ops.model import Unit
 from charms.mongodb.v1.helpers import MONGO_SHELL
 from pytest_operator.plugin import OpsTest
 import ops
