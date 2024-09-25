@@ -183,6 +183,12 @@ async def get_unit_hostname(ops_test: OpsTest, unit_id: int, app: str) -> str:
     return hostname.strip()
 
 
+def get_juju_status(model_name: str, app_name: str) -> str:
+    return subprocess.check_output(
+        f"juju status --model {model_name} {app_name}".split()
+    ).decode("utf-8")
+
+
 async def check_all_units_blocked_with_status(
     ops_test: OpsTest, app_name: str, status: Optional[str]
 ) -> None:
