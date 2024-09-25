@@ -108,7 +108,7 @@ class MongosUpgrade(GenericMongosUpgrade):
             except PrecheckFailed as exception:
                 self._set_upgrade_status()
                 self.charm.status.set_and_share_status(exception.status)
-                logger.debug(f"Set unit status to {self.unit.status}")
+                logger.debug(f"Set unit status to {self.charm.unit.status}")
                 logger.error(exception.status.message)
                 return
             if authorized:
