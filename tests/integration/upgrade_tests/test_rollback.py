@@ -13,7 +13,6 @@ import tenacity
 from pytest_operator.plugin import OpsTest
 from ..helpers import (
     APPLICATION_APP_NAME,
-    check_mongos,
     deploy_cluster_components,
     get_juju_status,
     integrate_cluster_components,
