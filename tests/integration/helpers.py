@@ -275,14 +275,12 @@ async def deploy_cluster_components(
         MONGODB_CHARM_NAME,
         application_name=CONFIG_SERVER_APP_NAME,
         channel="6/edge",
-        revision=192,
         config={"role": "config-server"},
     )
     await ops_test.model.deploy(
         MONGODB_CHARM_NAME,
         application_name=SHARD_APP_NAME,
         channel="6/edge",
-        revision=192,
         config={"role": "shard"},
     )
 

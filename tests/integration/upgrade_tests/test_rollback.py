@@ -30,12 +30,18 @@ async def refresh_with_juju(ops_test: OpsTest, app_name: str, channel: str) -> N
 
 @pytest_asyncio.fixture
 async def local_charm(ops_test: OpsTest):
+    """Builds the regular charm."""
     charm = await ops_test.build_charm(".")
     yield charm
 
 
 @pytest_asyncio.fixture
 def faulty_upgrade_charm(local_charm, tmp_path: pathlib.Path):
+    """Builds a faulty charm from the local charm.
+
+    This works by modifying both the workload major version and the snap revision.
+    This allows to test the detection of incompatible versions and test for rollbacks.
+    """
     fault_charm = tmp_path / "fault_charm.charm"
     shutil.copy(local_charm, fault_charm)
     config_file = pathlib.Path("src/config.py")
@@ -72,7 +78,7 @@ async def test_build_and_deploy(ops_test: OpsTest) -> None:
 
 @pytest.mark.group(1)
 @pytest.mark.abort_on_fail
-async def test_upgrade_and_rollback(
+async def test_failed_upgrade_and_rollback(
     ops_test: OpsTest, local_charm: pathlib.Path, faulty_upgrade_charm: pathlib.Path
 ) -> None:
     """Tests that upgrade can be ran successfully."""
