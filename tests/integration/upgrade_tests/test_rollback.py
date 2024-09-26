@@ -12,20 +12,18 @@ import re
 import tenacity
 from pytest_operator.plugin import OpsTest
 from ..helpers import (
+    APPLICATION_APP_NAME,
+    check_mongos,
     deploy_cluster_components,
     get_juju_status,
     integrate_cluster_components,
     MONGOS_APP_NAME,
+    run_mongos_command,
 )
 
 logger = logging.getLogger(__name__)
 
 UPGRADE_TIMEOUT = 15 * 60
-
-
-async def refresh_with_juju(ops_test: OpsTest, app_name: str, channel: str) -> None:
-    refresh_cmd = f"refresh {app_name} --model {ops_test.model.info.name} --channel {channel} --switch ch:mongodb"
-    await ops_test.juju(*refresh_cmd.split())
 
 
 @pytest_asyncio.fixture
@@ -49,7 +47,7 @@ def faulty_upgrade_charm(local_charm, tmp_path: pathlib.Path):
 
     [major, minor, patch] = workload_version.split(".")
 
-    regex = re.compile("SNAP_PACKAGES.*\(.*, ([0-9]+)\)]")
+    regex = re.compile(r"SNAP_PACKAGES.*\(.*, ([0-9]+)\)]")
     file_data = config_file.read_text().split("\n")
     for index, line in enumerate(file_data):
         if entry := regex.findall(line):
@@ -114,3 +112,11 @@ async def test_failed_upgrade_and_rollback(
         timeout=1000,
         idle_period=30,
     )
+
+    for unit in mongos_application.units:
+        number = unit.name.split("/")[-1]
+        cmd = f"db.test_collection.insertOne({{number: {number}}} );"
+        return_code, _, std_err = await run_mongos_command(
+            ops_test, unit, cmd, app_name=APPLICATION_APP_NAME
+        )
+        assert return_code == 0, f"mongos user failed to write data, error: {std_err}"
