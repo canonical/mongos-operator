@@ -88,7 +88,7 @@ async def test_failed_upgrade_and_rollback(
         wait=tenacity.wait_fixed(10),
     ):
         with attempt:
-            assert "Upgrade incompatible" in get_juju_status(
+            assert "Refresh incompatible" in get_juju_status(
                 ops_test.model.name, MONGOS_APP_NAME
             ), "Not indicating charm incompatible"
 
