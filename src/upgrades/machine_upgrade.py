@@ -38,7 +38,7 @@ class Upgrade(AbstractUpgrade):
     @unit_state.setter
     def unit_state(self, value: UnitState) -> None:
         # Super call
-        Upgrade.unit_state.fset(self, value)
+        AbstractUpgrade.unit_state.fset(self, value)
 
     def _get_unit_healthy_status(self) -> ops.StatusBase:
         if (
@@ -57,10 +57,10 @@ class Upgrade(AbstractUpgrade):
         """App upgrade status."""
         if not self.is_compatible:
             logger.info(
-                "Upgrade incompatible. If you accept potential *data loss* and *downtime*, you can continue by running `force-upgrade` action on each remaining unit"
+                "Refresh incompatible. If you accept potential *data loss* and *downtime*, you can continue by running `force-upgrade` action on each remaining unit"
             )
             return ops.BlockedStatus(
-                "Upgrade incompatible. Rollback to previous revision with `juju refresh`"
+                "Refresh incompatible. Rollback to previous revision with `juju refresh`"
             )
         return super().app_status
 

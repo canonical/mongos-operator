@@ -489,15 +489,17 @@ class MongosOperatorCharm(ops.CharmBase):
     @property
     def mongos_initialised(self) -> bool:
         """Check if mongos is initialised."""
-        return "mongos_initialised" in self.app_peer_data
+        return json.loads(self.app_peer_data.get("mongos_initialised", "false"))
 
     @mongos_initialised.setter
     def mongos_initialised(self, value: bool):
         """Set the mongos_initialised flag."""
-        if value:
-            self.app_peer_data["mongos_initialised"] = str(value)
-        elif "mongos_initialised" in self.app_peer_data:
-            del self.app_peer_data["mongos_initialised"]
+        if isinstance(value, bool):
+            self.app_peer_data["mongos_initialised"] = json.dumps(value)
+        else:
+            raise ValueError(
+                f"'mongos_initialised' must be a boolean value. Provided {value} is of type {type(value)}"
+            )
 
     # END: helper functions
 
