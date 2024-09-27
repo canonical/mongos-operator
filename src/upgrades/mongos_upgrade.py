@@ -108,7 +108,7 @@ class MongosUpgrade(GenericMongosUpgrade):
             except PrecheckFailed as exception:
                 self._set_upgrade_status()
                 self.charm.status.set_and_share_status(exception.status)
-                logger.debug(f"Set unit status to {self.unit.status}")
+                logger.debug(f"Set unit status to {self.charm.unit.status}")
                 logger.error(exception.status.message)
                 return
             if authorized:
@@ -148,7 +148,7 @@ class MongosUpgrade(GenericMongosUpgrade):
         """Runs post-upgrade checks for after mongos router upgrade."""
         # The mongos service cannot be considered ready until it has a config-server. Therefore
         # it is not necessary to do any sophisticated checks.
-        if not self.charm.mongos_intialised:
+        if not self.charm.mongos_initialised:
             self._upgrade.unit_state = UnitState.HEALTHY
             return
 

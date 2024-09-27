@@ -183,6 +183,12 @@ async def get_unit_hostname(ops_test: OpsTest, unit_id: int, app: str) -> str:
     return hostname.strip()
 
 
+def get_juju_status(model_name: str, app_name: str) -> str:
+    return subprocess.check_output(
+        f"juju status --model {model_name} {app_name}".split()
+    ).decode("utf-8")
+
+
 async def check_all_units_blocked_with_status(
     ops_test: OpsTest, app_name: str, status: Optional[str]
 ) -> None:
@@ -244,10 +250,15 @@ async def wait_for_mongos_units_blocked(
         await ops_test.model.set_config({hook_interval_key: old_interval})
 
 
-async def deploy_cluster_components(ops_test: OpsTest) -> None:
+async def deploy_cluster_components(
+    ops_test: OpsTest, channel: str | None = None
+) -> None:
     """Deploys all cluster components and waits for idle."""
     application_charm = await ops_test.build_charm("tests/integration/application")
-    mongos_charm = await ops_test.build_charm(".")
+    if not channel:
+        mongos_charm = await ops_test.build_charm(".")
+    else:
+        mongos_charm = MONGOS_APP_NAME
 
     await ops_test.model.deploy(
         application_charm,
@@ -257,20 +268,19 @@ async def deploy_cluster_components(ops_test: OpsTest) -> None:
     await ops_test.model.deploy(
         mongos_charm,
         num_units=0,
+        channel=channel,
         application_name=MONGOS_APP_NAME,
     )
     await ops_test.model.deploy(
         MONGODB_CHARM_NAME,
         application_name=CONFIG_SERVER_APP_NAME,
-        channel="6/edge",
-        revision=173,
+        channel="6/stable",
         config={"role": "config-server"},
     )
     await ops_test.model.deploy(
         MONGODB_CHARM_NAME,
         application_name=SHARD_APP_NAME,
-        channel="6/edge",
-        revision=173,
+        channel="6/stable",
         config={"role": "shard"},
     )
 
