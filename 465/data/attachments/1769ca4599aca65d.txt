@@ -1,0 +1,29 @@
+[32mINFO    [0m juju.model:model.py:2972 Waiting for model:
+  application/0 [idle] active: 
+  application/1 [idle] active: 
+  application/2 [allocating] waiting: waiting for machine
+  mongos/0 [idle] active: 
+  mongos/1 [idle] active: 
+[32mINFO    [0m juju.model:model.py:2972 Waiting for model:
+  application/0 [idle] active: 
+  application/1 [idle] active: 
+  application/2 [allocating] waiting: waiting for machine
+[32mINFO    [0m juju.model:model.py:2972 Waiting for model:
+  application/0 [idle] active: 
+  application/1 [idle] active: 
+  application/2 [allocating] waiting: waiting for machine
+[32mINFO    [0m juju.model:model.py:2972 Waiting for model:
+  application/0 [idle] active: 
+  application/1 [idle] active: 
+  application/2 [allocating] waiting: waiting for machine
+[32mINFO    [0m juju.model:model.py:2972 Waiting for model:
+  mongos/2 [executing] maintenance: installing mongos
+[32mINFO    [0m juju.model:model.py:2972 Waiting for model:
+  mongos/2 [idle] active: 
+[32mINFO    [0m juju.model:model.py:2972 Waiting for model:
+  application/0 [idle] active: 
+  application/1 [idle] active: 
+  application/2 [idle] active: 
+  mongos/0 [executing] active: 
+  mongos/1 [executing] active: 
+  mongos/2 [executing] active:
