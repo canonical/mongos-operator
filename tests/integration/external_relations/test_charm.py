@@ -35,14 +35,14 @@ async def test_build_and_deploy(ops_test: OpsTest) -> None:
     await ops_test.model.deploy(
         MONGODB_CHARM_NAME,
         application_name=CONFIG_SERVER_APP_NAME,
-        channel="6/edge",
+        channel="6/stable",
         revision=173,
         config={"role": "config-server"},
     )
     await ops_test.model.deploy(
         MONGODB_CHARM_NAME,
         application_name=SHARD_APP_NAME,
-        channel="6/edge",
+        channel="6/stable",
         revision=173,
         config={"role": "shard"},
     )
