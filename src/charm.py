@@ -28,7 +28,7 @@ from charms.mongos.v0.set_status import MongosStatusHandler
 from charms.mongodb.v0.mongodb_secrets import SecretCache
 from charms.mongodb.v1.mongodb_tls import MongoDBTLS
 from charms.mongodb.v0.mongodb_secrets import generate_secret_label
-from charms.mongodb.v1.mongos import MongosConfiguration, MongosConnection
+from charms.mongodb.v1.mongos import MongoConfiguration, MongosConnection
 from charms.mongodb.v0.config_server_interface import ClusterRequirer
 from charms.mongodb.v1.users import (
     MongoDBUser,
@@ -173,8 +173,8 @@ class MongosOperatorCharm(ops.CharmBase):
 
     def _get_mongos_config_for_user(
         self, user: MongoDBUser, hosts: Set[str]
-    ) -> MongosConfiguration:
-        return MongosConfiguration(
+    ) -> MongoConfiguration:
+        return MongoConfiguration(
             database=user.get_database_name(),
             username=user.get_username(),
             password=self.get_secret(APP_SCOPE, user.get_password_key_name()),
@@ -568,14 +568,14 @@ class MongosOperatorCharm(ops.CharmBase):
         return self.app_peer_data.get(USER_ROLES_TAG, "default")
 
     @property
-    def mongos_config(self) -> MongosConfiguration:
+    def mongos_config(self) -> MongoConfiguration:
         """Generates a MongoDBConfiguration object for mongos in the deployment of MongoDB."""
         hosts = set(self.app_hosts)
         port = Config.MONGOS_PORT if self.is_external_client else None
         external_ca, _ = self.tls.get_tls_files(internal=False)
         internal_ca, _ = self.tls.get_tls_files(internal=True)
 
-        return MongosConfiguration(
+        return MongoConfiguration(
             database=self.database,
             username=self.get_secret(APP_SCOPE, Config.Secrets.USERNAME),
             password=self.get_secret(APP_SCOPE, Config.Secrets.PASSWORD),
