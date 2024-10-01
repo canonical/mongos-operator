@@ -147,15 +147,16 @@ async def test_mongos_can_scale(ops_test: OpsTest) -> None:
         assert mongos_running, f"Mongos is not currently running on unit {mongos_unit}."
 
     # destroy the first unit so the hosts are different from when the application was deployed
+    first_mongos_host_public_address = first_mongos_host.public_address
     await ops_test.model.destroy_unit(first_mongos_host.name)
     await ops_test.model.wait_for_idle(
         apps=[MONGOS_APP_NAME, DATA_INTEGRATOR_APP_NAME],
         idle_period=20,
     )
 
-    secret_uri = generate_mongos_uri(
+    secret_uri = await generate_mongos_uri(
         ops_test, auth=True, app_name=DATA_INTEGRATOR_APP_NAME, external=True
     )
     assert (
-        first_mongos_host.public_address not in secret_uri
+        first_mongos_host_public_address not in secret_uri
     ), "old host is still present in URI"
