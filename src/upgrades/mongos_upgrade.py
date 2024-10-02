@@ -64,7 +64,7 @@ class MongosUpgrade(GenericMongosUpgrade):
         self.framework.observe(charm.on.upgrade_charm, self._on_upgrade_charm)
 
         self.framework.observe(
-            charm.on["force-upgrade"].action, self._on_force_upgrade_action
+            charm.on["force-refresh-start"].action, self._on_force_upgrade_action
         )
         self.framework.observe(self.post_upgrade_event, self.run_post_upgrade_check)
 
@@ -116,33 +116,33 @@ class MongosUpgrade(GenericMongosUpgrade):
                 self._upgrade.upgrade_unit(charm=self.charm)
             else:
                 self._set_upgrade_status()
-                logger.debug("Waiting to upgrade")
+                logger.debug("Waiting to refresh")
                 return
         self._set_upgrade_status()
 
     def _on_upgrade_charm(self, _):
         if self.charm.unit.is_leader():
             if not self._upgrade.in_progress:
-                logger.info("Charm upgraded. MongoDB snap version unchanged")
+                logger.info("Charm refreshed. MongoDB snap version unchanged")
 
         self._reconcile_upgrade()
 
     def _on_force_upgrade_action(self, event: ActionEvent) -> None:
         if not self._upgrade or not self._upgrade.in_progress:
-            message = "No upgrade in progress"
-            logger.debug(f"Force upgrade event failed: {message}")
+            message = "No refresh in progress"
+            logger.debug(f"Force refresh failed: {message}")
             event.fail(message)
             return
         if self._upgrade.unit_state != "outdated":
-            message = "Unit already upgraded"
-            logger.debug(f"Force upgrade event failed: {message}")
+            message = "Unit already refresh"
+            logger.debug(f"Force refresh failed: {message}")
             event.fail(message)
             return
-        logger.debug("Forcing upgrade")
-        event.log(f"Forcefully upgrading {self.charm.unit.name}")
+        logger.debug("Forcing refresh")
+        event.log(f"Forcefully refreshing {self.charm.unit.name}")
         self._upgrade.upgrade_unit(charm=self.charm)
-        event.set_results({"result": f"Forcefully upgraded {self.charm.unit.name}"})
-        logger.debug("Forced upgrade")
+        event.set_results({"result": f"Forcefully refreshed {self.charm.unit.name}"})
+        logger.debug("Forced refresh")
 
     def run_post_upgrade_check(self, event) -> None:
         """Runs post-upgrade checks for after mongos router upgrade."""
@@ -169,7 +169,7 @@ class MongosUpgrade(GenericMongosUpgrade):
         if isinstance(self.charm.unit.status, ActiveStatus) or (
             isinstance(self.charm.unit.status, BlockedStatus)
             and self.charm.unit.status.message.startswith(
-                "Rollback with `juju refresh`. Pre-upgrade check failed:"
+                "Rollback with `juju refresh`. Pre-refresh check failed:"
             )
         ):
             self.charm.status.set_and_share_status(
@@ -181,14 +181,14 @@ class MongosUpgrade(GenericMongosUpgrade):
         logger.debug("-----\nchecking mongos running\n----")
         if not self.charm.cluster.is_mongos_running():
             logger.debug(
-                "Waiting for mongos router to be ready before finalising upgrade."
+                "Waiting for mongos router to be ready before finalising refresh."
             )
             event.defer()
             return
 
         logger.debug("-----\nchecking is_mongos_able_to_read_write\n----")
         if not self.is_mongos_able_to_read_write():
-            logger.error("mongos is not able to read/write after upgrade.")
+            logger.error("mongos is not able to read/write after refresh.")
             logger.info(ROLLBACK_INSTRUCTIONS)
             self.charm.status.set_and_share_status(Config.Status.UNHEALTHY_UPGRADE)
             event.defer()
@@ -197,7 +197,7 @@ class MongosUpgrade(GenericMongosUpgrade):
         if self.charm.unit.status == Config.Status.UNHEALTHY_UPGRADE:
             self.charm.status.set_and_share_status(ActiveStatus())
 
-        logger.debug("upgrade of unit succeeded.")
+        logger.debug("refresh of unit succeeded.")
         self._upgrade.unit_state = UnitState.HEALTHY
 
     # END: helpers

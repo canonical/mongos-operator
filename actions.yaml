@@ -1,7 +1,9 @@
 # Copyright 2024 Canonical Ltd.
 # See LICENSE file for licensing details.
-force-upgrade:
-  description: Force upgrade of this unit.
+force-refresh-start:
+  description: |
+    Force upgrade of this unit.
+    Potential of data loss and downtime.
 
 set-tls-private-key:
   description: Set the privates key, which will be used for certificate signing requests (CSR). Run for each unit separately.
