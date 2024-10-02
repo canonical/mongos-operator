@@ -12,6 +12,7 @@ bases:
 
 parts:
   charm:
+    charm-strict-dependencies: true
     override-pull: |
       craftctl default
       if [[ ! -f requirements.txt ]]
