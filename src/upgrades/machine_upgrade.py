@@ -31,7 +31,7 @@ class Upgrade(AbstractUpgrade):
             and self._unit_workload_container_version
             != self._app_workload_container_version
         ):
-            logger.debug("Unit upgrade state: outdated")
+            logger.debug("Unit refresh state: outdated")
             return UnitState.OUTDATED
         return super().unit_state
 
@@ -46,10 +46,10 @@ class Upgrade(AbstractUpgrade):
             == self._app_workload_container_version
         ):
             return ops.ActiveStatus(
-                f'MongoDB {self._unit_workload_version} running; Snap rev {self._unit_workload_container_version}; Charmed operator {self._current_versions["charm"]}'
+                f'MongoDB {self._unit_workload_version} running; Snap revision {self._unit_workload_container_version}; Charm revision {self._current_versions["charm"]}'
             )
         return ops.ActiveStatus(
-            f'MongoDB {self._unit_workload_version} running; Snap rev {self._unit_workload_container_version} (outdated); Charmed operator {self._current_versions["charm"]}'
+            f'MongoDB {self._unit_workload_version} running; Snap revision {self._unit_workload_container_version} (outdated); Charm revision {self._current_versions["charm"]}'
         )
 
     @property
@@ -57,7 +57,7 @@ class Upgrade(AbstractUpgrade):
         """App upgrade status."""
         if not self.is_compatible:
             logger.info(
-                "Refresh incompatible. If you accept potential *data loss* and *downtime*, you can continue by running `force-upgrade` action on each remaining unit"
+                "Refresh incompatible. If you accept potential *data loss* and *downtime*, you can continue by running `force-refresh-start` action on each remaining unit"
             )
             return ops.BlockedStatus(
                 "Refresh incompatible. Rollback to previous revision with `juju refresh`"
@@ -119,13 +119,13 @@ class Upgrade(AbstractUpgrade):
                         == self._current_versions["charm"]
                     ):
                         # Assumes charm version uniquely identifies charm revision
-                        logger.debug("Rollback detected. Skipping pre-upgrade check")
+                        logger.debug("Rollback detected. Skipping pre-refresh check")
                     else:
                         # Run pre-upgrade check
                         # (in case user forgot to run pre-upgrade-check action)
                         self.pre_upgrade_check()
                         logger.debug(
-                            "Pre-upgrade check after `juju refresh` successful"
+                            "Pre-refresh check after `juju refresh` successful"
                         )
 
                 return True
@@ -153,7 +153,7 @@ class Upgrade(AbstractUpgrade):
         charm.start_mongos_service()
         self._unit_databag["snap_revision"] = _SNAP_REVISION
         self._unit_workload_version = self._current_versions["workload"]
-        logger.debug(f"Saved {_SNAP_REVISION} in unit databag after upgrade")
+        logger.debug(f"Saved {_SNAP_REVISION} in unit databag after refresh")
 
         # post upgrade check should be retried in case of failure, for this it is necessary to
         # emit a separate event.
