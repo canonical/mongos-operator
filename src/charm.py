@@ -548,7 +548,12 @@ class MongosOperatorCharm(ops.CharmBase):
         Returns:
             a list of IP address associated with MongoDB application.
         """
-        return [self.unit_host(unit) for unit in self.peers_units] + [self.unit_host(self.unit)]
+        if not self.is_external_client:
+            return [Config.MONGOS_SOCKET_URI_FMT]
+
+        return [self.unit_host(unit) for unit in self.peers_units] + [
+            self.unit_host(self.unit)
+        ]
 
     @property
     def is_external_client(self) -> Optional[str]:
