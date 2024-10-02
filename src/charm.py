@@ -28,12 +28,12 @@ from charms.mongos.v0.set_status import MongosStatusHandler
 from charms.mongodb.v0.mongodb_secrets import SecretCache
 from charms.mongodb.v1.mongodb_tls import MongoDBTLS
 from charms.mongodb.v0.mongodb_secrets import generate_secret_label
-from charms.mongodb.v1.mongos import MongosConfiguration, MongosConnection
+from charms.mongodb.v1.mongos import MongoConfiguration, MongosConnection
 from charms.mongodb.v0.config_server_interface import ClusterRequirer
 from charms.mongodb.v1.users import (
     MongoDBUser,
 )
-
+from exceptions import ApplicationHostNotFoundError
 from config import Config
 
 import ops
@@ -43,6 +43,7 @@ from ops.model import (
     WaitingStatus,
     Relation,
     ActiveStatus,
+    Unit,
 )
 from ops.charm import InstallEvent, StartEvent, RelationDepartedEvent
 
@@ -75,6 +76,20 @@ class MongosOperatorCharm(ops.CharmBase):
         self.framework.observe(self.on.install, self._on_install)
         self.framework.observe(self.on.start, self._on_start)
         self.framework.observe(self.on.update_status, self._on_update_status)
+
+        # updates to hosts require updates to connection info
+        self.framework.observe(self.on.leader_elected, self.share_connection_info)
+
+        self.framework.observe(
+            self.on[Config.Relations.PEERS].relation_joined, self.share_connection_info
+        )
+        self.framework.observe(
+            self.on[Config.Relations.PEERS].relation_changed, self.share_connection_info
+        )
+        self.framework.observe(
+            self.on[Config.Relations.PEERS].relation_departed,
+            self.share_connection_info,
+        )
 
         self.role = Config.Role.MONGOS
         self.cluster = ClusterRequirer(self)
@@ -165,8 +180,8 @@ class MongosOperatorCharm(ops.CharmBase):
 
     def _get_mongos_config_for_user(
         self, user: MongoDBUser, hosts: Set[str]
-    ) -> MongosConfiguration:
-        return MongosConfiguration(
+    ) -> MongoConfiguration:
+        return MongoConfiguration(
             database=user.get_database_name(),
             username=user.get_username(),
             password=self.get_secret(APP_SCOPE, user.get_password_key_name()),
@@ -308,8 +323,15 @@ class MongosOperatorCharm(ops.CharmBase):
         """Remove: URI, username, and password from the host-app"""
         self.mongos_provider.remove_connection_info()
 
-    def share_connection_info(self) -> None:
+    def share_connection_info(self, *unused) -> None:
         """Provide: URI, username, and password to the host-app"""
+        if (
+            not self.unit.is_leader()
+            or not self.mongos_config.password
+            or not self.mongos_config.username
+        ):
+            return
+
         self.mongos_provider.update_connection_info(self.mongos_config)
 
     def set_user_roles(self, roles: List[str]) -> None:
@@ -402,13 +424,14 @@ class MongosOperatorCharm(ops.CharmBase):
         return True
 
     def get_mongos_host(self) -> str:
-        """Returns the host for mongos as a str.
+        """Returns the host for mongos as a str for the current unit.
 
         The host for mongos can be either the Unix Domain Socket or an IP address depending on how
         the client wishes to connect to mongos (inside Juju or outside).
         """
         if self.is_external_client:
-            return self._unit_ip
+            return self.unit_host(self.unit)
+
         return Config.MONGOS_SOCKET_URI_FMT
 
     @staticmethod
@@ -486,6 +509,20 @@ class MongosOperatorCharm(ops.CharmBase):
         with MongosConnection(self.mongos_config) as mongos:
             return mongos.is_ready
 
+    def unit_host(self, unit: Unit) -> str:
+        """Returns the ip address of a given unit."""
+        # check if host is current host
+        if unit == self.unit:
+            return str(
+                self.model.get_binding(Config.Relations.PEERS).network.bind_address
+            )
+        # check if host is a peer
+        elif unit in self._peers.data:
+            return str(self._peers.data[unit].get("private-address"))
+        # raise exception if host not found
+        else:
+            raise ApplicationHostNotFoundError
+
     @property
     def mongos_initialised(self) -> bool:
         """Check if mongos is initialised."""
@@ -505,9 +542,18 @@ class MongosOperatorCharm(ops.CharmBase):
 
     # BEGIN: properties
     @property
-    def _unit_ip(self) -> str:
-        """Returns the ip address of the unit."""
-        return str(self.model.get_binding(Config.Relations.PEERS).network.bind_address)
+    def app_hosts(self) -> List[str]:
+        """Retrieve IP addresses associated with MongoDB application.
+
+        Returns:
+            a list of IP address associated with MongoDB application.
+        """
+        if not self.is_external_client:
+            return [Config.MONGOS_SOCKET_URI_FMT]
+
+        return [self.unit_host(unit) for unit in self.peers_units] + [
+            self.unit_host(self.unit)
+        ]
 
     @property
     def is_external_client(self) -> Optional[str]:
@@ -538,14 +584,14 @@ class MongosOperatorCharm(ops.CharmBase):
         return self.app_peer_data.get(USER_ROLES_TAG, "default")
 
     @property
-    def mongos_config(self) -> MongosConfiguration:
+    def mongos_config(self) -> MongoConfiguration:
         """Generates a MongoDBConfiguration object for mongos in the deployment of MongoDB."""
-        hosts = [self.get_mongos_host()]
+        hosts = set(self.app_hosts)
         port = Config.MONGOS_PORT if self.is_external_client else None
         external_ca, _ = self.tls.get_tls_files(internal=False)
         internal_ca, _ = self.tls.get_tls_files(internal=True)
 
-        return MongosConfiguration(
+        return MongoConfiguration(
             database=self.database,
             username=self.get_secret(APP_SCOPE, Config.Secrets.USERNAME),
             password=self.get_secret(APP_SCOPE, Config.Secrets.PASSWORD),
@@ -564,6 +610,13 @@ class MongosOperatorCharm(ops.CharmBase):
              An `ops.model.Relation` object representing the peer relation.
         """
         return self.model.get_relation(Config.Relations.PEERS)
+
+    @property
+    def peers_units(self) -> list[Unit]:
+        if not self._peers:
+            return []
+        else:
+            return self._peers.units
 
     @property
     def unit_peer_data(self) -> Dict:
