@@ -10,7 +10,7 @@ authors = []
 
 [tool.poetry.dependencies]
 python = "^3.10.12"
-ops = "^2.15.0"
+ops = "~2.15.0"
 pymongo = "^4.7.3"
 overrides = "^7.7.0"
 tenacity = "^8.2.3"
@@ -24,7 +24,7 @@ rpds-py = "0.18.0"
 
 
 [tool.poetry.group.charm-libs.dependencies]
-ops = ">=2.15.0"
+ops = "~2.15.0"
 pydantic ="^1.10.7"
 cryptography = "^42.0.5"
 jsonschema = "^4.22.0"
@@ -52,7 +52,7 @@ pymongo = "^4.7.3"
 
 [tool.poetry.group.integration.dependencies]
 allure-pytest = "^2.13.5"
-ops = "^2.15.0"
+ops = "~2.15.0"
 tenacity = "^8.2.3"
 pymongo = "^4.7.3"
 juju = "^3.5.0"
