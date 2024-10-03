@@ -146,15 +146,15 @@ async def deploy_cluster(ops_test: OpsTest) -> None:
     await ops_test.model.deploy(
         MONGODB_CHARM_NAME,
         application_name=CONFIG_SERVER_APP_NAME,
-        channel="6/stable",
-        revision=173,
+        channel="6/edge",
+        revision=195,
         config={"role": "config-server"},
     )
     await ops_test.model.deploy(
         MONGODB_CHARM_NAME,
         application_name=SHARD_APP_NAME,
-        channel="6/stable",
-        revision=173,
+        channel="6/edge",
+        revision=195,
         config={"role": "shard"},
     )
 
@@ -246,12 +246,12 @@ async def rotate_and_verify_certs(ops_test: OpsTest) -> None:
     for unit in ops_test.model.applications[MONGOS_APP_NAME].units:
         original_tls_info[unit.name] = {}
 
-        original_tls_info[unit.name][
-            "external_cert_contents"
-        ] = await get_file_contents(ops_test, unit, EXTERNAL_CERT_PATH)
-        original_tls_info[unit.name][
-            "internal_cert_contents"
-        ] = await get_file_contents(ops_test, unit, INTERNAL_CERT_PATH)
+        original_tls_info[unit.name]["external_cert_contents"] = (
+            await get_file_contents(ops_test, unit, EXTERNAL_CERT_PATH)
+        )
+        original_tls_info[unit.name]["internal_cert_contents"] = (
+            await get_file_contents(ops_test, unit, INTERNAL_CERT_PATH)
+        )
         original_tls_info[unit.name]["external_cert_time"] = await time_file_created(
             ops_test, unit.name, EXTERNAL_CERT_PATH
         )
