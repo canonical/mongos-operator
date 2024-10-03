@@ -13,7 +13,7 @@ from charms.data_platform_libs.v0.data_interfaces import (
     DatabaseProvides,
 )
 
-from charms.mongodb.v1.mongos import MongosConfiguration
+from charms.mongodb.v1.mongos import MongoConfiguration
 
 logger = logging.getLogger(__name__)
 DATABASE_KEY = "database"
@@ -34,7 +34,7 @@ LIBAPI = 0
 
 # Increment this PATCH version before using `charmcraft publish-lib` or reset
 # to 0 if you are raising the major API version
-LIBPATCH = 1
+LIBPATCH = 2
 
 """Library to manage the relation for the application between mongos and the deployed application.
 In short, this relation ensure that:
@@ -74,15 +74,11 @@ To receive the username, password, and uri:
 class MongosProvider(Object):
     """Manage relations between the mongos router and the application on the mongos side."""
 
-    def __init__(
-        self, charm: CharmBase, relation_name: str = MONGOS_RELATION_NAME
-    ) -> None:
+    def __init__(self, charm: CharmBase, relation_name: str = MONGOS_RELATION_NAME) -> None:
         """Constructor for MongosProvider object."""
         self.relation_name = relation_name
         self.charm = charm
-        self.database_provides = DatabaseProvides(
-            self.charm, relation_name=self.relation_name
-        )
+        self.database_provides = DatabaseProvides(self.charm, relation_name=self.relation_name)
 
         super().__init__(charm, self.relation_name)
         self.framework.observe(
@@ -101,9 +97,7 @@ class MongosProvider(Object):
             or self.charm.database
         )
         new_extra_user_roles = (
-            self.database_provides.fetch_relation_field(
-                event.relation.id, USER_ROLES_KEY
-            )
+            self.database_provides.fetch_relation_field(event.relation.id, USER_ROLES_KEY)
             or self.charm.extra_user_roles
         )
         external_connectivity = (
@@ -134,13 +128,11 @@ class MongosProvider(Object):
                 relation.id, fields=["username", "password", "uris"]
             )
 
-    def update_connection_info(self, config: MongosConfiguration) -> None:
+    def update_connection_info(self, config: MongoConfiguration) -> None:
         """Sends the URI to the related parent application"""
         logger.info("Sharing connection information to host application.")
         for relation in self.model.relations[MONGOS_RELATION_NAME]:
-            self.database_provides.set_credentials(
-                relation.id, config.username, config.password
-            )
+            self.database_provides.set_credentials(relation.id, config.username, config.password)
             self.database_provides.set_database(relation.id, config.database)
             self.database_provides.set_uris(
                 relation.id,
