@@ -1,0 +1,56 @@
+[32mINFO    [0m integration.upgrade_tests.test_rollback:test_rollback.py:84 Wait for upgrade to fail
+[32mINFO    [0m integration.upgrade_tests.test_rollback:test_rollback.py:95 Re-refresh the charm
+[32mINFO    [0m integration.upgrade_tests.test_rollback:test_rollback.py:107 Wait for the charm to be rolled back
+[32mINFO    [0m juju.model:model.py:2972 Waiting for model:
+  mongos/0 [idle] active: 
+  mongos/1 [idle] active:
+[32mINFO    [0m pytest_operator.plugin:plugin.py:834 Model status:
+
+Model  Controller           Cloud/Region         Version  SLA          Timestamp
+test   localhost-localhost  localhost/localhost  3.5.3    unsupported  01:38:59Z
+
+App            Version  Status  Scale  Charm        Channel  Rev  Exposed  Message
+application             active      2  application             0  no       
+config-server           active      1  mongodb      6/edge   196  no       
+mongos                  active      2  mongos                  2  no       
+shard                   active      1  mongodb      6/edge   196  no       
+
+Unit              Workload  Agent  Machine  Public address  Ports            Message
+application/0*    active    idle   0        10.247.247.168                   
+  mongos/1        active    idle            10.247.247.168                   
+application/1     active    idle   1        10.247.247.243                   
+  mongos/0*       active    idle            10.247.247.243                   
+config-server/0*  active    idle   2        10.247.247.198  27017-27018/tcp  
+shard/0*          active    idle   3        10.247.247.242  27017/tcp        Primary
+
+Machine  State    Address         Inst id        Base          AZ  Message
+0        started  10.247.247.168  juju-74d69e-0  ubuntu@22.04      Running
+1        started  10.247.247.243  juju-74d69e-1  ubuntu@22.04      Running
+2        started  10.247.247.198  juju-74d69e-2  ubuntu@22.04      Running
+3        started  10.247.247.242  juju-74d69e-3  ubuntu@22.04      Running
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:840 Juju error logs:
+
+machine-0: 01:31:57 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-0: 01:31:57 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-application-0: 01:31:58 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+machine-1: 01:32:00 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-1: 01:32:00 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-application-1: 01:32:00 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+machine-2: 01:32:07 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-3: 01:32:07 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-3: 01:32:07 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-2: 01:32:07 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-shard-0: 01:32:07 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+unit-config-server-0: 01:32:08 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+unit-config-server-0: 01:33:01 ERROR unit.config-server/0.juju-log _on_secret_remove: Secret secret:crvkbefp7m4hsv7cs1eg seems to have no observers, could be removed
+unit-shard-0: 01:33:04 ERROR unit.shard/0.juju-log _on_secret_remove: Secret secret:crvkbenp7m4hsv7cs1f0 seems to have no observers, could be removed
+unit-mongos-0: 01:33:19 ERROR juju.worker.meterstatus error running "meter-status-changed": exit status 1
+unit-mongos-1: 01:33:19 ERROR juju.worker.meterstatus error running "meter-status-changed": exit status 1
+unit-config-server-0: 01:33:37 ERROR unit.config-server/0.juju-log config-server:7: Failed to add shard shard to the config server, error=OperationFailure("Authentication failed., full error: {'ok': 0.0, 'errmsg': 'Authentication failed.', 'code': 18, 'codeName': 'AuthenticationFailed', '$clusterTime': {'clusterTime': Timestamp(1728005616, 3), 'signature': {'hash': b'\\t\\x93\\x02\\xa0\\x96-\\xfdwF\\x96\\xbb\\xa5\\xd0@-\\xcc\\xd2\\xe6\\x1b\\xbb', 'keyId': 7421727401865904153}}, 'operationTime': Timestamp(1728005616, 3)}")
+unit-config-server-0: 01:33:37 ERROR unit.config-server/0.juju-log config-server:7: shard shard does not have the same auth as the config server.
+unit-shard-0: 01:33:59 ERROR unit.shard/0.juju-log _on_secret_remove: Secret secret:crvkbenp7m4hsv7cs1f0 seems to have no observers, could be removed
+unit-shard-0: 01:34:00 ERROR unit.shard/0.juju-log _on_secret_remove: Secret secret:crvkbenp7m4hsv7cs1f0 seems to have no observers, could be removed
+unit-shard-0: 01:37:22 ERROR unit.shard/0.juju-log Charm is in sharding role: database. Does not support shard interface.
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:904 Forgetting main...
