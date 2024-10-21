@@ -6,11 +6,11 @@
 
 ## Overview
 
-The Charmed Mongos operator deploys and operates mongos instances on both physical and virtual machines, along with a wide range of cloud and cloud-like environments.
+The Charmed Mongos operator deploys and operates `mongos` instances on both physical and virtual machines, along with a wide range of cloud and cloud-like environments.
 
 [mongos](https://www.mongodb.com/docs/v6.0/reference/program/mongos/) is a router for connecting client applications to a sharded MongoDB clusters. It is the only way to access a sharded MongoDB cluster from the client perspective.
 
-It acts as a [subordinate charmed oerator](https://juju.is/docs/sdk/charm-taxonomy#heading--subordinate-charms) and is meant to act as a proxy to a sharded MongoDB cluster. To deploy a sharded MongoDB cluster, please see our [Charmed solution for MongoDB](https://charmhub.io/mongodb).
+It acts as a [subordinate charmed operator](https://juju.is/docs/sdk/charm-taxonomy#heading--subordinate-charms) and is meant to act as a proxy to a sharded MongoDB cluster. To deploy a sharded MongoDB cluster, please see our [Charmed solution for MongoDB](https://charmhub.io/mongodb).
 
 For information about how to deploy, integrate, and manage this charm, see the Official [Charmed Mongos documentation](https://charmhub.io/mongos).
 
