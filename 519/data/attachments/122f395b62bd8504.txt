@@ -1,0 +1,70 @@
+[32mINFO    [0m juju.model:model.py:2972 Waiting for model:
+  mongos/0 [idle] active: 
+  data-integrator/0 [idle] active: 
+  data-integrator/1 [allocating] waiting: waiting for machine
+[32mINFO    [0m juju.model:model.py:2972 Waiting for model:
+  data-integrator/1 [allocating] waiting: waiting for machine
+[32mINFO    [0m juju.model:model.py:2972 Waiting for model:
+  data-integrator/1 [allocating] waiting: waiting for machine
+[32mINFO    [0m juju.model:model.py:2972 Waiting for model:
+  data-integrator/1 [allocating] waiting: waiting for machine
+[32mINFO    [0m juju.model:model.py:2972 Waiting for model:
+  mongos/1 [executing] maintenance: installing mongos
+  data-integrator/0 [idle] active: 
+  data-integrator/1 [executing] blocked: Please relate the data-integrator with the desired product
+[32mINFO    [0m juju.model:model.py:2972 Waiting for model:
+  mongos/0 [idle] active: 
+  mongos/1 [idle] active: 
+  data-integrator/1 [idle] active: 
+[32mINFO    [0m juju.model:model.py:2972 Waiting for model:
+  mongos/0 [idle] active: 
+  mongos/1 [idle] active: 
+  data-integrator/0 [idle] active: 
+  data-integrator/1 [executing] active:
+[32mINFO    [0m pytest_operator.plugin:plugin.py:834 Model status:
+
+Model  Controller           Cloud/Region         Version  SLA          Timestamp
+test   localhost-localhost  localhost/localhost  3.5.3    unsupported  01:41:57Z
+
+App              Version  Status  Scale  Charm            Channel      Rev  Exposed  Message
+config-server             active      1  mongodb          6/edge       199  no       
+data-integrator           active      1  data-integrator  latest/edge   72  no       
+mongos                    active      1  mongos                          0  no       
+shard                     active      1  mongodb          6/edge       199  no       
+
+Unit                Workload  Agent  Machine  Public address  Ports            Message
+config-server/0*    active    idle   1        10.82.50.111    27017-27018/tcp  
+data-integrator/1*  active    idle   3        10.82.50.249                     
+  mongos/1*         active    idle            10.82.50.249                     
+shard/0*            active    idle   2        10.82.50.124    27017/tcp        Primary
+
+Machine  State    Address       Inst id        Base          AZ  Message
+1        started  10.82.50.111  juju-f4a96d-1  ubuntu@22.04      Running
+2        started  10.82.50.124  juju-f4a96d-2  ubuntu@22.04      Running
+3        started  10.82.50.249  juju-f4a96d-3  ubuntu@22.04      Running
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:840 Juju error logs:
+
+machine-0: 01:31:58 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-0: 01:31:58 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-data-integrator-0: 01:31:59 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+machine-2: 01:32:06 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-2: 01:32:06 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-1: 01:32:06 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-1: 01:32:06 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-shard-0: 01:32:07 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+unit-config-server-0: 01:32:07 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+unit-config-server-0: 01:33:11 ERROR unit.config-server/0.juju-log _on_secret_remove: Secret secret:csaqugg274q1jf046a50 seems to have no observers, could be removed
+unit-shard-0: 01:33:14 ERROR unit.shard/0.juju-log _on_secret_remove: Secret secret:csaquhg274q1jf046a5g seems to have no observers, could be removed
+unit-mongos-0: 01:33:31 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+unit-config-server-0: 01:33:43 ERROR unit.config-server/0.juju-log config-server:8: Failed to add shard shard to the config server, error=OperationFailure("Authentication failed., full error: {'ok': 0.0, 'errmsg': 'Authentication failed.', 'code': 18, 'codeName': 'AuthenticationFailed', '$clusterTime': {'clusterTime': Timestamp(1729474423, 1), 'signature': {'hash': b'\\x92\\xe7\\x82\\xd0\\xd4\\xa5\\xd1#\\n\\xe2;\\xf7k<\\xd8\\xd7\\xce\\xd8\\xf8r', 'keyId': 7428035892779941911}}, 'operationTime': Timestamp(1729474423, 1)}")
+unit-config-server-0: 01:33:43 ERROR unit.config-server/0.juju-log config-server:8: shard shard does not have the same auth as the config server.
+unit-shard-0: 01:33:53 ERROR unit.shard/0.juju-log _on_secret_remove: Secret secret:csaquhg274q1jf046a5g seems to have no observers, could be removed
+unit-shard-0: 01:33:53 ERROR unit.shard/0.juju-log _on_secret_remove: Secret secret:csaquhg274q1jf046a5g seems to have no observers, could be removed
+unit-shard-0: 01:33:59 ERROR unit.shard/0.juju-log _on_secret_remove: Secret secret:csaquhg274q1jf046a5g seems to have no observers, could be removed
+machine-3: 01:40:11 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-3: 01:40:11 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-data-integrator-1: 01:40:11 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+unit-mongos-1: 01:40:14 ERROR juju.worker.meterstatus error running "meter-status-changed": exit status 1
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:904 Forgetting main...
