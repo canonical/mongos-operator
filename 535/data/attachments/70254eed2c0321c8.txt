@@ -1,0 +1,73 @@
+[32mINFO    [0m juju.model:model.py:2972 Waiting for model:
+  mongos/0 [executing] active: 
+  data-integrator/0 [idle] active: 
+  data-integrator/1 [allocating] waiting: waiting for machine
+[32mINFO    [0m juju.model:model.py:2972 Waiting for model:
+  data-integrator/1 [allocating] waiting: waiting for machine
+[32mINFO    [0m juju.model:model.py:2972 Waiting for model:
+  data-integrator/1 [allocating] waiting: waiting for machine
+[32mINFO    [0m juju.model:model.py:2972 Waiting for model:
+  data-integrator/1 [allocating] waiting: waiting for machine
+[32mINFO    [0m juju.model:model.py:2972 Waiting for model:
+  mongos/1 [executing] maintenance: installing mongos
+  data-integrator/0 [idle] active: 
+  data-integrator/1 [executing] active: 
+[32mINFO    [0m juju.model:model.py:2972 Waiting for model:
+  mongos/0 [idle] active: 
+  mongos/1 [executing] active: 
+  data-integrator/0 [idle] active: 
+  data-integrator/1 [idle] active: 
+[32mINFO    [0m juju.model:model.py:2972 Waiting for model:
+  mongos/0 [idle] active: 
+  mongos/1 [idle] active: 
+  data-integrator/0 [idle] active: 
+  data-integrator/1 [executing] active:
+[32mINFO    [0m pytest_operator.plugin:plugin.py:834 Model status:
+
+Model  Controller           Cloud/Region         Version  SLA          Timestamp
+test   localhost-localhost  localhost/localhost  3.5.3    unsupported  01:43:55Z
+
+App              Version  Status  Scale  Charm            Channel      Rev  Exposed  Message
+config-server             active      1  mongodb          6/edge       199  no       
+data-integrator           active      1  data-integrator  latest/edge   72  no       
+mongos                    active      1  mongos                          0  no       
+shard                     active      1  mongodb          6/edge       199  no       
+
+Unit                Workload  Agent  Machine  Public address  Ports            Message
+config-server/0*    active    idle   1        10.172.88.148   27017-27018/tcp  
+data-integrator/1*  active    idle   3        10.172.88.81                     
+  mongos/1*         active    idle            10.172.88.81                     
+shard/0*            active    idle   2        10.172.88.250   27017/tcp        Primary
+
+Machine  State    Address        Inst id        Base          AZ  Message
+1        started  10.172.88.148  juju-2b5340-1  ubuntu@22.04      Running
+2        started  10.172.88.250  juju-2b5340-2  ubuntu@22.04      Running
+3        started  10.172.88.81   juju-2b5340-3  ubuntu@22.04      Running
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:840 Juju error logs:
+
+machine-0: 01:32:59 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-0: 01:32:59 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-data-integrator-0: 01:33:00 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+machine-1: 01:33:00 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-1: 01:33:00 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-config-server-0: 01:33:01 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+unit-config-server-0: 01:33:01 ERROR juju.worker.dependency "uniter" manifold worker returned unexpected error: preparing operation "install ch:amd64/jammy/mongodb-199" for config-server/0: failed to download charm "ch:amd64/jammy/mongodb-199" from API server: download request with archiveSha256 length 0 not valid
+unit-config-server-0: 01:33:05 ERROR juju.worker.dependency "uniter" manifold worker returned unexpected error: preparing operation "install ch:amd64/jammy/mongodb-199" for config-server/0: failed to download charm "ch:amd64/jammy/mongodb-199" from API server: download request with archiveSha256 length 0 not valid
+machine-2: 01:33:07 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-2: 01:33:07 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-shard-0: 01:33:07 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+unit-shard-0: 01:34:07 ERROR unit.shard/0.juju-log _on_secret_remove: Secret secret:csi2vuhr6m3hj19dhg50 seems to have no observers, could be removed
+unit-config-server-0: 01:34:17 ERROR unit.config-server/0.juju-log _on_secret_remove: Secret secret:csi3019r6m3hj19dhg5g seems to have no observers, could be removed
+unit-mongos-0: 01:34:33 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+unit-config-server-0: 01:34:45 ERROR unit.config-server/0.juju-log config-server:8: Failed to add shard shard to the config server, error=OperationFailure("Authentication failed., full error: {'ok': 0.0, 'errmsg': 'Authentication failed.', 'code': 18, 'codeName': 'AuthenticationFailed', '$clusterTime': {'clusterTime': Timestamp(1730424885, 1), 'signature': {'hash': b'\\xae b\\xdd\\x1d\\xb4D~S}?\\xbb\\xca\\x03/\\xe4\\xa5%\\x17\\xef', 'keyId': 7432118113165901849}}, 'operationTime': Timestamp(1730424885, 1)}")
+unit-config-server-0: 01:34:45 ERROR unit.config-server/0.juju-log config-server:8: shard shard does not have the same auth as the config server.
+unit-shard-0: 01:34:55 ERROR unit.shard/0.juju-log _on_secret_remove: Secret secret:csi2vuhr6m3hj19dhg50 seems to have no observers, could be removed
+unit-shard-0: 01:34:56 ERROR unit.shard/0.juju-log _on_secret_remove: Secret secret:csi2vuhr6m3hj19dhg50 seems to have no observers, could be removed
+unit-shard-0: 01:35:01 ERROR unit.shard/0.juju-log _on_secret_remove: Secret secret:csi2vuhr6m3hj19dhg50 seems to have no observers, could be removed
+machine-3: 01:42:05 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-3: 01:42:05 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-data-integrator-1: 01:42:05 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+unit-mongos-1: 01:42:07 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:904 Forgetting main...
