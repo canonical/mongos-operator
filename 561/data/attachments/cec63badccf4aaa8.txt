@@ -1,0 +1,56 @@
+[32mINFO    [0m integration.upgrade_tests.test_rollback:test_rollback.py:84 Wait for upgrade to fail
+[32mINFO    [0m integration.upgrade_tests.test_rollback:test_rollback.py:95 Re-refresh the charm
+[32mINFO    [0m integration.upgrade_tests.test_rollback:test_rollback.py:107 Wait for the charm to be rolled back
+[32mINFO    [0m juju.model:model.py:2972 Waiting for model:
+  mongos/0 [idle] active: 
+  mongos/1 [idle] active:
+[32mINFO    [0m pytest_operator.plugin:plugin.py:834 Model status:
+
+Model  Controller           Cloud/Region         Version  SLA          Timestamp
+test   localhost-localhost  localhost/localhost  3.5.3    unsupported  01:48:03Z
+
+App            Version  Status  Scale  Charm        Channel  Rev  Exposed  Message
+application             active      2  application             0  no       
+config-server           active      1  mongodb      6/edge   204  no       
+mongos                  active      2  mongos                  2  no       
+shard                   active      1  mongodb      6/edge   204  no       
+
+Unit              Workload  Agent  Machine  Public address  Ports            Message
+application/0     active    idle   0        10.218.53.233                    
+  mongos/1        active    idle            10.218.53.233                    
+application/1*    active    idle   1        10.218.53.26                     
+  mongos/0*       active    idle            10.218.53.26                     
+config-server/0*  active    idle   2        10.218.53.178   27017-27018/tcp  
+shard/0*          active    idle   3        10.218.53.51    27017/tcp        Primary
+
+Machine  State    Address        Inst id        Base          AZ  Message
+0        started  10.218.53.233  juju-926d8d-0  ubuntu@22.04      Running
+1        started  10.218.53.26   juju-926d8d-1  ubuntu@22.04      Running
+2        started  10.218.53.178  juju-926d8d-2  ubuntu@22.04      Running
+3        started  10.218.53.51   juju-926d8d-3  ubuntu@22.04      Running
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:840 Juju error logs:
+
+machine-1: 01:40:26 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-1: 01:40:26 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-application-1: 01:40:27 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+machine-0: 01:40:29 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-0: 01:40:29 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-application-0: 01:40:30 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+machine-2: 01:40:38 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-2: 01:40:38 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-3: 01:40:39 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-config-server-0: 01:40:39 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+machine-3: 01:40:39 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-shard-0: 01:40:39 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+unit-shard-0: 01:41:33 ERROR unit.shard/0.juju-log _on_secret_remove: Secret secret:csqlaea29dhhj3434n20 seems to have no observers, could be removed
+unit-config-server-0: 01:41:35 ERROR unit.config-server/0.juju-log _on_secret_remove: Secret secret:csqlaei29dhhj3434n2g seems to have no observers, could be removed
+unit-mongos-1: 01:41:49 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+unit-mongos-0: 01:41:49 ERROR juju.worker.meterstatus error running "meter-status-changed": exit status 1
+unit-config-server-0: 01:42:08 ERROR unit.config-server/0.juju-log config-server:7: Failed to add shard shard to the config server, error=OperationFailure("failed to run command { isMaster: 1 } when attempting to add shard shard/10.218.53.51:27017 :: caused by :: HostUnreachable: Connection reset by peer, full error: {'ok': 0.0, 'errmsg': 'failed to run command { isMaster: 1 } when attempting to add shard shard/10.218.53.51:27017 :: caused by :: HostUnreachable: Connection reset by peer', 'code': 96, 'codeName': 'OperationFailed', '$clusterTime': {'clusterTime': Timestamp(1731548527, 1), 'signature': {'hash': b'\\xc2\\x0f\\t\\xca\\xce\\xfc\\x13\\xd5\\x8b\\xf3\\xc3\\x00\\x10\\xe5bi;\\xa2O\\xef', 'keyId': 7436944101628444697}}, 'operationTime': Timestamp(1731548527, 1)}")
+unit-config-server-0: 01:42:08 ERROR unit.config-server/0.juju-log config-server:7: Failed to add shard to cluster
+unit-config-server-0: 01:42:08 ERROR unit.config-server/0.juju-log config-server:7: Deferring _on_relation_event for shards interface since: error=OperationFailure("failed to run command { isMaster: 1 } when attempting to add shard shard/10.218.53.51:27017 :: caused by :: HostUnreachable: Connection reset by peer, full error: {'ok': 0.0, 'errmsg': 'failed to run command { isMaster: 1 } when attempting to add shard shard/10.218.53.51:27017 :: caused by :: HostUnreachable: Connection reset by peer', 'code': 96, 'codeName': 'OperationFailed', '$clusterTime': {'clusterTime': Timestamp(1731548527, 1), 'signature': {'hash': b'\\xc2\\x0f\\t\\xca\\xce\\xfc\\x13\\xd5\\x8b\\xf3\\xc3\\x00\\x10\\xe5bi;\\xa2O\\xef', 'keyId': 7436944101628444697}}, 'operationTime': Timestamp(1731548527, 1)}")
+unit-shard-0: 01:42:27 ERROR unit.shard/0.juju-log _on_secret_remove: Secret secret:csqlaea29dhhj3434n20 seems to have no observers, could be removed
+unit-shard-0: 01:42:29 ERROR unit.shard/0.juju-log _on_secret_remove: Secret secret:csqlaea29dhhj3434n20 seems to have no observers, could be removed
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:904 Forgetting main...
