@@ -1,0 +1,133 @@
+[32mINFO    [0m juju.model:model.py:2972 Waiting for model:
+  application/1 [idle] active: 
+  application/2 [idle] active: 
+  mongos/0 [executing] active: 
+  mongos/2 [executing] active: 
+  shard/0 [idle] active: Primary
+  config-server/1 [executing] active: Primary
+[32mINFO    [0m juju.model:model.py:2972 Waiting for model:
+  application/1 [idle] active: 
+  application/2 [idle] active: 
+  mongos/0 [idle] active: 
+  mongos/2 [idle] active:
+[32mINFO    [0m pytest_operator.plugin:plugin.py:834 Model status:
+
+Model  Controller           Cloud/Region         Version  SLA          Timestamp
+test   localhost-localhost  localhost/localhost  3.5.3    unsupported  02:14:13Z
+
+App            Version  Status  Scale  Charm        Channel  Rev  Exposed  Message
+application             active      2  application             0  no       
+config-server           active      1  mongodb      6/edge   206  no       
+mongos                  active      2  mongos                  0  no       
+shard                   active      1  mongodb      6/edge   206  no       
+
+Unit              Workload  Agent  Machine  Public address  Ports            Message
+application/1*    active    idle   1        10.81.84.144                     
+  mongos/0        blocked   idle            10.81.84.144                     Missing relation to config-server.
+application/2     active    idle   5        10.81.84.171                     
+  mongos/2*       blocked   idle            10.81.84.171                     Missing relation to config-server.
+config-server/1*  active    idle   4        10.81.84.27     27017-27018/tcp  Primary
+shard/0*          active    idle   3        10.81.84.155    27017/tcp        Primary
+
+Machine  State    Address       Inst id        Base          AZ  Message
+1        started  10.81.84.144  juju-b94291-1  ubuntu@22.04      Running
+3        started  10.81.84.155  juju-b94291-3  ubuntu@22.04      Running
+4        started  10.81.84.27   juju-b94291-4  ubuntu@22.04      Running
+5        started  10.81.84.171  juju-b94291-5  ubuntu@22.04      Running
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:840 Juju error logs:
+
+machine-1: 01:55:14 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-1: 01:55:14 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-application-1: 01:55:15 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+machine-0: 01:55:22 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-0: 01:55:22 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-application-0: 01:55:22 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+machine-3: 01:55:38 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-3: 01:55:38 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-shard-0: 01:55:38 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+unit-shard-0: 01:55:50 ERROR unit.shard/0.juju-log Unable to set params: ['vm.max_map_count']
+unit-shard-0: 01:55:50 ERROR unit.shard/0.juju-log Error setting values on sysctl: Unable to set params: ['vm.max_map_count']
+machine-2: 01:56:20 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-2: 01:56:20 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-config-server-0: 01:56:20 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+unit-config-server-0: 01:56:32 ERROR unit.config-server/0.juju-log Unable to set params: ['vm.max_map_count']
+unit-config-server-0: 01:56:32 ERROR unit.config-server/0.juju-log Error setting values on sysctl: Unable to set params: ['vm.max_map_count']
+unit-shard-0: 01:56:37 ERROR unit.shard/0.juju-log _on_secret_remove: Secret secret:cthnqg3nqnu1ir67s80g seems to have no observers, could be removed
+unit-config-server-0: 01:57:22 ERROR unit.config-server/0.juju-log _on_secret_remove: Secret secret:cthnqrbnqnu1ir67s810 seems to have no observers, could be removed
+unit-mongos-1: 01:57:37 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+unit-mongos-0: 01:57:37 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+unit-mongos-1: 01:57:47 ERROR unit.mongos/1.juju-log Uncaught exception while in charm code:
+Traceback (most recent call last):
+  File "/var/lib/juju/agents/unit-mongos-1/charm/./src/charm.py", line 669, in <module>
+    ops.main(MongosOperatorCharm)
+  File "/var/lib/juju/agents/unit-mongos-1/charm/venv/ops/main.py", line 563, in __call__
+    return main(charm_class, use_juju_for_storage=use_juju_for_storage)
+  File "/var/lib/juju/agents/unit-mongos-1/charm/venv/ops/main.py", line 551, in main
+    manager.run()
+  File "/var/lib/juju/agents/unit-mongos-1/charm/venv/ops/main.py", line 530, in run
+    self._emit()
+  File "/var/lib/juju/agents/unit-mongos-1/charm/venv/ops/main.py", line 519, in _emit
+    _emit_charm_event(self.charm, self.dispatcher.event_name)
+  File "/var/lib/juju/agents/unit-mongos-1/charm/venv/ops/main.py", line 147, in _emit_charm_event
+    event_to_emit.emit(*args, **kwargs)
+  File "/var/lib/juju/agents/unit-mongos-1/charm/venv/ops/framework.py", line 348, in emit
+    framework._emit(event)
+  File "/var/lib/juju/agents/unit-mongos-1/charm/venv/ops/framework.py", line 860, in _emit
+    self._reemit(event_path)
+  File "/var/lib/juju/agents/unit-mongos-1/charm/venv/ops/framework.py", line 950, in _reemit
+    custom_handler(event)
+  File "/var/lib/juju/agents/unit-mongos-1/charm/./src/charm.py", line 107, in _on_install
+    self.install_snap_packages(packages=Config.SNAP_PACKAGES)
+  File "/var/lib/juju/agents/unit-mongos-1/charm/./src/charm.py", line 166, in install_snap_packages
+    snap_package = snap_cache[snap_name]
+  File "/var/lib/juju/agents/unit-mongos-1/charm/lib/charms/operator_libs_linux/v1/snap.py", line 795, in __getitem__
+    self._snap_map[snap_name] = self._load_info(snap_name)
+  File "/var/lib/juju/agents/unit-mongos-1/charm/lib/charms/operator_libs_linux/v1/snap.py", line 843, in _load_info
+    info = self._snap_client.get_snap_information(name)
+  File "/var/lib/juju/agents/unit-mongos-1/charm/lib/charms/operator_libs_linux/v1/snap.py", line 751, in get_snap_information
+    return self._request("GET", "find", {"name": name})[0]
+  File "/var/lib/juju/agents/unit-mongos-1/charm/lib/charms/operator_libs_linux/v1/snap.py", line 708, in _request
+    response = self._request_raw(method, path, query, headers, data)
+  File "/var/lib/juju/agents/unit-mongos-1/charm/lib/charms/operator_libs_linux/v1/snap.py", line 729, in _request_raw
+    response = self.opener.open(request, timeout=self.timeout)
+  File "/usr/lib/python3.10/urllib/request.py", line 519, in open
+    response = self._open(req, data)
+  File "/usr/lib/python3.10/urllib/request.py", line 536, in _open
+    result = self._call_chain(self.handle_open, protocol, protocol +
+  File "/usr/lib/python3.10/urllib/request.py", line 496, in _call_chain
+    result = func(*args)
+  File "/var/lib/juju/agents/unit-mongos-1/charm/lib/charms/operator_libs_linux/v1/snap.py", line 645, in http_open
+    return self.do_open(_UnixSocketConnection, req, socket_path=self.socket_path)
+  File "/usr/lib/python3.10/urllib/request.py", line 1352, in do_open
+    r = h.getresponse()
+  File "/usr/lib/python3.10/http/client.py", line 1375, in getresponse
+    response.begin()
+  File "/usr/lib/python3.10/http/client.py", line 318, in begin
+    version, status, reason = self._read_status()
+  File "/usr/lib/python3.10/http/client.py", line 279, in _read_status
+    line = str(self.fp.readline(_MAXLINE + 1), "iso-8859-1")
+  File "/usr/lib/python3.10/socket.py", line 705, in readinto
+    return self._sock.recv_into(b)
+TimeoutError: timed out
+unit-mongos-1: 01:57:47 ERROR juju.worker.uniter.operation hook "install" (via hook dispatching script: dispatch) failed: exit status 1
+unit-config-server-0: 01:58:52 ERROR unit.config-server/0.juju-log config-server:7: Failed to add shard shard to the config server, error=OperationFailure("Authentication failed., full error: {'ok': 0.0, 'errmsg': 'Authentication failed.', 'code': 18, 'codeName': 'AuthenticationFailed', '$clusterTime': {'clusterTime': Timestamp(1734573532, 2), 'signature': {'hash': b'\\xf3\\x0f\\xfa\\x85\\xb3\\x14\\x1b\\xd5\\x0c\\x88K\\xe8\\x889\\x9f|2\\x82Ru', 'keyId': 7449936150065578009}}, 'operationTime': Timestamp(1734573532, 2)}")
+unit-config-server-0: 01:58:52 ERROR unit.config-server/0.juju-log config-server:7: shard shard does not have the same auth as the config server.
+unit-shard-0: 01:59:01 ERROR unit.shard/0.juju-log _on_secret_remove: Secret secret:cthnqg3nqnu1ir67s80g seems to have no observers, could be removed
+unit-shard-0: 01:59:01 ERROR unit.shard/0.juju-log _on_secret_remove: Secret secret:cthnqg3nqnu1ir67s80g seems to have no observers, could be removed
+unit-shard-0: 01:59:07 ERROR unit.shard/0.juju-log _on_secret_remove: Secret secret:cthnqg3nqnu1ir67s80g seems to have no observers, could be removed
+unit-shard-0: 01:59:11 ERROR unit.shard/0.juju-log _on_secret_remove: Secret secret:cthnqg3nqnu1ir67s80g seems to have no observers, could be removed
+machine-4: 02:05:48 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-4: 02:05:48 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-config-server-1: 02:05:49 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+unit-config-server-1: 02:06:00 ERROR unit.config-server/1.juju-log Unable to set params: ['vm.max_map_count']
+unit-config-server-1: 02:06:00 ERROR unit.config-server/1.juju-log Error setting values on sysctl: Unable to set params: ['vm.max_map_count']
+unit-shard-0: 02:06:30 ERROR unit.shard/0.juju-log _on_secret_remove: Secret secret:cthnqg3nqnu1ir67s80g seems to have no observers, could be removed
+unit-shard-0: 02:06:46 ERROR unit.shard/0.juju-log _on_secret_remove: Secret secret:cthnqg3nqnu1ir67s80g seems to have no observers, could be removed
+unit-shard-0: 02:07:49 ERROR unit.shard/0.juju-log _on_secret_remove: Secret secret:cthnqg3nqnu1ir67s80g seems to have no observers, could be removed
+machine-5: 02:10:17 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-5: 02:10:17 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-application-2: 02:10:17 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+unit-mongos-2: 02:10:20 ERROR juju.worker.meterstatus error running "meter-status-changed": exit status 1
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:904 Forgetting main...
