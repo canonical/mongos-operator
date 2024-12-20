@@ -12,7 +12,7 @@ from parameterized import parameterized
 from unittest import mock
 
 
-from charms.operator_libs_linux.v1 import snap
+from charms.operator_libs_linux.v2 import snap
 from ops.model import BlockedStatus, WaitingStatus
 from ops.testing import Harness
 

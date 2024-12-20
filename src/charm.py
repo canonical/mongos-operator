@@ -15,7 +15,7 @@ from charms.mongodb.v1.helpers import (
     TLS_INT_CA_FILE,
     TLS_INT_PEM_FILE,
 )
-from charms.operator_libs_linux.v1 import snap
+from charms.operator_libs_linux.v2 import snap
 from pathlib import Path
 
 from typing import Set, List, Optional, Dict
