@@ -1,0 +1,67 @@
+[32mINFO    [0m juju.model:model.py:2972 Waiting for model:
+  mongos/0 [idle] active: 
+  mongos/1 [idle] active: 
+[32mINFO    [0m juju.model:model.py:2972 Waiting for model:
+  mongos/0 [idle] active: 
+  mongos/1 [idle] active: 
+[32mINFO    [0m juju.model:model.py:2972 Waiting for model:
+  mongos/0 [idle] active: 
+  mongos/1 [idle] active: 
+[32mINFO    [0m juju.model:model.py:2972 Waiting for model:
+  mongos/0 [idle] active: 
+  mongos/1 [idle] active: 
+[32mINFO    [0m juju.model:model.py:2972 Waiting for model:
+  mongos/0 [idle] active: 
+  mongos/1 [idle] active:
+[32mINFO    [0m pytest_operator.plugin:plugin.py:834 Model status:
+
+Model  Controller           Cloud/Region         Version  SLA          Timestamp
+test   localhost-localhost  localhost/localhost  3.5.3    unsupported  01:49:17Z
+
+App            Version  Status  Scale  Charm        Channel  Rev  Exposed  Message
+application             active      2  application             0  no       
+config-server           active      1  mongodb      6/edge   206  no       
+mongos                  active      2  mongos                  0  no       
+shard                   active      1  mongodb      6/edge   206  no       
+
+Unit              Workload  Agent  Machine  Public address  Ports            Message
+application/0*    active    idle   0        10.231.252.11                    
+  mongos/0        active    idle            10.231.252.11                    
+application/1     active    idle   1        10.231.252.208                   
+  mongos/1*       active    idle            10.231.252.208                   
+config-server/0*  active    idle   2        10.231.252.129  27017-27018/tcp  
+shard/0*          active    idle   3        10.231.252.81   27017/tcp        Primary
+
+Machine  State    Address         Inst id        Base          AZ  Message
+0        started  10.231.252.11   juju-1aa41b-0  ubuntu@22.04      Running
+1        started  10.231.252.208  juju-1aa41b-1  ubuntu@22.04      Running
+2        started  10.231.252.129  juju-1aa41b-2  ubuntu@22.04      Running
+3        started  10.231.252.81   juju-1aa41b-3  ubuntu@22.04      Running
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:840 Juju error logs:
+
+machine-0: 01:42:03 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-0: 01:42:03 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-application-0: 01:42:03 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+machine-1: 01:42:08 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-1: 01:42:08 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-application-1: 01:42:08 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+machine-3: 01:42:12 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-3: 01:42:12 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-shard-0: 01:42:13 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+machine-2: 01:42:13 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-2: 01:42:13 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-config-server-0: 01:42:13 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+unit-shard-0: 01:42:26 ERROR unit.shard/0.juju-log Unable to set params: ['vm.max_map_count']
+unit-shard-0: 01:42:26 ERROR unit.shard/0.juju-log Error setting values on sysctl: Unable to set params: ['vm.max_map_count']
+unit-config-server-0: 01:42:27 ERROR unit.config-server/0.juju-log Unable to set params: ['vm.max_map_count']
+unit-config-server-0: 01:42:27 ERROR unit.config-server/0.juju-log Error setting values on sysctl: Unable to set params: ['vm.max_map_count']
+unit-config-server-0: 01:43:05 ERROR unit.config-server/0.juju-log _on_secret_remove: Secret secret:ctn0c4tscct1ir33k3rg seems to have no observers, could be removed
+unit-shard-0: 01:43:13 ERROR unit.shard/0.juju-log _on_secret_remove: Secret secret:ctn0c75scct1ir33k3s0 seems to have no observers, could be removed
+unit-mongos-0: 01:43:28 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+unit-mongos-1: 01:43:28 ERROR juju.worker.meterstatus error running "meter-status-changed": exit status 127
+unit-shard-0: 01:44:06 ERROR unit.shard/0.juju-log _on_secret_remove: Secret secret:ctn0c75scct1ir33k3s0 seems to have no observers, could be removed
+unit-shard-0: 01:44:08 ERROR unit.shard/0.juju-log _on_secret_remove: Secret secret:ctn0c75scct1ir33k3s0 seems to have no observers, could be removed
+unit-shard-0: 01:44:17 ERROR unit.shard/0.juju-log _on_secret_remove: Secret secret:ctn0c75scct1ir33k3s0 seems to have no observers, could be removed
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:904 Forgetting main...
