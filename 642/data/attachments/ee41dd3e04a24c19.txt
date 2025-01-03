@@ -1,0 +1,127 @@
+[32mINFO    [0m juju.model:model.py:2098 Deploying ch:amd64/jammy/self-signed-certificates-228
+[32mINFO    [0m juju.model:model.py:2972 Waiting for model:
+  mongos/1 [executing] maintenance: disabling TLS
+  mongos/0 [executing] active: 
+[32mINFO    [0m juju.model:model.py:2972 Waiting for model:
+  mongos/1 [idle] active: 
+  mongos/0 [idle] active: 
+[32mINFO    [0m juju.model:model.py:2972 Waiting for model:
+  mongos/1 [idle] active: 
+  mongos/0 [idle] active: 
+[32mINFO    [0m juju.model:model.py:2972 Waiting for model:
+  self-signed-certificates-separate/0 [allocating] waiting: waiting for machine
+[32mINFO    [0m juju.model:model.py:2972 Waiting for model:
+  self-signed-certificates-separate/0 [executing] maintenance: installing charm software
+[32mINFO    [0m juju.model:model.py:2972 Waiting for model:
+  mongos/1 [idle] active: 
+  mongos/0 [idle] active: 
+[32mINFO    [0m juju.model:model.py:2972 Waiting for model:
+  mongos/1 [executing] maintenance: enabling TLS
+  mongos/0 [executing] maintenance: enabling TLS
+[32mINFO    [0m juju.model:model.py:2972 Waiting for model:
+  mongos/1 [executing] maintenance: enabling TLS
+  mongos/0 [executing] maintenance: enabling TLS
+[32mINFO    [0m juju.model:model.py:2972 Waiting for model:
+  mongos/1 [executing] maintenance: enabling TLS
+  mongos/0 [executing] maintenance: enabling TLS
+[32mINFO    [0m juju.model:model.py:2972 Waiting for model:
+  mongos/1 [executing] maintenance: enabling TLS
+  mongos/0 [executing] maintenance: enabling TLS
+[32mINFO    [0m juju.model:model.py:2972 Waiting for model:
+  mongos/1 [executing] maintenance: enabling TLS
+  mongos/0 [executing] maintenance: enabling TLS
+[32mINFO    [0m juju.model:model.py:2972 Waiting for model:
+  mongos/1 [idle] waiting: Waiting for MongoDB to start
+  mongos/0 [idle] waiting: Waiting for MongoDB to start
+[32mINFO    [0m pytest_operator.plugin:plugin.py:834 Model status:
+
+Model  Controller           Cloud/Region         Version  SLA          Timestamp
+test   localhost-localhost  localhost/localhost  3.5.3    unsupported  02:34:27Z
+
+App                                Version  Status  Scale  Charm                     Channel      Rev  Exposed  Message
+application                                 active      2  application                              0  no       
+config-server                               active      1  mongodb                   6/edge       199  no       
+mongos                                      active      2  mongos                                   0  no       
+self-signed-certificates                    active      1  self-signed-certificates  latest/edge  228  no       
+self-signed-certificates-separate           active      1  self-signed-certificates  latest/edge  228  no       
+shard                                       active      1  mongodb                   6/edge       199  no       
+
+Unit                                  Workload  Agent  Machine  Public address  Ports            Message
+application/0                         active    idle   0        10.69.152.221                    
+  mongos/1                            blocked   idle            10.69.152.221                    mongos CA and Config-Server CA don't match.
+application/1*                        active    idle   1        10.69.152.145                    
+  mongos/0*                           blocked   idle            10.69.152.145                    mongos CA and Config-Server CA don't match.
+config-server/0*                      active    idle   2        10.69.152.83    27017-27018/tcp  Primary
+self-signed-certificates-separate/0*  active    idle   5        10.69.152.148                    
+self-signed-certificates/0*           active    idle   4        10.69.152.124                    
+shard/0*                              active    idle   3        10.69.152.220   27017/tcp        Primary
+
+Machine  State    Address        Inst id        Base          AZ  Message
+0        started  10.69.152.221  juju-60285c-0  ubuntu@22.04      Running
+1        started  10.69.152.145  juju-60285c-1  ubuntu@22.04      Running
+2        started  10.69.152.83   juju-60285c-2  ubuntu@22.04      Running
+3        started  10.69.152.220  juju-60285c-3  ubuntu@22.04      Running
+4        started  10.69.152.124  juju-60285c-4  ubuntu@22.04      Running
+5        started  10.69.152.148  juju-60285c-5  ubuntu@22.04      Running
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:840 Juju error logs:
+
+machine-1: 01:44:27 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-1: 01:44:27 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-application-1: 01:44:27 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+machine-0: 01:44:28 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-0: 01:44:28 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-application-0: 01:44:28 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+machine-3: 01:44:32 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-3: 01:44:32 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-shard-0: 01:44:33 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+machine-2: 01:44:34 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-2: 01:44:34 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-config-server-0: 01:44:35 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+unit-shard-0: 01:45:34 ERROR unit.shard/0.juju-log _on_secret_remove: Secret secret:ctrk2a9qgt81is6mpd4g seems to have no observers, could be removed
+unit-config-server-0: 01:45:36 ERROR unit.config-server/0.juju-log _on_secret_remove: Secret secret:ctrk2apqgt81is6mpd50 seems to have no observers, could be removed
+unit-mongos-0: 01:45:52 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+unit-mongos-1: 01:45:52 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+unit-config-server-0: 01:46:37 ERROR unit.config-server/0.juju-log config-server:7: Failed to add shard shard to the config server, error=OperationFailure("Authentication failed., full error: {'ok': 0.0, 'errmsg': 'Authentication failed.', 'code': 18, 'codeName': 'AuthenticationFailed', '$clusterTime': {'clusterTime': Timestamp(1735868796, 2), 'signature': {'hash': b'A\\x0c\\xc4c\\xf3\\x0e\\xb1g+\\x86!?O\\x97\\xcb\\xa4\\xa2\\t\\xa5\\xac', 'keyId': 7455499395434283033}}, 'operationTime': Timestamp(1735868796, 2)}")
+unit-config-server-0: 01:46:37 ERROR unit.config-server/0.juju-log config-server:7: shard shard does not have the same auth as the config server.
+unit-shard-0: 01:46:45 ERROR unit.shard/0.juju-log _on_secret_remove: Secret secret:ctrk2a9qgt81is6mpd4g seems to have no observers, could be removed
+unit-shard-0: 01:46:46 ERROR unit.shard/0.juju-log _on_secret_remove: Secret secret:ctrk2a9qgt81is6mpd4g seems to have no observers, could be removed
+unit-shard-0: 01:46:51 ERROR unit.shard/0.juju-log _on_secret_remove: Secret secret:ctrk2a9qgt81is6mpd4g seems to have no observers, could be removed
+machine-4: 01:54:01 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-4: 01:54:01 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-self-signed-certificates-0: 01:54:01 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+unit-mongos-1: 01:54:34 ERROR unit.mongos/1.juju-log certificates:9: Non-existing secret unit:int-cert-secret was attempted to be removed.
+unit-mongos-0: 01:54:34 ERROR unit.mongos/0.juju-log certificates:9: Non-existing secret unit:int-cert-secret was attempted to be removed.
+unit-mongos-0: 01:54:35 ERROR unit.mongos/0.juju-log certificates:9: Non-existing secret unit:ext-cert-secret was attempted to be removed.
+unit-mongos-1: 01:54:35 ERROR unit.mongos/1.juju-log certificates:9: Non-existing secret unit:ext-cert-secret was attempted to be removed.
+unit-config-server-0: 01:58:03 ERROR unit.config-server/0.juju-log certificates:10: Non-existing secret unit:int-cert-secret was attempted to be removed.
+unit-shard-0: 01:58:03 ERROR unit.shard/0.juju-log certificates:11: Non-existing secret unit:int-cert-secret was attempted to be removed.
+unit-config-server-0: 01:58:03 ERROR unit.config-server/0.juju-log certificates:10: Non-existing secret unit:ext-cert-secret was attempted to be removed.
+unit-shard-0: 01:58:03 ERROR unit.shard/0.juju-log certificates:11: Non-existing secret unit:ext-cert-secret was attempted to be removed.
+unit-shard-0: 01:58:38 ERROR unit.shard/0.juju-log _on_secret_remove: Secret secret:ctrk8apqgt81is6mpdc0 seems to have no observers, could be removed
+unit-shard-0: 01:58:38 ERROR unit.shard/0.juju-log _on_secret_remove: Secret secret:ctrk2a9qgt81is6mpd4g seems to have no observers, could be removed
+unit-shard-0: 01:58:39 ERROR unit.shard/0.juju-log _on_secret_remove: Secret secret:ctrk8apqgt81is6mpdc0 seems to have no observers, could be removed
+unit-config-server-0: 01:58:56 ERROR unit.config-server/0.juju-log _on_secret_remove: Secret secret:ctrk8apqgt81is6mpdbg seems to have no observers, could be removed
+unit-config-server-0: 01:58:57 ERROR unit.config-server/0.juju-log _on_secret_remove: Secret secret:ctrk8apqgt81is6mpdbg seems to have no observers, could be removed
+unit-config-server-0: 01:58:58 ERROR unit.config-server/0.juju-log _on_secret_remove: Secret secret:ctrk2upqgt81is6mpd5g seems to have no observers, could be removed
+unit-config-server-0: 02:02:11 ERROR unit.config-server/0.juju-log _on_secret_remove: Secret secret:ctrk38pqgt81is6mpd6g seems to have no observers, could be removed
+unit-self-signed-certificates-0: 02:17:09 ERROR juju.worker.dependency "uniter" manifold worker returned unexpected error: relation scope id "a2442740-8ee2-4def-8a32-262a0b60285c:r#9#mongos": settings a2442740-8ee2-4def-8a32-262a0b60285c:r#9#mongos not found (not found)
+unit-mongos-0: 02:17:10 ERROR juju.worker.dependency "uniter" manifold worker returned unexpected error: relation scope id "a2442740-8ee2-4def-8a32-262a0b60285c:r#9#self-signed-certificates": settings a2442740-8ee2-4def-8a32-262a0b60285c:r#9#self-signed-certificates not found (not found)
+unit-mongos-1: 02:17:10 ERROR juju.worker.dependency "uniter" manifold worker returned unexpected error: relation scope id "a2442740-8ee2-4def-8a32-262a0b60285c:r#9#self-signed-certificates": settings a2442740-8ee2-4def-8a32-262a0b60285c:r#9#self-signed-certificates not found (not found)
+unit-mongos-0: 02:22:58 ERROR unit.mongos/0.juju-log certificates:12: Non-existing secret unit:int-cert-secret was attempted to be removed.
+unit-mongos-0: 02:22:59 ERROR unit.mongos/0.juju-log certificates:12: Non-existing secret unit:ext-cert-secret was attempted to be removed.
+unit-mongos-1: 02:22:59 ERROR unit.mongos/1.juju-log certificates:12: Non-existing secret unit:int-cert-secret was attempted to be removed.
+unit-mongos-1: 02:22:59 ERROR unit.mongos/1.juju-log certificates:12: Non-existing secret unit:ext-cert-secret was attempted to be removed.
+machine-5: 02:29:53 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-5: 02:29:53 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-self-signed-certificates-separate-0: 02:29:53 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+unit-mongos-0: 02:30:24 ERROR unit.mongos/0.juju-log certificates:13: Non-existing secret unit:int-cert-secret was attempted to be removed.
+unit-mongos-1: 02:30:24 ERROR unit.mongos/1.juju-log certificates:13: Non-existing secret unit:int-cert-secret was attempted to be removed.
+unit-mongos-0: 02:30:24 ERROR unit.mongos/0.juju-log certificates:13: Non-existing secret unit:ext-cert-secret was attempted to be removed.
+unit-mongos-1: 02:30:24 ERROR unit.mongos/1.juju-log certificates:13: Non-existing secret unit:ext-cert-secret was attempted to be removed.
+unit-mongos-1: 02:34:26 ERROR unit.mongos/1.juju-log mongos is integrated to a different CA than the config server. Please use the same CA for all cluster components.
+unit-mongos-1: 02:34:26 ERROR unit.mongos/1.juju-log mongos is integrated to a different CA than the config server. Please use the same CA for all cluster components.
+unit-mongos-0: 02:34:26 ERROR unit.mongos/0.juju-log mongos is integrated to a different CA than the config server. Please use the same CA for all cluster components.
+unit-mongos-0: 02:34:26 ERROR unit.mongos/0.juju-log mongos is integrated to a different CA than the config server. Please use the same CA for all cluster components.
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:904 Forgetting main...
