@@ -524,6 +524,11 @@ class MongosOperatorCharm(ops.CharmBase):
             raise ApplicationHostNotFoundError
 
     @property
+    def db_initialised(self) -> bool:
+        """Proxy for mongos_initialised, since some libs rely on db_initialised."""
+        return self.mongos_initialised
+
+    @property
     def mongos_initialised(self) -> bool:
         """Check if mongos is initialised."""
         return json.loads(self.app_peer_data.get("mongos_initialised", "false"))
