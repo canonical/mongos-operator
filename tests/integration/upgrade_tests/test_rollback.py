@@ -39,27 +39,32 @@ def faulty_upgrade_charm(local_charm, tmp_path: pathlib.Path):
     This works by modifying both the workload major version and the snap revision.
     This allows to test the detection of incompatible versions and test for rollbacks.
     """
+    LITERALS_PATH = (
+        "venv/lib/python3.10/site-packages/single_kernel_mongo/config/literals.py"
+    )
     fault_charm = tmp_path / "fault_charm.charm"
     shutil.copy(local_charm, fault_charm)
-    config_file = pathlib.Path("src/config.py")
     workload_version = pathlib.Path("workload_version").read_text().strip()
 
     [major, minor, patch] = workload_version.split(".")
 
-    regex = re.compile(r"SNAP_PACKAGES.*\(.*, ([0-9]+)\)]")
-    file_data = config_file.read_text().split("\n")
+    with zipfile.ZipFile(fault_charm, mode="r") as charm_zip:
+        with charm_zip.open(LITERALS_PATH) as literals_file:
+            file_data = literals_file.read().decode().split("\n")
+
+    regex = re.compile(r"SNAP.*\(.*, revision=\"([0-9]+)\"\)")
     for index, line in enumerate(file_data):
         if entry := regex.findall(line):
             current_rev = entry[0]
-            new_rev = int(entry[0]) - 1
+            new_rev = int(current_rev) - 1
             new_line = line.replace(current_rev, str(new_rev))
             file_data[index] = new_line
             break
 
     with zipfile.ZipFile(fault_charm, mode="a") as charm_zip:
-        charm_zip.writestr("src/config.py", "\n".join(file_data))
+        charm_zip.writestr(LITERALS_PATH, "\n".join(file_data))
         charm_zip.writestr(
-            "workload_version", f"{int(major) -1}.{minor}.{patch}+testrollback"
+            "workload_version", f"{int(major) - 1}.{minor}.{patch}+testrollback"
         )
 
     yield fault_charm

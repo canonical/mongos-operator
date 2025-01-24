@@ -10,7 +10,9 @@ from charm import MongosOperatorCharm
 
 from .helpers import patch_network_get
 
-from charms.data_platform_libs.v0.data_interfaces import DatabaseRequiresEvents
+from single_kernel_mongo.lib.charms.data_platform_libs.v0.data_interfaces import (
+    DatabaseRequiresEvents,
+)
 
 PEER_ADDR = {"private-address": "127.4.5.6"}
 REL_DATA = {
@@ -47,7 +49,7 @@ class TestMongosInterface(unittest.TestCase):
         self.charm = self.harness.charm
         self.addCleanup(self.harness.cleanup)
 
-    @patch("charm.MongosOperatorCharm.open_mongos_port")
+    @patch("ops.model.Unit.open_port")
     def test_mongos_opens_port_external(self, open_mongos_port):
         """Tests that relation changed does not wait for keyfile.
 

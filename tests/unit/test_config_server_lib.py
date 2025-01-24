@@ -2,7 +2,8 @@
 # See LICENSE file for licensing details.
 import unittest
 
-from unittest.mock import patch, mock_open
+from unittest import mock
+from unittest.mock import patch
 
 from ops.testing import Harness
 
@@ -10,10 +11,15 @@ from charm import MongosOperatorCharm
 
 from .helpers import patch_network_get
 
-from charms.data_platform_libs.v0.data_interfaces import DatabaseRequiresEvents
+
+from single_kernel_mongo.lib.charms.data_platform_libs.v0.data_interfaces import (
+    DatabaseRequiresEvents,
+)
 
 PEER_ADDR = {"private-address": "127.4.5.6"}
 REL_DATA = {
+    "username": "blah",
+    "password": "blah",
     "key-file": "key-file-contents",
     "config-server-db": "config-server-db/host:port",
 }
@@ -46,7 +52,7 @@ class TestConfigServerInterface(unittest.TestCase):
         self.addCleanup(self.harness.cleanup)
 
     @patch("ops.framework.EventBase.defer")
-    @patch("charm.ClusterRequirer.update_keyfile")
+    @patch("single_kernel_mongo.managers.mongos_operator.MongosOperator.update_keyfile")
     def test_on_relation_changed_waits_keyfile(self, update_keyfile, defer):
         """Tests that relation changed does not wait for keyfile.
 
@@ -61,36 +67,52 @@ class TestConfigServerInterface(unittest.TestCase):
         update_keyfile.assert_not_called()
         defer.assert_not_called()
 
-    @patch("charm.MongosOperatorCharm.push_file_to_unit")
-    @patch("charm.MongosOperatorCharm.get_keyfile_contents")
-    @patch("charm.MongosOperatorCharm.set_secret")
-    @patch("charm.ClusterRequirer.update_config_server_db")
-    @patch("charm.ClusterRequirer.is_mongos_running")
-    @patch("charm.MongosOperatorCharm.restart_charm_services")
+    @patch("single_kernel_mongo.core.vm_workload.VMWorkload.write")
+    @patch("single_kernel_mongo.core.vm_workload.VMWorkload.read")
+    @patch("single_kernel_mongo.state.charm_state.CharmState.get_keyfile")
+    @patch("single_kernel_mongo.state.charm_state.CharmState.set_keyfile")
+    @patch(
+        "single_kernel_mongo.managers.mongos_operator.MongosOperator.update_config_server_db"
+    )
+    @patch(
+        "single_kernel_mongo.managers.mongos_operator.MongosOperator.is_mongos_running"
+    )
+    @patch(
+        "single_kernel_mongo.managers.mongos_operator.MongosOperator.restart_charm_services"
+    )
     def test_same_keyfile(
         self,
         restart_charm_services,
         is_mongos_running,
         update_config_server_db,
-        set_secret,
+        set_keyfile,
         get_keyfile_contents,
+        read_file,
         push_file_to_unit,
     ):
         """Tests that charm doesn't update keyfile when they are the same."""
         get_keyfile_contents.return_value = REL_DATA["key-file"]
+        read_file.return_value = [REL_DATA["key-file"]]
         relation_id = self.harness.add_relation("cluster", "config-server")
         self.harness.add_relation_unit(relation_id, "config-server/0")
         self.harness.update_relation_data(relation_id, "config-server", REL_DATA)
 
         push_file_to_unit.assert_not_called()
-        set_secret.assert_not_called()
+        set_keyfile.assert_not_called()
 
-    @patch("charm.MongosOperatorCharm.push_file_to_unit")
-    @patch("charm.MongosOperatorCharm.get_keyfile_contents")
-    @patch("charm.MongosOperatorCharm.set_secret")
-    @patch("charm.ClusterRequirer.update_config_server_db", return_value=False)
-    @patch("charm.ClusterRequirer.is_mongos_running")
-    @patch("charm.MongosOperatorCharm.restart_charm_services")
+    @patch("single_kernel_mongo.core.vm_workload.VMWorkload.write")
+    @patch("single_kernel_mongo.state.charm_state.CharmState.get_keyfile")
+    @patch("single_kernel_mongo.state.charm_state.CharmState.set_keyfile")
+    @patch(
+        "single_kernel_mongo.managers.mongos_operator.MongosOperator.update_config_server_db",
+        return_value=False,
+    )
+    @patch(
+        "single_kernel_mongo.managers.mongos_operator.MongosOperator.is_mongos_running"
+    )
+    @patch(
+        "single_kernel_mongo.managers.mongos_operator.MongosOperator.restart_charm_services"
+    )
     def test_non_leader_doesnt_set_keyfile_secret(
         self,
         restart_charm_services,
@@ -110,22 +132,27 @@ class TestConfigServerInterface(unittest.TestCase):
         push_file_to_unit.assert_called()
         set_secret.assert_not_called()
 
-    @patch("charm.MongosOperatorCharm.push_file_to_unit")
-    @patch("charm.MongosOperatorCharm.get_keyfile_contents")
-    @patch("charm.MongosOperatorCharm.set_secret")
-    @patch("charm.ClusterRequirer.is_mongos_running")
-    @patch("charm.MongosOperatorCharm.restart_charm_services")
-    @patch("charm.MongosOperatorCharm.update_mongos_args")
-    @patch("builtins.open", new_callable=mock_open, read_data=MONGOS_VAR)
-    @patch("charm.Path")
+    @patch("single_kernel_mongo.core.vm_workload.VMWorkload.write")
+    @patch("single_kernel_mongo.state.charm_state.CharmState.get_keyfile")
+    @patch("single_kernel_mongo.state.charm_state.CharmState.set_keyfile")
+    @patch(
+        "single_kernel_mongo.managers.mongos_operator.MongosOperator.is_mongos_running"
+    )
+    @patch(
+        "single_kernel_mongo.managers.mongos_operator.MongosOperator.restart_charm_services"
+    )
+    @patch("single_kernel_mongo.managers.config.MongosConfigManager.set_environment")
+    @patch(
+        "single_kernel_mongo.workload.mongos_workload.MongosWorkload.config_server_db",
+        new_callable=mock.PropertyMock(return_value=REL_DATA["config-server-db"]),
+    )
     def test_same_config_db(
         self,
-        path,
-        open,
-        update_mongos_args,
+        fs_config_server_db,
+        set_env,
         restart_charm_services,
         is_mongos_running,
-        set_secret,
+        set_keyfile,
         get_keyfile_contents,
         push_file_to_unit,
     ):
@@ -136,15 +163,24 @@ class TestConfigServerInterface(unittest.TestCase):
         self.harness.add_relation_unit(relation_id, "config-server/0")
         self.harness.update_relation_data(relation_id, "config-server", REL_DATA)
 
-        update_mongos_args.assert_not_called()
+        set_env.assert_not_called()
 
-    @patch("charm.MongosOperatorCharm.push_file_to_unit")
-    @patch("charm.MongosOperatorCharm.get_keyfile_contents")
-    @patch("charm.MongosOperatorCharm.set_secret")
-    @patch("charm.ClusterRequirer.is_mongos_running", return_value=False)
+    @patch(
+        "single_kernel_mongo.workload.mongos_workload.MongosWorkload.config_server_db",
+    )
+    @patch("single_kernel_mongo.core.vm_workload.VMWorkload.update_env")
+    @patch("single_kernel_mongo.core.vm_workload.VMWorkload.write")
+    @patch("single_kernel_mongo.state.charm_state.CharmState.get_keyfile")
+    @patch("single_kernel_mongo.state.charm_state.CharmState.set_keyfile")
+    @patch(
+        "single_kernel_mongo.managers.mongos_operator.MongosOperator.is_mongos_running",
+        return_value=False,
+    )
     @patch("ops.framework.EventBase.defer")
-    @patch("charm.MongosOperatorCharm.restart_charm_services")
-    def retry_restart_mongos(
+    @patch(
+        "single_kernel_mongo.managers.mongos_operator.MongosOperator.restart_charm_services"
+    )
+    def test_retry_restart_mongos(
         self,
         restart_mongos,
         defer,
@@ -152,6 +188,8 @@ class TestConfigServerInterface(unittest.TestCase):
         set_secret,
         get_keyfile_contents,
         push_file_to_unit,
+        update_env,
+        get_env,
     ):
         """Tests that when the charm failed to start mongos it tries again."""
         relation_id = self.harness.add_relation("cluster", "config-server")
@@ -160,22 +198,23 @@ class TestConfigServerInterface(unittest.TestCase):
         restart_mongos.assert_called()
         defer.assert_called()
 
-        relation_id = self.harness.add_relation("cluster", "config-server")
-        self.harness.add_relation_unit(relation_id, "config-server/0")
-
         # update with the same data
         self.harness.update_relation_data(relation_id, "config-server", REL_DATA)
         restart_mongos.assert_called()
 
-    @patch("charm.ClusterRequirer._on_relation_changed")
-    @patch("charm.MongosOperatorCharm.has_departed_run")
-    @patch("charm.MongosOperatorCharm.proceed_on_broken_event")
-    @patch("charm.MongosOperatorCharm.stop_mongos_service")
+    @patch(
+        "single_kernel_mongo.events.cluster.ClusterMongosEventHandler._on_relation_changed"
+    )
+    @patch("single_kernel_mongo.state.charm_state.CharmState.is_scaling_down")
+    @patch("single_kernel_mongo.state.charm_state.CharmState.has_departed_run")
+    @patch(
+        "single_kernel_mongo.managers.mongos_operator.MongosOperator.stop_charm_services"
+    )
     def test_broken_does_not_excute_on_scale_down(
         self,
         stop_mongos_service,
         has_departed_run,
-        proceed_on_broken_event,
+        is_scaling_down,
         rel_changed,
     ):
         # case 1: scale down check has not run yet
@@ -188,18 +227,27 @@ class TestConfigServerInterface(unittest.TestCase):
 
         # case 2: broken event is due to scale down
         has_departed_run.return_value = True
-        proceed_on_broken_event.return_value = False
+        is_scaling_down.return_value = True
+        # proceed_on_broken_event.side_effect = DeferrableFailedHookChecksError
         relation_id = self.harness.add_relation("cluster", "config-server")
         self.harness.add_relation_unit(relation_id, "config-server/0")
         self.harness.update_relation_data(relation_id, "config-server", REL_DATA)
         self.harness.remove_relation(relation_id)
         stop_mongos_service.assert_not_called()
 
-    @patch("charm.ClusterRequirer._on_relation_changed")
-    @patch("charm.MongosOperatorCharm.remove_connection_info")
-    @patch("charm.MongosOperatorCharm.has_departed_run")
-    @patch("charm.MongosOperatorCharm.proceed_on_broken_event")
-    @patch("charm.MongosOperatorCharm.stop_mongos_service")
+    @patch(
+        "single_kernel_mongo.events.cluster.ClusterMongosEventHandler._on_relation_changed"
+    )
+    @patch(
+        "single_kernel_mongo.managers.mongos_operator.MongosOperator.remove_connection_info"
+    )
+    @patch("single_kernel_mongo.state.charm_state.CharmState.has_departed_run")
+    @patch(
+        "single_kernel_mongo.managers.mongos_operator.MongosOperator.assert_proceed_on_broken_event"
+    )
+    @patch(
+        "single_kernel_mongo.managers.mongos_operator.MongosOperator.stop_charm_services"
+    )
     def test_broken_stops_mongos(
         self,
         stop_mongos_service,

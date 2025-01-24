@@ -5,6 +5,9 @@ force-refresh-start:
     Force upgrade of this unit.
     Potential of data loss and downtime.
 
+pre-refresh-check:
+  description: Check if charm is ready to refresh
+
 set-tls-private-key:
   description: Set the privates key, which will be used for certificate signing requests (CSR). Run for each unit separately.
   params:
