@@ -14,8 +14,15 @@ from charms.data_platform_libs.v0.data_interfaces import (
     DatabaseRequestedEvent,
     DatabaseRequires,
 )
+from charms.mongodb.v0.mongo import MongoConnection
 from charms.mongodb.v1.mongos import MongosConnection
-from ops.charm import CharmBase, EventBase, RelationBrokenEvent, RelationChangedEvent
+from ops.charm import (
+    CharmBase,
+    EventBase,
+    RelationBrokenEvent,
+    RelationChangedEvent,
+    RelationCreatedEvent,
+)
 from ops.framework import Object
 from ops.model import (
     ActiveStatus,
@@ -24,6 +31,7 @@ from ops.model import (
     StatusBase,
     WaitingStatus,
 )
+from pymongo.errors import PyMongoError
 
 from config import Config
 
@@ -45,7 +53,7 @@ LIBAPI = 0
 
 # Increment this PATCH version before using `charmcraft publish-lib` or reset
 # to 0 if you are raising the major API version
-LIBPATCH = 13
+LIBPATCH = 15
 
 
 class ClusterProvider(Object):
@@ -55,8 +63,10 @@ class ClusterProvider(Object):
         self,
         charm: CharmBase,
         relation_name: str = Config.Relations.CLUSTER_RELATIONS_NAME,
+        substrate: str = Config.Substrate.VM,
     ) -> None:
         """Constructor for ShardingProvider object."""
+        self.substrate = substrate
         self.relation_name = relation_name
         self.charm = charm
         self.database_provides = DatabaseProvides(
@@ -195,7 +205,9 @@ class ClusterProvider(Object):
             )
             return
 
-        self.charm.client_relations.oversee_users(departed_relation_id, event)
+        # mongos-k8s router is in charge of removing its own users.
+        if self.substrate == Config.Substrate.VM:
+            self.charm.client_relations.oversee_users(departed_relation_id, event)
 
     def update_config_server_db(self, event):
         """Provides related mongos applications with new config server db."""
@@ -264,7 +276,7 @@ class ClusterRequirer(Object):
         super().__init__(charm, self.relation_name)
         self.framework.observe(
             charm.on[self.relation_name].relation_created,
-            self.database_requires._on_relation_created_event,
+            self._on_relation_created_handler,
         )
 
         self.framework.observe(
@@ -280,6 +292,13 @@ class ClusterRequirer(Object):
         self.framework.observe(
             charm.on[self.relation_name].relation_broken, self._on_relation_broken
         )
+
+    def _on_relation_created_handler(self, event: RelationCreatedEvent) -> None:
+        logger.info("Integrating to config-server")
+        self.charm.status.set_and_share_status(
+            WaitingStatus("Connecting to config-server")
+        )
+        self.database_requires._on_relation_created_event(event)
 
     def _on_database_created(self, event) -> None:
         if self.charm.upgrade_in_progress:
@@ -329,6 +348,8 @@ class ClusterRequirer(Object):
 
         # avoid restarting mongos when possible
         if not updated_keyfile and not updated_config and self.is_mongos_running():
+            # mongos-k8s router must update its users on start
+            self._update_k8s_users(event)
             return
 
         # mongos is not available until it is using new secrets
@@ -349,6 +370,22 @@ class ClusterRequirer(Object):
         if self.charm.unit.is_leader():
             self.charm.mongos_initialised = True
 
+        # mongos-k8s router must update its users on start
+        self._update_k8s_users(event)
+
+    def _update_k8s_users(self, event) -> None:
+        if self.substrate != Config.Substrate.K8S:
+            return
+
+        # K8s can handle its 1:Many users after being initialized
+        try:
+            self.charm.client_relations.oversee_users(None, None)
+        except PyMongoError:
+            event.defer()
+            logger.debug(
+                "failed to add users on mongos-k8s router, will defer and try again."
+            )
+
     def _on_relation_broken(self, event: RelationBrokenEvent) -> None:
         # Only relation_deparated events can check if scaling down
         if not self.charm.has_departed_run(event.relation.id):
@@ -362,6 +399,13 @@ class ClusterRequirer(Object):
             logger.info(
                 "Skipping relation broken event, broken event due to scale down"
             )
+            return
+
+        try:
+            self.handle_mongos_k8s_users_removal()
+        except PyMongoError:
+            logger.debug("Trouble removing router users, will defer and try again")
+            event.defer()
             return
 
         self.charm.stop_mongos_service()
@@ -378,9 +422,24 @@ class ClusterRequirer(Object):
         if self.substrate == Config.Substrate.VM:
             self.charm.remove_connection_info()
         else:
-            self.db_initialised = False
+            self.charm.db_initialised = False
 
     # BEGIN: helper functions
+    def handle_mongos_k8s_users_removal(self) -> None:
+        """Handles the removal of all client mongos-k8s users and the mongos-k8s admin user.
+
+        Raises:
+            PyMongoError
+        """
+        if not self.charm.unit.is_leader() or self.substrate != Config.Substrate.K8S:
+            return
+
+        self.charm.client_relations.remove_all_relational_users()
+
+        # now that the client mongos users have been removed we can remove ourself
+        with MongoConnection(self.charm.mongo_config) as mongo:
+            mongo.drop_user(self.charm.mongo_config.username)
+
     def pass_hook_checks(self, event):
         """Runs the pre-hooks checks for ClusterRequirer, returns True if all pass."""
         if self.is_mongos_tls_missing():
@@ -396,15 +455,6 @@ class ClusterRequirer(Object):
                 "Deferring %s. mongos uses TLS, but config-server does not. Please synchronise encryption methods.",
                 str(type(event)),
             )
-            event.defer()
-            return False
-
-        if not self.is_ca_compatible():
-            logger.info(
-                "Deferring %s. mongos is integrated to a different CA than the config server. Please use the same CA for all cluster components.",
-                str(type(event)),
-            )
-
             event.defer()
             return False
 
