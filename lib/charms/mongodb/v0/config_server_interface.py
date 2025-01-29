@@ -53,7 +53,7 @@ LIBAPI = 0
 
 # Increment this PATCH version before using `charmcraft publish-lib` or reset
 # to 0 if you are raising the major API version
-LIBPATCH = 15
+LIBPATCH = 1
 
 
 class ClusterProvider(Object):
@@ -104,15 +104,6 @@ class ClusterProvider(Object):
                 "Skipping %s. ClusterProvider is only be executed by config-server",
                 type(event),
             )
-            return False
-
-        # race condition where mongos cannot start without TLS certificates, but mongos cannot
-        # request TLS certificates without knowing the name of the config-server.
-        if self.is_waiting_to_request_certs():
-            logger.info(
-                "Mongos was waiting for config-server to enable TLS. Wait for TLS to be enabled until starting mongos."
-            )
-            event.defer()
             return False
 
         if self.charm.upgrade_in_progress:
@@ -333,7 +324,7 @@ class ClusterRequirer(Object):
             self.charm.share_connection_info()
 
     def _on_relation_changed(self, event) -> None:
-        """Starts/restarts mongos with config server information."""
+        """Starts/restarts monogs with config server information."""
         if not self.pass_hook_checks(event):
             logger.info("pre-hook checks did not pass, not executing event")
             return
@@ -463,6 +454,15 @@ class ClusterRequirer(Object):
             logger.info(
                 "Deferring %s. mongos uses TLS, but config-server does not. Please synchronise encryption methods.",
                 str(type(event)),
+            )
+            event.defer()
+            return False
+
+        # race condition where mongos cannot start without TLS certificates, but mongos cannot
+        # request TLS certificates without knowing the name of the config-server.
+        if self.is_waiting_to_request_certs():
+            logger.info(
+                "Mongos was waiting for config-server to enable TLS. Wait for TLS to be enabled until starting mongos."
             )
             event.defer()
             return False
