@@ -91,6 +91,9 @@ class ClusterProvider(Object):
 
     def pass_hook_checks(self, event: EventBase) -> bool:
         """Runs the pre-hooks checks for ClusterProvider, returns True if all pass."""
+        if not self.charm.unit.is_leader():
+            return False
+
         if not self.charm.db_initialised:
             logger.info("Deferring %s. db is not initialised.", type(event))
             event.defer()
@@ -103,7 +106,13 @@ class ClusterProvider(Object):
             )
             return False
 
-        if not self.charm.unit.is_leader():
+        # race condition where mongos cannot start without TLS certificates, but mongos cannot
+        # request TLS certificates without knowing the name of the config-server.
+        if self.is_waiting_to_request_certs():
+            logger.info(
+                "Mongos was waiting for config-server to enable TLS. Wait for TLS to be enabled until starting mongos."
+            )
+            event.defer()
             return False
 
         if self.charm.upgrade_in_progress:
@@ -324,7 +333,7 @@ class ClusterRequirer(Object):
             self.charm.share_connection_info()
 
     def _on_relation_changed(self, event) -> None:
-        """Starts/restarts monogs with config server information."""
+        """Starts/restarts mongos with config server information."""
         if not self.pass_hook_checks(event):
             logger.info("pre-hook checks did not pass, not executing event")
             return
@@ -542,6 +551,22 @@ class ClusterRequirer(Object):
             self.model.get_relation(Config.Relations.CLUSTER_RELATIONS_NAME).id,
             CONFIG_SERVER_DB_KEY,
         )
+
+    def is_waiting_to_request_certs(self) -> bool:
+        """Returns True if mongos has been waiting for config server in order to request certs."""
+        if not self.charm.model.get_relation(Config.TLS.TLS_PEER_RELATION):
+            return False
+
+        mongos_tls_ca = self.charm.tls.get_tls_secret(
+            internal=True, label_name=Config.TLS.SECRET_CA_LABEL
+        )
+
+        # our CA is none until certs have been requested. We cannot request certs until integrated
+        # to config-server.
+        if not mongos_tls_ca:
+            return True
+
+        return False
 
     def is_ca_compatible(self) -> bool:
         """Returns true if both the mongos and the config server use the same CA."""

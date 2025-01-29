@@ -156,16 +156,6 @@ class MongoDBTLS(Object):
 
     def _on_tls_relation_joined(self, event: RelationJoinedEvent) -> None:
         """Request certificate when TLS relation joined."""
-        if (
-            self.charm.is_role(Config.Role.MONGOS)
-            and not self.charm.has_config_server()
-        ):
-            logger.info(
-                "mongos is not running (not integrated to config-server) deferring renewal of certificates."
-            )
-            event.defer()
-            return
-
         if self.charm.upgrade_in_progress:
             logger.warning(
                 "Enabling TLS is not supported during an upgrade. The charm may be in a broken, unrecoverable state."
@@ -209,13 +199,6 @@ class MongoDBTLS(Object):
 
     def _on_certificate_available(self, event: CertificateAvailableEvent) -> None:
         """Enable TLS when TLS certificate available."""
-        if self.charm.is_role(Config.Role.MONGOS) and not self.charm.config_server_db:
-            logger.debug(
-                "mongos requires config-server in order to start, do not restart with TLS until integrated to config-server"
-            )
-            event.defer()
-            return
-
         # mongos must recieve its certificates in order for it to get initialised
         if not self.charm.db_initialised and not self.charm.is_role(Config.Role.MONGOS):
             logger.info("Deferring %s. db is not initialised.", str(type(event)))
