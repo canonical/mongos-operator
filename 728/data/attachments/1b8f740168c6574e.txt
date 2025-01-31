@@ -1,0 +1,58 @@
+[32mINFO    [0m integration.upgrade_tests.test_rollback:test_rollback.py:84 Wait for upgrade to fail
+[32mINFO    [0m integration.upgrade_tests.test_rollback:test_rollback.py:95 Re-refresh the charm
+[32mINFO    [0m integration.upgrade_tests.test_rollback:test_rollback.py:107 Wait for the charm to be rolled back
+[32mINFO    [0m juju.model:model.py:2972 Waiting for model:
+  mongos/0 [idle] active: 
+  mongos/1 [idle] active:
+[32mINFO    [0m pytest_operator.plugin:plugin.py:834 Model status:
+
+Model  Controller           Cloud/Region         Version  SLA          Timestamp
+test   localhost-localhost  localhost/localhost  3.6.1    unsupported  01:38:06Z
+
+App            Version  Status  Scale  Charm        Channel  Rev  Exposed  Message
+application             active      2  application             0  no       
+config-server           active      1  mongodb      6/edge   209  no       
+mongos                  active      2  mongos                  2  no       
+shard                   active      1  mongodb      6/edge   209  no       
+
+Unit              Workload  Agent  Machine  Public address  Ports            Message
+application/0     active    idle   0        10.116.156.218                   
+  mongos/0        active    idle            10.116.156.218                   
+application/1*    active    idle   1        10.116.156.5                     
+  mongos/1*       active    idle            10.116.156.5                     
+config-server/0*  active    idle   2        10.116.156.83   27017-27018/tcp  
+shard/0*          active    idle   3        10.116.156.94   27017/tcp        Primary
+
+Machine  State    Address         Inst id        Base          AZ  Message
+0        started  10.116.156.218  juju-e26174-0  ubuntu@22.04      Running
+1        started  10.116.156.5    juju-e26174-1  ubuntu@22.04      Running
+2        started  10.116.156.83   juju-e26174-2  ubuntu@22.04      Running
+3        started  10.116.156.94   juju-e26174-3  ubuntu@22.04      Running
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:840 Juju error logs:
+
+machine-1: 01:31:49 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-1: 01:31:49 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-application-1: 01:31:50 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+machine-0: 01:31:51 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-0: 01:31:51 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-application-0: 01:31:52 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+machine-2: 01:31:57 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-2: 01:31:57 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-config-server-0: 01:31:57 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+machine-3: 01:32:01 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-3: 01:32:01 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-shard-0: 01:32:01 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+unit-config-server-0: 01:32:11 ERROR unit.config-server/0.juju-log Unable to set params: ['vm.max_map_count']
+unit-config-server-0: 01:32:11 ERROR unit.config-server/0.juju-log Error setting values on sysctl: Unable to set params: ['vm.max_map_count']
+unit-shard-0: 01:32:13 ERROR unit.shard/0.juju-log Unable to set params: ['vm.max_map_count']
+unit-shard-0: 01:32:13 ERROR unit.shard/0.juju-log Error setting values on sysctl: Unable to set params: ['vm.max_map_count']
+unit-config-server-0: 01:32:48 ERROR unit.config-server/0.juju-log _on_secret_remove: Secret secret:cue2gb6f8kqd48kkcgf0 seems to have no observers, could be removed
+unit-shard-0: 01:32:51 ERROR unit.shard/0.juju-log _on_secret_remove: Secret secret:cue2gbuf8kqd48kkcgfg seems to have no observers, could be removed
+unit-mongos-0: 01:33:06 ERROR juju.worker.meterstatus error running "meter-status-changed": exit status 1
+unit-mongos-1: 01:33:06 ERROR juju.worker.meterstatus error running "meter-status-changed": exit status 1
+unit-config-server-0: 01:33:25 ERROR unit.config-server/0.juju-log config-server:7: Failed to add shard shard to the config server, error=OperationFailure("Authentication failed., full error: {'ok': 0.0, 'errmsg': 'Authentication failed.', 'code': 18, 'codeName': 'AuthenticationFailed', '$clusterTime': {'clusterTime': Timestamp(1738287204, 1), 'signature': {'hash': b'\\x8a\\x1e\\xbb\\xed\\xf6N\\x8d]\\xfd\\x96\\x90\\xa9\\x7f\\xd6\\xe9\\xee\\xfb\\x1de\\x1f', 'keyId': 7465886481781882905}}, 'operationTime': Timestamp(1738287204, 1)}")
+unit-config-server-0: 01:33:25 ERROR unit.config-server/0.juju-log config-server:7: shard shard does not have the same auth as the config server.
+unit-shard-0: 01:33:43 ERROR unit.shard/0.juju-log _on_secret_remove: Secret secret:cue2gbuf8kqd48kkcgfg seems to have no observers, could be removed
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:904 Forgetting main...
