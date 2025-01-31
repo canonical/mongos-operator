@@ -178,7 +178,7 @@ async def deploy_cluster(ops_test: OpsTest) -> None:
     await wait_for_mongos_units_blocked(ops_test, MONGOS_APP_NAME, timeout=TIMEOUT)
 
 
-async def build_cluster(ops_test: OpsTest) -> None:
+async def build_cluster(ops_test: OpsTest, integrate_with_mongos=True) -> None:
     """Connects the cluster components to each other."""
     # prepare sharded cluster
     await ops_test.model.wait_for_idle(
@@ -198,13 +198,17 @@ async def build_cluster(ops_test: OpsTest) -> None:
         timeout=TIMEOUT,
     )
 
-    # connect sharded cluster to mongos
-    await ops_test.model.integrate(
-        f"{MONGOS_APP_NAME}:{CLUSTER_REL_NAME}",
-        f"{CONFIG_SERVER_APP_NAME}:{CLUSTER_REL_NAME}",
-    )
+    apps = [CONFIG_SERVER_APP_NAME, SHARD_APP_NAME]
+    if integrate_with_mongos:
+        # connect sharded cluster to mongos
+        await ops_test.model.integrate(
+            f"{MONGOS_APP_NAME}:{CLUSTER_REL_NAME}",
+            f"{CONFIG_SERVER_APP_NAME}:{CLUSTER_REL_NAME}",
+        )
+        apps.append(MONGOS_APP_NAME)
+
     await ops_test.model.wait_for_idle(
-        apps=[CONFIG_SERVER_APP_NAME, SHARD_APP_NAME, MONGOS_APP_NAME],
+        apps=apps,
         idle_period=20,
         status="active",
         timeout=TIMEOUT,
@@ -216,7 +220,7 @@ async def deploy_tls(ops_test: OpsTest) -> None:
     await ops_test.model.deploy(CERTS_APP_NAME, channel="edge")
 
     await ops_test.model.wait_for_idle(
-        apps=[CERTS_APP_NAME, CONFIG_SERVER_APP_NAME],
+        apps=[CERTS_APP_NAME],
         idle_period=20,
         raise_on_blocked=False,
         timeout=TIMEOUT,
@@ -255,12 +259,12 @@ async def rotate_and_verify_certs(ops_test: OpsTest) -> None:
     for unit in ops_test.model.applications[MONGOS_APP_NAME].units:
         original_tls_info[unit.name] = {}
 
-        original_tls_info[unit.name][
-            "external_cert_contents"
-        ] = await get_file_contents(ops_test, unit, EXTERNAL_CERT_PATH)
-        original_tls_info[unit.name][
-            "internal_cert_contents"
-        ] = await get_file_contents(ops_test, unit, INTERNAL_CERT_PATH)
+        original_tls_info[unit.name]["external_cert_contents"] = (
+            await get_file_contents(ops_test, unit, EXTERNAL_CERT_PATH)
+        )
+        original_tls_info[unit.name]["internal_cert_contents"] = (
+            await get_file_contents(ops_test, unit, INTERNAL_CERT_PATH)
+        )
         original_tls_info[unit.name]["external_cert_time"] = await time_file_created(
             ops_test, unit.name, EXTERNAL_CERT_PATH
         )
