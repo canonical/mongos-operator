@@ -1,0 +1,141 @@
+[32mINFO    [0m juju.model:model.py:2098 Deploying ch:amd64/jammy/self-signed-certificates-238
+[32mINFO    [0m juju.model:model.py:2972 Waiting for model:
+  mongos/0 [executing] maintenance: disabling TLS
+  mongos/1 [executing] maintenance: disabling TLS
+[32mINFO    [0m juju.model:model.py:2972 Waiting for model:
+  mongos/0 [idle] active: 
+  mongos/1 [idle] active: 
+[32mINFO    [0m juju.model:model.py:2972 Waiting for model:
+  mongos/0 [idle] active: 
+  mongos/1 [idle] active: 
+[32mINFO    [0m juju.model:model.py:2972 Waiting for model:
+  self-signed-certificates-separate/0 [allocating] waiting: waiting for machine
+[32mINFO    [0m juju.model:model.py:2972 Waiting for model:
+  self-signed-certificates-separate/0 [allocating] waiting: waiting for machine
+[32mINFO    [0m juju.model:model.py:2972 Waiting for model:
+  mongos/0 [idle] active: 
+  mongos/1 [idle] active: 
+[32mINFO    [0m juju.model:model.py:2972 Waiting for model:
+  mongos/0 [executing] maintenance: enabling TLS
+  mongos/1 [executing] maintenance: enabling TLS
+[32mINFO    [0m juju.model:model.py:2972 Waiting for model:
+  mongos/0 [executing] maintenance: enabling TLS
+  mongos/1 [executing] maintenance: enabling TLS
+[32mINFO    [0m juju.model:model.py:2972 Waiting for model:
+  mongos/0 [executing] maintenance: enabling TLS
+  mongos/1 [executing] maintenance: enabling TLS
+[32mINFO    [0m juju.model:model.py:2972 Waiting for model:
+  mongos/0 [executing] maintenance: enabling TLS
+  mongos/1 [executing] maintenance: enabling TLS
+[32mINFO    [0m juju.model:model.py:2972 Waiting for model:
+  mongos/0 [executing] maintenance: enabling TLS
+  mongos/1 [executing] maintenance: enabling TLS
+[32mINFO    [0m juju.model:model.py:2972 Waiting for model:
+  mongos/0 [idle] waiting: Waiting for MongoDB to start
+  mongos/1 [idle] waiting: Waiting for MongoDB to start
+[32mINFO    [0m pytest_operator.plugin:plugin.py:834 Model status:
+
+Model  Controller           Cloud/Region         Version  SLA          Timestamp
+test   localhost-localhost  localhost/localhost  3.6.1    unsupported  02:24:27Z
+
+App                                Version  Status  Scale  Charm                     Channel      Rev  Exposed  Message
+application                                 active      2  application                              0  no       
+config-server                               active      1  mongodb                   6/edge       199  no       
+mongos                                      active      2  mongos                                   0  no       
+self-signed-certificates                    active      1  self-signed-certificates  latest/edge  238  no       
+self-signed-certificates-separate           active      1  self-signed-certificates  latest/edge  238  no       
+shard                                       active      1  mongodb                   6/edge       199  no       
+
+Unit                                  Workload  Agent  Machine  Public address  Ports            Message
+application/0*                        active    idle   0        10.225.109.248                   
+  mongos/1                            blocked   idle            10.225.109.248                   mongos CA and Config-Server CA don't match.
+application/1                         active    idle   1        10.225.109.219                   
+  mongos/0*                           blocked   idle            10.225.109.219                   mongos CA and Config-Server CA don't match.
+config-server/0*                      active    idle   2        10.225.109.173  27017-27018/tcp  Primary
+self-signed-certificates-separate/0*  active    idle   5        10.225.109.214                   
+self-signed-certificates/0*           active    idle   4        10.225.109.18                    
+shard/0*                              active    idle   3        10.225.109.102  27017/tcp        Primary
+
+Machine  State    Address         Inst id        Base          AZ  Message
+0        started  10.225.109.248  juju-34869f-0  ubuntu@22.04      Running
+1        started  10.225.109.219  juju-34869f-1  ubuntu@22.04      Running
+2        started  10.225.109.173  juju-34869f-2  ubuntu@22.04      Running
+3        started  10.225.109.102  juju-34869f-3  ubuntu@22.04      Running
+4        started  10.225.109.18   juju-34869f-4  ubuntu@22.04      Running
+5        started  10.225.109.214  juju-34869f-5  ubuntu@22.04      Running
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:840 Juju error logs:
+
+machine-0: 01:32:33 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-0: 01:32:33 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-application-0: 01:32:33 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+machine-1: 01:32:46 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-1: 01:32:46 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-application-1: 01:32:46 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+machine-2: 01:32:55 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-2: 01:32:55 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-config-server-0: 01:32:55 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+unit-config-server-0: 01:32:55 ERROR juju.worker.dependency "uniter" manifold worker returned unexpected error: preparing operation "install ch:amd64/mongodb-199" for config-server/0: failed to download charm "ch:amd64/mongodb-199" from API server: download request with archiveSha256 length 0 not valid
+machine-3: 01:32:56 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-3: 01:32:56 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-shard-0: 01:32:57 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+unit-shard-0: 01:32:57 ERROR juju.worker.dependency "uniter" manifold worker returned unexpected error: preparing operation "install ch:amd64/mongodb-199" for shard/0: failed to download charm "ch:amd64/mongodb-199" from API server: download request with archiveSha256 length 0 not valid
+unit-config-server-0: 01:32:58 ERROR juju.worker.dependency "uniter" manifold worker returned unexpected error: preparing operation "install ch:amd64/mongodb-199" for config-server/0: failed to download charm "ch:amd64/mongodb-199" from API server: download request with archiveSha256 length 0 not valid
+unit-shard-0: 01:33:00 ERROR juju.worker.dependency "uniter" manifold worker returned unexpected error: preparing operation "install ch:amd64/mongodb-199" for shard/0: failed to download charm "ch:amd64/mongodb-199" from API server: download request with archiveSha256 length 0 not valid
+unit-config-server-0: 01:33:02 ERROR juju.worker.dependency "uniter" manifold worker returned unexpected error: preparing operation "install ch:amd64/mongodb-199" for config-server/0: failed to download charm "ch:amd64/mongodb-199" from API server: download request with archiveSha256 length 0 not valid
+unit-shard-0: 01:33:04 ERROR juju.worker.dependency "uniter" manifold worker returned unexpected error: preparing operation "install ch:amd64/mongodb-199" for shard/0: failed to download charm "ch:amd64/mongodb-199" from API server: download request with archiveSha256 length 0 not valid
+unit-config-server-0: 01:33:08 ERROR juju.worker.dependency "uniter" manifold worker returned unexpected error: preparing operation "install ch:amd64/mongodb-199" for config-server/0: failed to download charm "ch:amd64/mongodb-199" from API server: download request with archiveSha256 length 0 not valid
+unit-shard-0: 01:33:09 ERROR juju.worker.dependency "uniter" manifold worker returned unexpected error: preparing operation "install ch:amd64/mongodb-199" for shard/0: failed to download charm "ch:amd64/mongodb-199" from API server: download request with archiveSha256 length 0 not valid
+unit-config-server-0: 01:33:14 ERROR juju.worker.dependency "uniter" manifold worker returned unexpected error: preparing operation "install ch:amd64/mongodb-199" for config-server/0: failed to download charm "ch:amd64/mongodb-199" from API server: download request with archiveSha256 length 0 not valid
+unit-shard-0: 01:33:16 ERROR juju.worker.dependency "uniter" manifold worker returned unexpected error: preparing operation "install ch:amd64/mongodb-199" for shard/0: failed to download charm "ch:amd64/mongodb-199" from API server: download request with archiveSha256 length 0 not valid
+unit-config-server-0: 01:33:21 ERROR juju.worker.dependency "uniter" manifold worker returned unexpected error: preparing operation "install ch:amd64/mongodb-199" for config-server/0: failed to download charm "ch:amd64/mongodb-199" from API server: download request with archiveSha256 length 0 not valid
+unit-shard-0: 01:33:23 ERROR juju.worker.dependency "uniter" manifold worker returned unexpected error: preparing operation "install ch:amd64/mongodb-199" for shard/0: failed to download charm "ch:amd64/mongodb-199" from API server: download request with archiveSha256 length 0 not valid
+unit-config-server-0: 01:33:30 ERROR juju.worker.dependency "uniter" manifold worker returned unexpected error: preparing operation "install ch:amd64/mongodb-199" for config-server/0: failed to download charm "ch:amd64/mongodb-199" from API server: download request with archiveSha256 length 0 not valid
+unit-shard-0: 01:33:32 ERROR juju.worker.dependency "uniter" manifold worker returned unexpected error: preparing operation "install ch:amd64/mongodb-199" for shard/0: failed to download charm "ch:amd64/mongodb-199" from API server: download request with archiveSha256 length 0 not valid
+unit-config-server-0: 01:33:41 ERROR juju.worker.dependency "uniter" manifold worker returned unexpected error: preparing operation "install ch:amd64/mongodb-199" for config-server/0: failed to download charm "ch:amd64/mongodb-199" from API server: download request with archiveSha256 length 0 not valid
+unit-shard-0: 01:33:42 ERROR juju.worker.dependency "uniter" manifold worker returned unexpected error: preparing operation "install ch:amd64/mongodb-199" for shard/0: failed to download charm "ch:amd64/mongodb-199" from API server: download request with archiveSha256 length 0 not valid
+unit-config-server-0: 01:33:54 ERROR juju.worker.dependency "uniter" manifold worker returned unexpected error: preparing operation "install ch:amd64/mongodb-199" for config-server/0: failed to download charm "ch:amd64/mongodb-199" from API server: download request with archiveSha256 length 0 not valid
+unit-shard-0: 01:33:54 ERROR juju.worker.dependency "uniter" manifold worker returned unexpected error: preparing operation "install ch:amd64/mongodb-199" for shard/0: failed to download charm "ch:amd64/mongodb-199" from API server: download request with archiveSha256 length 0 not valid
+unit-config-server-0: 01:34:10 ERROR juju.worker.dependency "uniter" manifold worker returned unexpected error: preparing operation "install ch:amd64/mongodb-199" for config-server/0: failed to download charm "ch:amd64/mongodb-199" from API server: download request with archiveSha256 length 0 not valid
+unit-shard-0: 01:34:11 ERROR juju.worker.dependency "uniter" manifold worker returned unexpected error: preparing operation "install ch:amd64/mongodb-199" for shard/0: failed to download charm "ch:amd64/mongodb-199" from API server: download request with archiveSha256 length 0 not valid
+unit-config-server-0: 01:35:27 ERROR unit.config-server/0.juju-log _on_secret_remove: Secret secret:cufcniij0cqd16264te0 seems to have no observers, could be removed
+unit-shard-0: 01:35:30 ERROR unit.shard/0.juju-log _on_secret_remove: Secret secret:cufcnjij0cqd16264teg seems to have no observers, could be removed
+unit-mongos-1: 01:35:47 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+unit-mongos-0: 01:35:47 ERROR juju.worker.meterstatus error running "meter-status-changed": exit status 1
+unit-config-server-0: 01:36:31 ERROR unit.config-server/0.juju-log config-server:7: Failed to add shard shard to the config server, error=OperationFailure("Authentication failed., full error: {'ok': 0.0, 'errmsg': 'Authentication failed.', 'code': 18, 'codeName': 'AuthenticationFailed', '$clusterTime': {'clusterTime': Timestamp(1738460190, 1), 'signature': {'hash': b'\\x9dK\\xf6\\xc0\\xb46]\\xa3\\xb8\\xadG=\\xc8\\xccb%!\\x89+b', 'keyId': 7466629335030431770}}, 'operationTime': Timestamp(1738460190, 1)}")
+unit-config-server-0: 01:36:31 ERROR unit.config-server/0.juju-log config-server:7: shard shard does not have the same auth as the config server.
+unit-shard-0: 01:36:38 ERROR unit.shard/0.juju-log _on_secret_remove: Secret secret:cufcnjij0cqd16264teg seems to have no observers, could be removed
+machine-4: 01:44:21 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-4: 01:44:21 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-self-signed-certificates-0: 01:44:21 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+unit-mongos-0: 01:44:54 ERROR unit.mongos/0.juju-log certificates:9: Non-existing secret unit:int-cert-secret was attempted to be removed.
+unit-mongos-0: 01:44:54 ERROR unit.mongos/0.juju-log certificates:9: Non-existing secret unit:ext-cert-secret was attempted to be removed.
+unit-mongos-1: 01:44:54 ERROR unit.mongos/1.juju-log certificates:9: Non-existing secret unit:int-cert-secret was attempted to be removed.
+unit-mongos-1: 01:44:55 ERROR unit.mongos/1.juju-log certificates:9: Non-existing secret unit:ext-cert-secret was attempted to be removed.
+unit-config-server-0: 01:47:52 ERROR unit.config-server/0.juju-log certificates:10: Non-existing secret unit:int-cert-secret was attempted to be removed.
+unit-config-server-0: 01:47:52 ERROR unit.config-server/0.juju-log certificates:10: Non-existing secret unit:ext-cert-secret was attempted to be removed.
+unit-shard-0: 01:47:55 ERROR unit.shard/0.juju-log certificates:11: Non-existing secret unit:int-cert-secret was attempted to be removed.
+unit-shard-0: 01:47:56 ERROR unit.shard/0.juju-log certificates:11: Non-existing secret unit:ext-cert-secret was attempted to be removed.
+unit-config-server-0: 01:48:46 ERROR unit.config-server/0.juju-log _on_secret_remove: Secret secret:cufcti2j0cqd16264tl0 seems to have no observers, could be removed
+unit-config-server-0: 01:48:49 ERROR unit.config-server/0.juju-log _on_secret_remove: Secret secret:cufco7aj0cqd16264tf0 seems to have no observers, could be removed
+unit-shard-0: 01:48:49 ERROR unit.shard/0.juju-log _on_secret_remove: Secret secret:cufctiqj0cqd16264tmg seems to have no observers, could be removed
+unit-config-server-0: 01:53:14 ERROR unit.config-server/0.juju-log _on_secret_remove: Secret secret:cufcogij0cqd16264tg0 seems to have no observers, could be removed
+unit-mongos-0: 02:06:55 ERROR juju.worker.dependency "uniter" manifold worker returned unexpected error: relation scope id "9664da53-707c-440d-8996-ede11734869f:r#9#self-signed-certificates": settings 9664da53-707c-440d-8996-ede11734869f:r#9#self-signed-certificates not found (not found)
+unit-mongos-1: 02:12:43 ERROR unit.mongos/1.juju-log certificates:12: Non-existing secret unit:int-cert-secret was attempted to be removed.
+unit-mongos-1: 02:12:44 ERROR unit.mongos/1.juju-log certificates:12: Non-existing secret unit:ext-cert-secret was attempted to be removed.
+unit-mongos-0: 02:12:44 ERROR unit.mongos/0.juju-log certificates:12: Non-existing secret unit:int-cert-secret was attempted to be removed.
+unit-mongos-0: 02:12:45 ERROR unit.mongos/0.juju-log certificates:12: Non-existing secret unit:ext-cert-secret was attempted to be removed.
+unit-mongos-0: 02:18:12 ERROR juju.worker.dependency "uniter" manifold worker returned unexpected error: relation scope id "9664da53-707c-440d-8996-ede11734869f:r#12#self-signed-certificates": settings 9664da53-707c-440d-8996-ede11734869f:r#12#self-signed-certificates not found (not found)
+machine-5: 02:19:44 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-5: 02:19:44 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-self-signed-certificates-separate-0: 02:19:44 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+unit-mongos-0: 02:20:14 ERROR unit.mongos/0.juju-log certificates:13: Non-existing secret unit:int-cert-secret was attempted to be removed.
+unit-mongos-0: 02:20:14 ERROR unit.mongos/0.juju-log certificates:13: Non-existing secret unit:ext-cert-secret was attempted to be removed.
+unit-mongos-1: 02:20:14 ERROR unit.mongos/1.juju-log certificates:13: Non-existing secret unit:int-cert-secret was attempted to be removed.
+unit-mongos-1: 02:20:15 ERROR unit.mongos/1.juju-log certificates:13: Non-existing secret unit:ext-cert-secret was attempted to be removed.
+unit-mongos-1: 02:24:14 ERROR unit.mongos/1.juju-log mongos is integrated to a different CA than the config server. Please use the same CA for all cluster components.
+unit-mongos-1: 02:24:14 ERROR unit.mongos/1.juju-log mongos is integrated to a different CA than the config server. Please use the same CA for all cluster components.
+unit-mongos-0: 02:24:25 ERROR unit.mongos/0.juju-log mongos is integrated to a different CA than the config server. Please use the same CA for all cluster components.
+unit-mongos-0: 02:24:25 ERROR unit.mongos/0.juju-log mongos is integrated to a different CA than the config server. Please use the same CA for all cluster components.
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:904 Forgetting main...
