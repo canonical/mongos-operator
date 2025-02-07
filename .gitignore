@@ -11,3 +11,10 @@ __pycache__/
 .idea
 .vscode/
 coverage.xml
+
+# Local .terraform directories
+**/.terraform/*
+
+# .tfstate files
+*.tfstate
+*.tfstate.*
