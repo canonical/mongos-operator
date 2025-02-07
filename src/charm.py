@@ -560,6 +560,18 @@ class MongosOperatorCharm(ops.CharmBase):
             self.unit_host(self.unit)
         ]
 
+    def get_ext_mongos_host(
+        self, unit, incl_port=False
+    ) -> Optional[str]:  # TODO incl_port
+        """Returns the external host for the given unit."""
+        if not self.is_external_client:
+            return None
+
+        if not incl_port:
+            return self.unit_host(unit)
+        else:
+            return f"{self.unit_host(unit)}:{Config.MONGOS_PORT}"
+
     @property
     def is_external_client(self) -> Optional[str]:
         """Returns the database requested by the hosting application of the subordinate charm."""
