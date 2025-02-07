@@ -4,7 +4,7 @@
 variable "app_name" {
   description = "Application name"
   type        = string
-  default     = "mongodb"
+  default     = "mongos"
 }
 
 variable "channel" {
