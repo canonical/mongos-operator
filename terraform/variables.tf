@@ -38,12 +38,6 @@ variable "units" {
   default     = 3
 }
 
-variable "constraints" {
-  description = "String listing constraints for this application"
-  type        = string
-  default     = "arch=amd64"
-}
-
 variable "machines" {
   description = "List of machines for placement"
   type        = list(string)

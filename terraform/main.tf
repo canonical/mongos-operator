@@ -13,7 +13,6 @@ resource "juju_application" "mongos" {
   model       = var.model
   name        = var.app_name
   units       = var.units
-  constraints = var.constraints
 
 
   # TODO: uncomment once final fixes have been added for:
