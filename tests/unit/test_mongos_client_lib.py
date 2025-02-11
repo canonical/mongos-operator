@@ -6,7 +6,7 @@ from unittest.mock import patch
 
 from ops.testing import Harness
 
-from charm import MongosOperatorCharm
+from charm import MongosVMCharm
 
 from .helpers import patch_network_get
 
@@ -42,7 +42,7 @@ class TestMongosInterface(unittest.TestCase):
             # Ignore the events not existing before the first test.
             pass
 
-        self.harness = Harness(MongosOperatorCharm)
+        self.harness = Harness(MongosVMCharm)
         self.harness.begin()
         self.harness.add_relation("router-peers", "router-peers")
         self.harness.set_leader(True)

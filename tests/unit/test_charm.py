@@ -12,7 +12,7 @@ from unittest import mock
 from ops.model import BlockedStatus, WaitingStatus
 from ops.testing import Harness
 
-from charm import MongosOperatorCharm
+from charm import MongosVMCharm
 
 from .helpers import patch_network_get
 
@@ -46,7 +46,7 @@ class TestCharm(unittest.TestCase):
             # Ignore the events not existing before the first test.
             pass
 
-        self.harness = Harness(MongosOperatorCharm)
+        self.harness = Harness(MongosVMCharm)
         self.addCleanup(self.harness.cleanup)
         self.harness.begin()
         self.peer_rel_id = self.harness.add_relation("router-peers", "router-peers")

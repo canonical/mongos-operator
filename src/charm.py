@@ -12,7 +12,7 @@ from single_kernel_mongo.core.structured_config import MongosCharmConfig
 from single_kernel_mongo.managers.mongos_operator import MongosOperator
 
 
-class MongosOperatorCharm(AbstractMongoCharm[MongosCharmConfig, MongosOperator]):
+class MongosVMCharm(AbstractMongoCharm[MongosCharmConfig, MongosOperator]):
     config_type = MongosCharmConfig
     operator_type = MongosOperator
     substrate = Substrates.VM
@@ -21,4 +21,4 @@ class MongosOperatorCharm(AbstractMongoCharm[MongosCharmConfig, MongosOperator])
 
 
 if __name__ == "__main__":
-    main(MongosOperatorCharm)
+    main(MongosVMCharm)
