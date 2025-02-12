@@ -25,7 +25,7 @@ rpds-py = "0.18.0"
 [tool.poetry.group.charm-libs.dependencies]
 ops = "~2.15.0"
 pydantic ="*"
-cryptography = "^42.0.5"
+cryptography = "^44.0.0"
 jsonschema = "^4.22.0"
 cosl = "*"
 
