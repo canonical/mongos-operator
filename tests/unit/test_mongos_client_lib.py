@@ -6,11 +6,13 @@ from unittest.mock import patch
 
 from ops.testing import Harness
 
-from charm import MongosOperatorCharm
+from charm import MongosVMCharm
 
 from .helpers import patch_network_get
 
-from charms.data_platform_libs.v0.data_interfaces import DatabaseRequiresEvents
+from single_kernel_mongo.lib.charms.data_platform_libs.v0.data_interfaces import (
+    DatabaseRequiresEvents,
+)
 
 PEER_ADDR = {"private-address": "127.4.5.6"}
 REL_DATA = {
@@ -40,14 +42,14 @@ class TestMongosInterface(unittest.TestCase):
             # Ignore the events not existing before the first test.
             pass
 
-        self.harness = Harness(MongosOperatorCharm)
+        self.harness = Harness(MongosVMCharm)
         self.harness.begin()
         self.harness.add_relation("router-peers", "router-peers")
         self.harness.set_leader(True)
         self.charm = self.harness.charm
         self.addCleanup(self.harness.cleanup)
 
-    @patch("charm.MongosOperatorCharm.open_mongos_port")
+    @patch("ops.model.Unit.open_port")
     def test_mongos_opens_port_external(self, open_mongos_port):
         """Tests that relation changed does not wait for keyfile.
 

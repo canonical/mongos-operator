@@ -7,6 +7,8 @@ requires-poetry = ">=2.0.0"
 
 [tool.poetry.dependencies]
 python = "^3.10.12"
+mongo-charms-single-kernel = "~0.0.1"
+dacite = "==1.8.0"
 ops = "~2.15.0"
 pymongo = "^4.7.3"
 overrides = "^7.7.0"
@@ -22,11 +24,10 @@ rpds-py = "0.18.0"
 
 [tool.poetry.group.charm-libs.dependencies]
 ops = "~2.15.0"
-pydantic ="^1.10.7"
+pydantic ="*"
 cryptography = "^42.0.5"
 jsonschema = "^4.22.0"
-cosl = "^ 0.0.16"
-pyOpenSSL = "^24.2.1"
+cosl = "*"
 
 [tool.poetry.requires-plugins]
 poetry-plugin-export = ">=1.8"
@@ -45,12 +46,16 @@ ruff = "^0.1.6"
 codespell = "^2.2.6"
 
 [tool.poetry.group.unit.dependencies]
+mongo-charms-single-kernel = "~0.0.1"
+dacite = "==1.8.0"
 coverage = {extras = ["toml"], version = "^7.5.0"}
 pytest = "^8.1.1"
 parameterized = "^0.9.0"
 pymongo = "^4.7.3"
 
 [tool.poetry.group.integration.dependencies]
+mongo-charms-single-kernel = "~0.0.1"
+dacite = "==1.8.0"
 allure-pytest = "^2.13.5"
 ops = "~2.15.0"
 tenacity = "^8.2.3"

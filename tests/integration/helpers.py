@@ -1,4 +1,3 @@
-from charms.mongodb.v1.helpers import MONGO_SHELL
 from pytest_operator.plugin import OpsTest
 import ops
 import json
@@ -26,6 +25,7 @@ CONFIG_SERVER_REL_NAME = "config-server"
 MONGOS_SOCKET = "%2Fvar%2Fsnap%2Fcharmed-mongodb%2Fcommon%2Fvar%2Fmongodb-27018.sock"
 MONGOS_APP_NAME = "mongos"
 PING_CMD = "db.runCommand({ping: 1})"
+MONGO_SHELL = "charmed-mongodb.mongosh"
 
 
 async def generate_mongos_command(
@@ -144,7 +144,7 @@ async def get_application_relation_data(
     unit = ops_test.model.applications[application_name].units[0]
     raw_data = (await ops_test.juju("show-unit", unit.name))[1]
     if not raw_data:
-        raise ValueError(f"no unit info could be grabbed for { unit.name}")
+        raise ValueError(f"no unit info could be grabbed for {unit.name}")
     data = yaml.safe_load(raw_data)
 
     # Filter the data based on the relation name.
