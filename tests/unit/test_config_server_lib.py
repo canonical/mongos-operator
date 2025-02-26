@@ -9,8 +9,6 @@ from ops.testing import Harness
 
 from charm import MongosVMCharm
 
-from .helpers import patch_network_get
-
 
 from single_kernel_mongo.lib.charms.data_platform_libs.v0.data_interfaces import (
     DatabaseRequiresEvents,
@@ -29,7 +27,6 @@ CLUSTER_ALIAS = "cluster"
 
 
 class TestConfigServerInterface(unittest.TestCase):
-    @patch_network_get(private_address="1.1.1.1")
     def setUp(self):
         try:
             # runs before each test to delete the custom events created for the aliases. This is
