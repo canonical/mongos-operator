@@ -220,14 +220,14 @@ async def check_all_units_blocked_with_status(
         unit_name = status_item[0]
         status_type = status_item[1]
         status_message = " ".join(status_item[4:])
-        assert (
-            status_type == "blocked"
-        ), f"unit {unit_name} not in blocked state, in {status_type}"
+        assert status_type == "blocked", (
+            f"unit {unit_name} not in blocked state, in {status_type}"
+        )
 
         if status:
-            assert (
-                status_message == status
-            ), f"unit {unit_name} does not show the status {status}"
+            assert status_message == status, (
+                f"unit {unit_name} does not show the status {status}"
+            )
 
 
 async def wait_for_mongos_units_blocked(
@@ -296,8 +296,13 @@ async def integrate_cluster_components(ops_test: OpsTest) -> None:
     await ops_test.model.integrate(APPLICATION_APP_NAME, MONGOS_APP_NAME)
 
     await ops_test.model.wait_for_idle(
-        apps=[CONFIG_SERVER_APP_NAME, SHARD_APP_NAME],
-        idle_period=10,
+        apps=[
+            APPLICATION_APP_NAME,
+            CONFIG_SERVER_APP_NAME,
+            MONGOS_APP_NAME,
+            SHARD_APP_NAME,
+        ],
+        idle_period=20,
         raise_on_blocked=False,
     )
     await ops_test.model.integrate(
