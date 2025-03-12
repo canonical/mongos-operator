@@ -14,7 +14,6 @@ from ops.testing import Harness
 
 from charm import MongosVMCharm
 
-from .helpers import patch_network_get
 
 from single_kernel_mongo.lib.charms.data_platform_libs.v0.data_interfaces import (
     DatabaseRequiresEvents,
@@ -55,7 +54,6 @@ class TestCharm(unittest.TestCase):
     def use_caplog(self, caplog):
         self._caplog = caplog
 
-    @patch_network_get(private_address="1.1.1.1")
     def test_install_snap_packages_failure(self):
         """Test verifies that install hook fails when a snap error occurs."""
         with patch(
@@ -126,7 +124,6 @@ class TestCharm(unittest.TestCase):
         self.harness.charm.on.update_status.emit()
         self.assertTrue(isinstance(self.harness.charm.unit.status, WaitingStatus))
 
-    @patch_network_get(private_address="1.1.1.1")
     def test_mongos_host(self):
         """TBD."""
         self.harness.set_leader(True)
@@ -136,4 +133,4 @@ class TestCharm(unittest.TestCase):
 
         self.harness.charm.operator.state.app_peer_data.external_connectivity = True
         mongos_host = self.harness.charm.operator.state.app_hosts
-        self.assertEqual(mongos_host, {"1.1.1.1"})
+        self.assertEqual(mongos_host, {"10.0.0.10"})
