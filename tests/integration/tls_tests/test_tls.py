@@ -100,7 +100,10 @@ async def test_mongos_tls_ca_mismatch(ops_test: OpsTest) -> None:
     await toggle_tls_mongos(ops_test, enable=False)
 
     await ops_test.model.deploy(
-        CERTS_APP_NAME, application_name=DIFFERENT_CERTS_APP_NAME, channel="edge"
+        CERTS_APP_NAME,
+        application_name=DIFFERENT_CERTS_APP_NAME,
+        channel="latest/stable",
+        base="ubuntu@22.04",
     )
 
     await ops_test.model.wait_for_idle(
@@ -217,7 +220,9 @@ async def build_cluster(ops_test: OpsTest, integrate_with_mongos=True) -> None:
 
 async def deploy_tls(ops_test: OpsTest) -> None:
     """Deploys the self-signed certificate operator."""
-    await ops_test.model.deploy(CERTS_APP_NAME, channel="edge")
+    await ops_test.model.deploy(
+        CERTS_APP_NAME, channel="latest/stable", base="ubuntu@22.04"
+    )
 
     await ops_test.model.wait_for_idle(
         apps=[CERTS_APP_NAME],
