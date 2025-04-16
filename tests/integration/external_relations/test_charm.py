@@ -24,7 +24,7 @@ async def test_build_and_deploy(ops_test: OpsTest) -> None:
 
     mongos_charm = await ops_test.build_charm(".")
     await ops_test.model.deploy(
-        DATA_INTEGRATOR_APP_NAME, channel="latest/edge", base="ubuntu@22.04"
+        DATA_INTEGRATOR_APP_NAME, channel="latest/stable", series="jammy"
     )
     await ops_test.model.deploy(
         mongos_charm,
