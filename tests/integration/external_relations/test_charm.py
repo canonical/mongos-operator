@@ -24,8 +24,7 @@ async def test_build_and_deploy(ops_test: OpsTest) -> None:
 
     mongos_charm = await ops_test.build_charm(".")
     await ops_test.model.deploy(
-        DATA_INTEGRATOR_APP_NAME,
-        channel="latest/edge",
+        DATA_INTEGRATOR_APP_NAME, channel="latest/stable", series="jammy"
     )
     await ops_test.model.deploy(
         mongos_charm,
@@ -133,9 +132,9 @@ async def test_mongos_can_scale(ops_test: OpsTest) -> None:
         secret_uri = await generate_mongos_uri(
             ops_test, auth=True, app_name=DATA_INTEGRATOR_APP_NAME, external=True
         )
-        assert (
-            mongos_unit.public_address in secret_uri
-        ), f"host for {mongos_unit} is not present in URI"
+        assert mongos_unit.public_address in secret_uri, (
+            f"host for {mongos_unit} is not present in URI"
+        )
 
         mongos_running = await check_mongos(
             ops_test,
@@ -157,6 +156,6 @@ async def test_mongos_can_scale(ops_test: OpsTest) -> None:
     secret_uri = await generate_mongos_uri(
         ops_test, auth=True, app_name=DATA_INTEGRATOR_APP_NAME, external=True
     )
-    assert (
-        first_mongos_host_public_address not in secret_uri
-    ), "old host is still present in URI"
+    assert first_mongos_host_public_address not in secret_uri, (
+        "old host is still present in URI"
+    )
