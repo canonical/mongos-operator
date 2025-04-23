@@ -1,0 +1,69 @@
+[32mINFO    [0m pytest_operator.plugin:plugin.py:834 Model status:
+
+Model  Controller           Cloud/Region         Version  SLA          Timestamp
+test   localhost-localhost  localhost/localhost  3.6.1    unsupported  02:08:16Z
+
+App                       Version  Status  Scale  Charm                     Channel        Rev  Exposed  Message
+application                        active      2  application                                0  no       
+config-server                      active      1  mongodb                   6/edge         199  no       
+mongos                    6.0.6    active      2  mongos                                     0  no       
+self-signed-certificates           active      1  self-signed-certificates  latest/stable  264  no       
+shard                              active      1  mongodb                   6/edge         199  no       
+
+Unit                         Workload  Agent  Machine  Public address  Ports            Message
+application/0*               active    idle   0        10.203.23.176                    
+  mongos/0*                  active    idle            10.203.23.176                    
+application/1                active    idle   1        10.203.23.160                    
+  mongos/1                   active    idle            10.203.23.160                    
+config-server/0*             active    idle   2        10.203.23.12    27017-27018/tcp  Primary
+self-signed-certificates/0*  active    idle   4        10.203.23.78                     
+shard/0*                     active    idle   3        10.203.23.92    27017/tcp        Primary
+
+Machine  State    Address        Inst id        Base          AZ  Message
+0        started  10.203.23.176  juju-3ac3fa-0  ubuntu@22.04      Running
+1        started  10.203.23.160  juju-3ac3fa-1  ubuntu@22.04      Running
+2        started  10.203.23.12   juju-3ac3fa-2  ubuntu@22.04      Running
+3        started  10.203.23.92   juju-3ac3fa-3  ubuntu@22.04      Running
+4        started  10.203.23.78   juju-3ac3fa-4  ubuntu@22.04      Running
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:840 Juju error logs:
+
+machine-0: 01:32:40 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-0: 01:32:40 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-application-0: 01:32:41 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+machine-3: 01:32:46 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-3: 01:32:46 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-shard-0: 01:32:46 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+machine-2: 01:32:59 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-2: 01:32:59 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-config-server-0: 01:32:59 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+machine-1: 01:33:15 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-1: 01:33:15 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-application-1: 01:33:15 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+unit-shard-0: 01:33:46 ERROR unit.shard/0.juju-log _on_secret_remove: Secret secret:d0446p876qoctlctcgrg seems to have no observers, could be removed
+unit-config-server-0: 01:33:55 ERROR unit.config-server/0.juju-log _on_secret_remove: Secret secret:d0446rg76qoctlctcgs0 seems to have no observers, could be removed
+unit-mongos-0: 01:34:10 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+unit-mongos-1: 01:34:10 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+unit-config-server-0: 01:34:54 ERROR unit.config-server/0.juju-log config-server:7: Failed to add shard shard to the config server, error=OperationFailure("Authentication failed., full error: {'ok': 0.0, 'errmsg': 'Authentication failed.', 'code': 18, 'codeName': 'AuthenticationFailed', '$clusterTime': {'clusterTime': Timestamp(1745372093, 1), 'signature': {'hash': b'Sw\\x8bs\\x8eTK\\xc3\\x8a\\x0c\\x1a\\xce{\\xb3\\x9c;S\\xb8\\x9d\\xac', 'keyId': 7496315753843392537}}, 'operationTime': Timestamp(1745372093, 1)}")
+unit-config-server-0: 01:34:54 ERROR unit.config-server/0.juju-log config-server:7: shard shard does not have the same auth as the config server.
+unit-shard-0: 01:35:03 ERROR unit.shard/0.juju-log _on_secret_remove: Secret secret:d0446p876qoctlctcgrg seems to have no observers, could be removed
+machine-4: 01:42:14 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-4: 01:42:14 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-self-signed-certificates-0: 01:42:14 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+unit-mongos-1: 01:42:47 ERROR unit.mongos/1.juju-log certificates:9: Non-existing secret unit:int-cert-secret was attempted to be removed.
+unit-mongos-0: 01:42:47 ERROR unit.mongos/0.juju-log certificates:9: Non-existing secret unit:int-cert-secret was attempted to be removed.
+unit-mongos-1: 01:42:47 ERROR unit.mongos/1.juju-log certificates:9: Non-existing secret unit:ext-cert-secret was attempted to be removed.
+unit-mongos-0: 01:42:47 ERROR unit.mongos/0.juju-log certificates:9: Non-existing secret unit:ext-cert-secret was attempted to be removed.
+unit-shard-0: 01:43:39 ERROR unit.shard/0.juju-log certificates:11: Non-existing secret unit:int-cert-secret was attempted to be removed.
+unit-config-server-0: 01:43:39 ERROR unit.config-server/0.juju-log certificates:10: Non-existing secret unit:int-cert-secret was attempted to be removed.
+unit-shard-0: 01:43:39 ERROR unit.shard/0.juju-log certificates:11: Non-existing secret unit:ext-cert-secret was attempted to be removed.
+unit-config-server-0: 01:43:39 ERROR unit.config-server/0.juju-log certificates:10: Non-existing secret unit:ext-cert-secret was attempted to be removed.
+unit-shard-0: 01:44:30 ERROR unit.shard/0.juju-log _on_secret_remove: Secret secret:d044bio76qoctlctch2g seems to have no observers, could be removed
+unit-config-server-0: 01:44:32 ERROR unit.config-server/0.juju-log _on_secret_remove: Secret secret:d0447f876qoctlctcgsg seems to have no observers, could be removed
+unit-config-server-0: 01:44:33 ERROR unit.config-server/0.juju-log _on_secret_remove: Secret secret:d044bio76qoctlctch30 seems to have no observers, could be removed
+unit-config-server-0: 01:49:33 ERROR unit.config-server/0.juju-log _on_secret_remove: Secret secret:d0447o076qoctlctcgtg seems to have no observers, could be removed
+unit-self-signed-certificates-0: 02:02:30 ERROR juju.worker.dependency "uniter" manifold worker returned unexpected error: relation scope id "79d343dc-1f22-4b1e-8b6e-ce7f3d3ac3fa:r#9#mongos": settings 79d343dc-1f22-4b1e-8b6e-ce7f3d3ac3fa:r#9#mongos not found (not found)
+unit-mongos-1: 02:02:31 ERROR juju.worker.dependency "uniter" manifold worker returned unexpected error: relation scope id "79d343dc-1f22-4b1e-8b6e-ce7f3d3ac3fa:r#9#self-signed-certificates": settings 79d343dc-1f22-4b1e-8b6e-ce7f3d3ac3fa:r#9#self-signed-certificates not found (not found)
+unit-mongos-0: 02:02:31 ERROR juju.worker.dependency "uniter" manifold worker returned unexpected error: relation scope id "79d343dc-1f22-4b1e-8b6e-ce7f3d3ac3fa:r#9#self-signed-certificates": settings 79d343dc-1f22-4b1e-8b6e-ce7f3d3ac3fa:r#9#self-signed-certificates not found (not found)
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:904 Forgetting main...
