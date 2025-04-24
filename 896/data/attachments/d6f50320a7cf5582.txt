@@ -1,0 +1,101 @@
+[32mINFO    [0m pytest_operator.plugin:plugin.py:708 Connecting to existing model localhost-localhost:test on unspecified cloud
+[32mINFO    [0m juju.model:__init__.py:2301 Deploying local:jammy/application-0
+[32mINFO    [0m juju.model:__init__.py:2301 Deploying ch:amd64/jammy/mongos-41
+[32mINFO    [0m juju.model:__init__.py:2301 Deploying ch:amd64/jammy/mongodb-212
+[32mINFO    [0m juju.model:__init__.py:2301 Deploying ch:amd64/jammy/mongodb-212
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  application/0 [allocating] waiting: waiting for machine
+  application/1 [allocating] waiting: waiting for machine
+  shard/0 [allocating] waiting: waiting for machine
+  config-server/0 [allocating] waiting: waiting for machine
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  application/0 [allocating] waiting: waiting for machine
+  application/1 [allocating] waiting: waiting for machine
+  shard/0 [allocating] waiting: waiting for machine
+  config-server/0 [allocating] waiting: waiting for machine
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  application/0 [allocating] waiting: waiting for machine
+  application/1 [allocating] waiting: waiting for machine
+  shard/0 [allocating] waiting: waiting for machine
+  config-server/0 [allocating] waiting: waiting for machine
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  application/0 [allocating] waiting: waiting for machine
+  application/1 [allocating] waiting: waiting for machine
+  shard/0 [allocating] waiting: waiting for machine
+  config-server/0 [allocating] waiting: waiting for machine
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  application/0 [allocating] waiting: waiting for machine
+  application/1 [allocating] waiting: waiting for machine
+  shard/0 [allocating] waiting: waiting for machine
+  config-server/0 [allocating] waiting: waiting for machine
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  application/0 [allocating] waiting: waiting for machine
+  application/1 [allocating] waiting: waiting for machine
+  shard/0 [allocating] waiting: waiting for machine
+  config-server/0 [allocating] waiting: waiting for machine
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  application/0 [allocating] waiting: waiting for machine
+  application/1 [allocating] waiting: waiting for machine
+  shard/0 [allocating] waiting: waiting for machine
+  config-server/0 [allocating] waiting: waiting for machine
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  application/0 [allocating] waiting: waiting for machine
+  application/1 [allocating] waiting: waiting for machine
+  shard/0 [allocating] waiting: waiting for machine
+  config-server/0 [allocating] waiting: waiting for machine
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  application/0 [allocating] waiting: waiting for machine
+  application/1 [allocating] waiting: waiting for machine
+  shard/0 [allocating] waiting: waiting for machine
+  config-server/0 [allocating] waiting: waiting for machine
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  application/1 [idle] active: 
+  shard/0 [allocating] waiting: waiting for machine
+  config-server/0 [executing] maintenance: installing MongoDB
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  shard/0 [executing] maintenance: installing MongoDB
+  config-server/0 [executing] active: 
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  shard/0 [idle] active: 
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  application/0 [idle] active: 
+  application/1 [idle] active: 
+  config-server/0 [idle] active: 
+  mongos/0 [allocating] waiting: installing agent
+  shard/0 [idle] active: 
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  application/0 [idle] active: 
+  application/1 [idle] active: 
+  mongos/0 [executing] blocked: Missing relation to config-server.
+  mongos/1 [executing] blocked: Missing relation to config-server.
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  config-server/0 [idle] active: 
+  shard/0 [idle] active: 
+  mongos/0 [executing] blocked: Missing relation to config-server.
+  mongos/1 [executing] blocked: Missing relation to config-server.
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  config-server/0 [executing] active: 
+  shard/0 [executing] maintenance: Adding shard to config-server
+  mongos/0 [idle] active: 
+  mongos/1 [idle] active: 
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  shard/0 [idle] maintenance: Adding shard to config-server
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  shard/0 [idle] maintenance: Adding shard to config-server
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  shard/0 [idle] maintenance: Adding shard to config-server
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  shard/0 [idle] maintenance: Adding shard to config-server
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  shard/0 [idle] maintenance: Adding shard to config-server
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  shard/0 [idle] maintenance: Adding shard to config-server
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  shard/0 [idle] maintenance: Adding shard to config-server
+[31m[1mERROR   [0m asyncio:base_events.py:1821 Task was destroyed but it is pending!
+task: <Task pending name='Task-52' coro=<Connection._pinger.<locals>._do_ping() running at /home/runner/work/mongos-operator/mongos-operator/.tox/integration/lib/python3.12/site-packages/juju/client/connection.py:517> wait_for=<Future pending cb=[Task.task_wakeup()]> cb=[create_task_with_handler.<locals>._task_result_exp_handler(task_name='tmp', logger=<Logger juju....ection (INFO)>)() at /home/runner/work/mongos-operator/mongos-operator/.tox/integration/lib/python3.12/site-packages/juju/_jasyncio.py:32]>
+[31m[1mERROR   [0m juju.client.connection:_jasyncio.py:48 Task tmp raised an exception: cannot reuse already awaited coroutine
+Traceback (most recent call last):
+  File "/home/runner/work/mongos-operator/mongos-operator/.tox/integration/lib/python3.12/site-packages/juju/_jasyncio.py", line 36, in _task_result_exp_handler
+    task.result()
+RuntimeError: cannot reuse already awaited coroutine
