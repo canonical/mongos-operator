@@ -44,6 +44,7 @@ class TestConfigServerInterface(unittest.TestCase):
         self.harness = Harness(MongosVMCharm)
         self.harness.begin()
         self.harness.add_relation("router-peers", "router-peers")
+        self.harness.add_relation("status-peers", "mongos")
         self.harness.set_leader(True)
         self.charm = self.harness.charm
         self.addCleanup(self.harness.cleanup)
