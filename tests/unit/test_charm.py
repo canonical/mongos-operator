@@ -50,6 +50,9 @@ class TestCharm(unittest.TestCase):
         self.addCleanup(self.harness.cleanup)
         self.harness.begin()
         self.peer_rel_id = self.harness.add_relation("router-peers", "router-peers")
+        self.peer_rel_id = self.harness.add_relation(
+            "upgrade-version-a", "upgrade-version-a"
+        )
         self.status_peer_rel_id = self.harness.add_relation("status-peers", "mongos")
 
     @pytest.fixture
