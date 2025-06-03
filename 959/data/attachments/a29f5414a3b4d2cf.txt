@@ -1,0 +1,75 @@
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mongos/0 [idle] active: 
+  data-integrator/0 [idle] active: 
+  data-integrator/1 [allocating] waiting: waiting for machine
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  data-integrator/1 [allocating] waiting: waiting for machine
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  data-integrator/1 [allocating] waiting: waiting for machine
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  data-integrator/1 [allocating] waiting: waiting for machine
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mongos/1 [allocating] waiting: agent initialising
+  data-integrator/0 [idle] active: 
+  data-integrator/1 [executing] maintenance: installing charm software
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mongos/0 [idle] active: 
+  mongos/1 [executing] maintenance: starting mongos
+  data-integrator/0 [idle] active: 
+  data-integrator/1 [idle] active: 
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mongos/1 [idle] active: 
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mongos/0 [idle] active: 
+  mongos/1 [idle] active: 
+  data-integrator/0 [idle] active: 
+  data-integrator/1 [executing] active: 
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mongos/1 [idle] active: 
+  data-integrator/1 [idle] active:
+[32mINFO    [0m pytest_operator.plugin:plugin.py:834 Model status:
+
+Model  Controller           Cloud/Region         Version  SLA          Timestamp
+test   localhost-localhost  localhost/localhost  3.6.1    unsupported  01:42:55Z
+
+App              Version  Status  Scale  Charm            Channel        Rev  Exposed  Message
+config-server             active      1  mongodb          6/edge         199  no       
+data-integrator           active      1  data-integrator  latest/stable   78  no       
+mongos           6.0.6    active      1  mongos                            0  no       
+shard                     active      1  mongodb          6/edge         199  no       
+
+Unit                Workload  Agent  Machine  Public address  Ports            Message
+config-server/0*    active    idle   1        10.111.236.54   27017-27018/tcp  Primary
+data-integrator/1*  active    idle   3        10.111.236.170                   
+  mongos/1*         active    idle            10.111.236.170  27018/tcp        
+shard/0*            active    idle   2        10.111.236.169  27017/tcp        Primary
+
+Machine  State    Address         Inst id        Base          AZ  Message
+1        started  10.111.236.54   juju-ad0e96-1  ubuntu@22.04      Running
+2        started  10.111.236.169  juju-ad0e96-2  ubuntu@22.04      Running
+3        started  10.111.236.170  juju-ad0e96-3  ubuntu@22.04      Running
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:840 Juju error logs:
+
+machine-2: 01:31:59 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-2: 01:31:59 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-shard-0: 01:31:59 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+machine-0: 01:32:00 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-0: 01:32:00 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-data-integrator-0: 01:32:00 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+machine-1: 01:32:15 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-1: 01:32:15 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-config-server-0: 01:32:15 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+unit-shard-0: 01:32:48 ERROR unit.shard/0.juju-log _on_secret_remove: Secret secret:d0v51aoev4esrj9ic2rg seems to have no observers, could be removed
+unit-config-server-0: 01:33:01 ERROR unit.config-server/0.juju-log _on_secret_remove: Secret secret:d0v51e0ev4esrj9ic2s0 seems to have no observers, could be removed
+unit-mongos-0: 01:33:16 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+unit-config-server-0: 01:33:29 ERROR unit.config-server/0.juju-log config-server:9: Failed to add shard shard to the config server, error=OperationFailure("Authentication failed., full error: {'ok': 0.0, 'errmsg': 'Authentication failed.', 'code': 18, 'codeName': 'AuthenticationFailed', '$clusterTime': {'clusterTime': Timestamp(1748914409, 2), 'signature': {'hash': b'\\x1f\\xf7h\\xc45\\xbf\\xc2\\xcdq[\\x94Y\\xb0f8!6\\xf2\\xa0\\x1e', 'keyId': 7511530014064508953}}, 'operationTime': Timestamp(1748914409, 2)}")
+unit-config-server-0: 01:33:29 ERROR unit.config-server/0.juju-log config-server:9: shard shard does not have the same auth as the config server.
+unit-shard-0: 01:33:39 ERROR unit.shard/0.juju-log _on_secret_remove: Secret secret:d0v51aoev4esrj9ic2rg seems to have no observers, could be removed
+machine-3: 01:40:59 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-3: 01:40:59 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-data-integrator-1: 01:40:59 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+unit-mongos-1: 01:41:02 ERROR juju.worker.meterstatus error running "meter-status-changed": exit status 1
+machine-0: 01:42:31 ERROR juju.api.watcher error trying to stop watcher: websocket: close sent
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:904 Forgetting main...
