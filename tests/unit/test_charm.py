@@ -65,10 +65,13 @@ class TestCharm(unittest.TestCase):
 
     def test_install_snap_packages_failure(self):
         """Test verifies that install hook fails when a snap error occurs."""
-        with patch(
-            "single_kernel_mongo.core.vm_workload.VMWorkload.install",
-            return_value=False,
-        ), pytest.raises(WorkloadNotReadyError):
+        with (
+            patch(
+                "single_kernel_mongo.core.vm_workload.VMWorkload.install",
+                return_value=False,
+            ),
+            pytest.raises(WorkloadNotReadyError),
+        ):
             self.harness.charm.on.install.emit()
 
     @parameterized.expand([(Scope.APP), (Scope.UNIT)])
@@ -128,16 +131,20 @@ class TestCharm(unittest.TestCase):
         # A running config server is a requirement to start for mongos
         self.harness.charm.on.update_status.emit()
 
-        statuses = self.harness.charm.operator.component_statuses.get(scope="unit")
+        statuses = self.harness.charm.operator.state.statuses.get(
+            scope="unit", component=self.harness.charm.operator.name
+        )
 
-        self.assertTrue(isinstance(statuses[0].status, BlockedStatus))
+        self.assertTrue(statuses[0].status == "blocked")
 
         self.harness.add_relation("cluster", "config-server")
         self.harness.charm.on.update_status.emit()
 
-        statuses = self.harness.charm.operator.component_statuses.get(scope="unit")
+        statuses = self.harness.charm.operator.state.statuses.get(
+            scope="unit", component=self.harness.charm.operator.name
+        )
 
-        self.assertTrue(isinstance(statuses[0].status, WaitingStatus))
+        self.assertTrue(statuses[0].status == "waiting")
 
     def test_mongos_host(self):
         """TBD."""
