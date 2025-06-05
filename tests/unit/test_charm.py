@@ -9,7 +9,6 @@ import pytest
 from parameterized import parameterized
 from unittest import mock
 
-from ops.model import BlockedStatus, WaitingStatus
 from ops.testing import Harness
 
 from charm import MongosVMCharm
