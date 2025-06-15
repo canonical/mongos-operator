@@ -1,0 +1,80 @@
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  config-server/0 [executing] active: 
+  shard/0 [idle] active: Primary
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  config-server/0 [executing] maintenance: enabling TLS
+  shard/0 [executing] maintenance: enabling TLS
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  config-server/0 [idle] active: 
+  shard/0 [idle] active: 
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mongos/1 [idle] blocked: Missing relation to config-server.
+  mongos/0 [idle] blocked: Missing relation to config-server.
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mongos/1 [executing] active: 
+  mongos/0 [executing] active:
+[32mINFO    [0m pytest_operator.plugin:plugin.py:834 Model status:
+
+Model  Controller           Cloud/Region         Version  SLA          Timestamp
+test   localhost-localhost  localhost/localhost  3.6.1    unsupported  02:03:52Z
+
+App                       Version  Status  Scale  Charm                     Channel        Rev  Exposed  Message
+application                        active      2  application                                0  no       
+config-server                      active      1  mongodb                   6/edge         199  no       
+mongos                    6.0.6    active      2  mongos                                     0  no       
+self-signed-certificates           active      1  self-signed-certificates  latest/stable  264  no       
+shard                              active      1  mongodb                   6/edge         199  no       
+
+Unit                         Workload  Agent  Machine  Public address  Ports            Message
+application/0*               active    idle   0        10.207.166.99                    
+  mongos/1                   active    idle            10.207.166.99                    
+application/1                active    idle   1        10.207.166.246                   
+  mongos/0*                  active    idle            10.207.166.246                   
+config-server/0*             active    idle   2        10.207.166.133  27017-27018/tcp  Primary
+self-signed-certificates/0*  active    idle   4        10.207.166.64                    
+shard/0*                     active    idle   3        10.207.166.49   27017/tcp        Primary
+
+Machine  State    Address         Inst id        Base          AZ  Message
+0        started  10.207.166.99   juju-09c36d-0  ubuntu@22.04      Running
+1        started  10.207.166.246  juju-09c36d-1  ubuntu@22.04      Running
+2        started  10.207.166.133  juju-09c36d-2  ubuntu@22.04      Running
+3        started  10.207.166.49   juju-09c36d-3  ubuntu@22.04      Running
+4        started  10.207.166.64   juju-09c36d-4  ubuntu@22.04      Running
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:840 Juju error logs:
+
+machine-0: 01:46:28 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-0: 01:46:28 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-application-0: 01:46:28 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+machine-1: 01:46:39 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-1: 01:46:39 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-application-1: 01:46:39 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+machine-2: 01:46:54 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-2: 01:46:54 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-config-server-0: 01:46:54 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+machine-3: 01:47:01 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-3: 01:47:01 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-shard-0: 01:47:02 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+unit-config-server-0: 01:47:46 ERROR unit.config-server/0.juju-log _on_secret_remove: Secret secret:d172cb3rcrjch9r2dfrg seems to have no observers, could be removed
+unit-shard-0: 01:47:54 ERROR unit.shard/0.juju-log _on_secret_remove: Secret secret:d172cdrrcrjch9r2dfs0 seems to have no observers, could be removed
+unit-mongos-0: 01:48:11 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+unit-mongos-1: 01:48:11 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+unit-config-server-0: 01:48:59 ERROR unit.config-server/0.juju-log config-server:8: Failed to add shard shard to the config server, error=OperationFailure("Authentication failed., full error: {'ok': 0.0, 'errmsg': 'Authentication failed.', 'code': 18, 'codeName': 'AuthenticationFailed', '$clusterTime': {'clusterTime': Timestamp(1749952138, 1), 'signature': {'hash': b'D\\xb5(\\xc6\\x1b4K)=\\xa0\\x92\\x1c\\xcd~K\\xce\\x10\\xb3\\xd1\\x0c', 'keyId': 7515986832908091417}}, 'operationTime': Timestamp(1749952138, 1)}")
+unit-config-server-0: 01:48:59 ERROR unit.config-server/0.juju-log config-server:8: shard shard does not have the same auth as the config server.
+unit-shard-0: 01:49:07 ERROR unit.shard/0.juju-log _on_secret_remove: Secret secret:d172cdrrcrjch9r2dfs0 seems to have no observers, could be removed
+machine-4: 01:55:58 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-4: 01:55:58 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-self-signed-certificates-0: 01:55:58 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+unit-config-server-0: 01:56:29 ERROR unit.config-server/0.juju-log certificates:9: Non-existing secret unit:int-cert-secret was attempted to be removed.
+unit-config-server-0: 01:56:29 ERROR unit.config-server/0.juju-log certificates:9: Non-existing secret unit:ext-cert-secret was attempted to be removed.
+unit-shard-0: 01:56:30 ERROR unit.shard/0.juju-log certificates:10: Non-existing secret unit:int-cert-secret was attempted to be removed.
+unit-shard-0: 01:56:30 ERROR unit.shard/0.juju-log certificates:10: Non-existing secret unit:ext-cert-secret was attempted to be removed.
+unit-shard-0: 01:57:08 ERROR unit.shard/0.juju-log _on_secret_remove: Secret secret:d172gjjrcrjch9r2dfu0 seems to have no observers, could be removed
+unit-config-server-0: 01:57:25 ERROR unit.config-server/0.juju-log _on_secret_remove: Secret secret:d172gjbrcrjch9r2dftg seems to have no observers, could be removed
+unit-config-server-0: 01:57:25 ERROR unit.config-server/0.juju-log _on_secret_remove: Secret secret:d172d2brcrjch9r2dfsg seems to have no observers, could be removed
+unit-mongos-0: 01:57:53 ERROR unit.mongos/0.juju-log certificates:11: Non-existing secret unit:int-cert-secret was attempted to be removed.
+unit-mongos-1: 01:57:53 ERROR unit.mongos/1.juju-log certificates:11: Non-existing secret unit:int-cert-secret was attempted to be removed.
+unit-mongos-0: 01:57:54 ERROR unit.mongos/0.juju-log certificates:11: Non-existing secret unit:ext-cert-secret was attempted to be removed.
+unit-mongos-1: 01:57:54 ERROR unit.mongos/1.juju-log certificates:11: Non-existing secret unit:ext-cert-secret was attempted to be removed.
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:904 Forgetting main...
