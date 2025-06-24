@@ -9,7 +9,6 @@ import pytest
 from parameterized import parameterized
 from unittest import mock
 
-from ops.model import BlockedStatus, WaitingStatus
 from ops.testing import Harness
 
 from charm import MongosVMCharm
@@ -22,6 +21,7 @@ from single_kernel_mongo.config.literals import Scope
 from single_kernel_mongo.exceptions import (
     DeferrableFailedHookChecksError,
     NonDeferrableFailedHookChecksError,
+    WorkloadNotReadyError,
 )
 
 CLUSTER_ALIAS = "cluster"
@@ -49,19 +49,29 @@ class TestCharm(unittest.TestCase):
         self.addCleanup(self.harness.cleanup)
         self.harness.begin()
         self.peer_rel_id = self.harness.add_relation("router-peers", "router-peers")
+        self.peer_rel_id = self.harness.add_relation(
+            "upgrade-version-a", "upgrade-version-a"
+        )
+        self.status_peer_rel_id = self.harness.add_relation("status-peers", "mongos")
 
     @pytest.fixture
     def use_caplog(self, caplog):
         self._caplog = caplog
 
+    @pytest.fixture(autouse=True)
+    def tenacity_wait(self, mocker):
+        mocker.patch("tenacity.nap.time")
+
     def test_install_snap_packages_failure(self):
         """Test verifies that install hook fails when a snap error occurs."""
-        with patch(
-            "single_kernel_mongo.core.vm_workload.VMWorkload.install",
-            return_value=False,
+        with (
+            patch(
+                "single_kernel_mongo.core.vm_workload.VMWorkload.install",
+                side_effect=WorkloadNotReadyError,
+            ),
+            pytest.raises(WorkloadNotReadyError),
         ):
             self.harness.charm.on.install.emit()
-            self.assertTrue(isinstance(self.harness.charm.unit.status, BlockedStatus))
 
     @parameterized.expand([(Scope.APP), (Scope.UNIT)])
     def test_invalid_secret(self, scope):
@@ -107,6 +117,7 @@ class TestCharm(unittest.TestCase):
         self.harness.charm.operator.state.set_scaling_down(mock_relation.id, "other")
         self.harness.charm.operator.assert_proceed_on_broken_event(mock_relation)
 
+    @pytest.mark.usefixtures("mock_fs_interactions")
     def test_status_shows_mongos_waiting(self):
         """Tests when mongos accurately reports waiting status."""
         mock_mongos_running = mock.Mock()
@@ -118,11 +129,21 @@ class TestCharm(unittest.TestCase):
 
         # A running config server is a requirement to start for mongos
         self.harness.charm.on.update_status.emit()
-        self.assertTrue(isinstance(self.harness.charm.unit.status, BlockedStatus))
+
+        statuses = self.harness.charm.operator.state.statuses.get(
+            scope="unit", component=self.harness.charm.operator.name
+        )
+
+        self.assertTrue(statuses[0].status == "blocked")
 
         self.harness.add_relation("cluster", "config-server")
         self.harness.charm.on.update_status.emit()
-        self.assertTrue(isinstance(self.harness.charm.unit.status, WaitingStatus))
+
+        statuses = self.harness.charm.operator.state.statuses.get(
+            scope="unit", component=self.harness.charm.operator.name
+        )
+
+        self.assertTrue(statuses[0].status == "waiting")
 
     def test_mongos_host(self):
         """TBD."""
