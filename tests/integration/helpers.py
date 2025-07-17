@@ -4,7 +4,7 @@ import json
 import yaml
 import subprocess
 
-from typing import Optional, Dict
+from typing import Dict
 
 from tenacity import (
     Retrying,
@@ -31,8 +31,8 @@ MONGO_SHELL = "charmed-mongodb.mongosh"
 async def generate_mongos_command(
     ops_test: OpsTest,
     auth: bool,
-    app_name: Optional[str],
-    uri: str = None,
+    app_name: str | None,
+    uri: str | None = None,
     external: bool = False,
 ) -> str:
     """Generates a command which verifies mongos is running."""
@@ -44,8 +44,8 @@ async def check_mongos(
     ops_test: OpsTest,
     unit: ops.model.Unit,
     auth: bool,
-    app_name: Optional[str] = None,
-    uri: str = None,
+    app_name: str | None = None,
+    uri: str | None = None,
     external: bool = False,
 ) -> bool:
     """Returns whether mongos is running on the provided unit."""
@@ -60,34 +60,10 @@ async def check_mongos(
     return return_code == 0
 
 
-async def run_mongos_command(
-    ops_test: OpsTest, unit: ops.model.Unit, mongos_cmd: str, app_name: str
-):
-    """Runs the provided mongos command.
-
-    The mongos charm uses the unix domain socket to communicate, and therefore we cannot run
-    MongoDB commands from outside the unit and we must use `juju exec` instead.
-    """
-    mongodb_uri = await generate_mongos_uri(ops_test, auth=True, app_name=app_name)
-
-    check_cmd = [
-        "exec",
-        "--unit",
-        unit.name,
-        "--",
-        MONGO_SHELL,
-        f"'{mongodb_uri}'",
-        "--eval",
-        f"'{mongos_cmd}'",
-    ]
-    return_code, std_output, std_err = await ops_test.juju(*check_cmd)
-    return (return_code, std_output, std_err)
-
-
 async def generate_mongos_uri(
     ops_test: OpsTest,
     auth: bool,
-    app_name: Optional[str] = None,
+    app_name: str | None = None,
     external: bool = False,
 ) -> str:
     """Generates a URI for accessing mongos."""
@@ -122,7 +98,7 @@ async def get_application_relation_data(
     key: str,
     relation_id: str = None,
     relation_alias: str = None,
-) -> Optional[str]:
+) -> str | None:
     """Get relation data for an application.
 
     Args:
@@ -177,20 +153,8 @@ async def get_ip_address(ops_test, app_name=MONGOS_APP_NAME) -> str:
     return await app_unit.get_public_address()
 
 
-async def get_unit_hostname(ops_test: OpsTest, unit_id: int, app: str) -> str:
-    """Get the hostname of a specific unit."""
-    _, hostname, _ = await ops_test.juju("ssh", f"{app}/{unit_id}", "hostname")
-    return hostname.strip()
-
-
-def get_juju_status(model_name: str, app_name: str) -> str:
-    return subprocess.check_output(
-        f"juju status --model {model_name} {app_name}".split()
-    ).decode("utf-8")
-
-
 async def check_all_units_blocked_with_status(
-    ops_test: OpsTest, app_name: str, status: Optional[str]
+    ops_test: OpsTest, app_name: str, status: str | None
 ) -> None:
     """Checks if all units are blocked with a provided status.
 
@@ -231,7 +195,7 @@ async def check_all_units_blocked_with_status(
 
 
 async def wait_for_mongos_units_blocked(
-    ops_test: OpsTest, app_name: str, status: Optional[str] = None, timeout=20
+    ops_test: OpsTest, app_name: str, status: str | None = None, timeout=20
 ) -> None:
     """Waits for units of mongos to be in the blocked state.
 
