@@ -1,0 +1,4 @@
+"DESCRIPTION","DURATION IN MS","NAME","PARENT SUITE","START TIME","STATUS","STOP TIME","SUB SUITE","SUITE","TEST CLASS","TEST METHOD"
+"","115540","test_mongos_starts_with_config_server","tests.integration","Thu Jul 31 01:43:53 UTC 2025","passed","Thu Jul 31 01:45:49 UTC 2025","","test_charm","",""
+"Verifies that the application and unit are active.","35671","test_waits_for_config_server","tests.integration","Thu Jul 31 01:43:18 UTC 2025","passed","Thu Jul 31 01:43:53 UTC 2025","","test_charm","",""
+"Build and deploy a sharded cluster.","372164","test_build_and_deploy","tests.integration","Thu Jul 31 01:37:06 UTC 2025","passed","Thu Jul 31 01:43:18 UTC 2025","","test_charm","",""
