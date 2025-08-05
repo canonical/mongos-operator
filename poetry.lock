@@ -2137,26 +2137,6 @@ pytest-asyncio = "<0.23"
 pyyaml = "*"
 
 [[package]]
-name = "pytest-operator-cache"
-version = "0.1.0"
-description = ""
-optional = false
-python-versions = "^3.8"
-groups = ["integration"]
-files = []
-develop = false
-
-[package.dependencies]
-pyyaml = "*"
-
-[package.source]
-type = "git"
-url = "https://github.com/canonical/data-platform-workflows"
-reference = "v29.0.0"
-resolved_reference = "90077c956fd22995aec4c1e5b86cf6248717d8c7"
-subdirectory = "python/pytest_plugins/pytest_operator_cache"
-
-[[package]]
 name = "pytest-operator-groups"
 version = "0.1.0"
 description = ""
@@ -2865,4 +2845,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.10.12"
-content-hash = "72b6e338e9f6e7722b1646e6586f4ae8475bb7ea17ab89eff4660f32ad1eb2c6"
+content-hash = "b21d5d567ab5b8632167ef7fe8c7d585274f1e6dea661a9010f6ca2b427957a9"
