@@ -13,7 +13,7 @@ website:
   - https://chat.charmhub.io/charmhub/channels/data-platform
 summary: A mongos operator charm
 series:
-  - jammy
+  - noble
 subordinate: true
 
 peers:
