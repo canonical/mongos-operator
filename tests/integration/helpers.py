@@ -184,14 +184,14 @@ async def check_all_units_blocked_with_status(
         unit_name = status_item[0]
         status_type = status_item[1]
         status_message = " ".join(status_item[4:])
-        assert (
-            status_type == "blocked"
-        ), f"unit {unit_name} not in blocked state, in {status_type}"
+        assert status_type == "blocked", (
+            f"unit {unit_name} not in blocked state, in {status_type}"
+        )
 
         if status:
-            assert (
-                status_message == status
-            ), f"unit {unit_name} does not show the status {status}"
+            assert status_message == status, (
+                f"unit {unit_name} does not show the status {status}"
+            )
 
 
 async def wait_for_mongos_units_blocked(
@@ -238,13 +238,13 @@ async def deploy_cluster_components(
     await ops_test.model.deploy(
         MONGODB_CHARM_NAME,
         application_name=CONFIG_SERVER_APP_NAME,
-        channel="8-transition/edge",
+        channel="8/edge",
         config={"role": "config-server"},
     )
     await ops_test.model.deploy(
         MONGODB_CHARM_NAME,
         application_name=SHARD_APP_NAME,
-        channel="8-transition/edge",
+        channel="8/edge",
         config={"role": "shard"},
     )
 
