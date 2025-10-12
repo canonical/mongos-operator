@@ -1,0 +1,1 @@
+[{"uid":"f6d7fbd9d9aa2520","name":"test_waits_for_config_server","time":{},"status":"unknown","severity":"normal"},{"uid":"be0e7aa4092b1302","name":"test_mongos_starts_with_config_server","time":{},"status":"unknown","severity":"normal"},{"uid":"336c3373bac78b5a","name":"test_build_and_deploy","time":{},"status":"unknown","severity":"normal"}]
