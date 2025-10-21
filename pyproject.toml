@@ -26,10 +26,6 @@ cryptography = "^42.0.5"
 jsonschema = "^4.22.0"
 cosl = "*"
 
-[tool.poetry.group.format]
-optional = true
-
-
 [tool.poetry.requires-plugins]
 poetry-plugin-export = ">=1.8"
 
