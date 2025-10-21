@@ -26,6 +26,12 @@ cryptography = "^42.0.5"
 jsonschema = "^4.22.0"
 cosl = "*"
 
+[tool.poetry.group.build-refresh-version]
+optional = true
+
+[tool.poetry.group.build-refresh-version.dependencies]
+charm-refresh-build-version = "^0.4.0"
+
 [tool.poetry.requires-plugins]
 poetry-plugin-export = ">=1.8"
 
