@@ -7,7 +7,7 @@ requires-poetry = ">=2.0.0"
 
 [tool.poetry.dependencies]
 python = "^3.10.12"
-mongo-charms-single-kernel = "1.8.3"
+mongo-charms-single-kernel = "1.8.7"
 ops = ">=2.21"
 pymongo = "^4.7.3"
 overrides = "^7.7.0"
@@ -26,6 +26,10 @@ cryptography = "^42.0.5"
 jsonschema = "^4.22.0"
 cosl = "*"
 
+[tool.poetry.group.format]
+optional = true
+
+
 [tool.poetry.requires-plugins]
 poetry-plugin-export = ">=1.8"
 
@@ -43,7 +47,7 @@ ruff = "^0.1.6"
 codespell = "^2.2.6"
 
 [tool.poetry.group.integration.dependencies]
-mongo-charms-single-kernel = "1.8.3"
+mongo-charms-single-kernel = "1.8.7"
 allure-pytest = "^2.13.5"
 ops = ">=2.21"
 pymongo = "^4.7.3"
@@ -51,8 +55,8 @@ juju = "^3.5.0"
 pytest = "^8.1.1"
 pytest-asyncio ="^0.21.1"
 pytest-operator = "^0.34.0"
-pytest-operator-groups = {git = "https://github.com/canonical/data-platform-workflows", tag = "v29.0.0", subdirectory = "python/pytest_plugins/pytest_operator_groups"}
-allure-pytest-collection-report = {git = "https://github.com/canonical/data-platform-workflows", tag = "v29.0.0", subdirectory = "python/pytest_plugins/allure_pytest_collection_report"}
+pytest-operator-groups = {git = "https://github.com/canonical/data-platform-workflows", tag = "v35.0.4", subdirectory = "python/pytest_plugins/pytest_operator_groups"}
+allure-pytest-collection-report = {git = "https://github.com/canonical/data-platform-workflows", tag = "v35.0.4", subdirectory = "python/pytest_plugins/allure_pytest_collection_report"}
 
 [build-system]
 build-backend = "poetry.core.masonry.api"
