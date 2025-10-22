@@ -1,0 +1,11 @@
+# Copyright 2025 Canonical Ltd.
+# See LICENSE file for licensing details.
+
+options:
+  pause-after-unit-refresh:
+    description: |
+      Wait for manual confirmation to resume refresh after these units refresh
+
+      Allowed values: "all", "first", "none"
+    type: string
+    default: first
