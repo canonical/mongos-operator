@@ -29,9 +29,14 @@ peers:
     interface: refresh
 
 requires:
-  certificates:
+  peer-certificates:
     interface: tls-certificates
     limit: 1
+    optional: true
+  client-certificates:
+    interface: tls-certificates
+    limit: 1
+    optional: true
   mongos_proxy:
     interface: mongos_client
     scope: container
