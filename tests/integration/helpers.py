@@ -191,7 +191,7 @@ async def check_all_units_blocked_with_status(
         if status:
             assert (
                 status_message == status
-            ), f"expected unit {unit_name} message `{status}`. Got `{status_message}`"
+            ), f"expected {unit_name} status message to be `{status}`. Got `{status_message}`"
 
 
 async def wait_for_mongos_units_blocked(
