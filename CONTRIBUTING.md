@@ -43,9 +43,8 @@ that can be used for linting and formatting code when you're preparing contribut
 tox run -e format        # update your code according to linting rules
 tox run -e lint          # code style
 tox run -e static        # static type checking
-tox run -e unit          # unit tests
 tox run -e integration   # integration tests
-tox                      # runs 'format', 'lint', 'static', and 'unit' environments
+tox                      # runs 'lint' environment
 ```
 
 ## Build the charm
