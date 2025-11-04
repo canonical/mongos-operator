@@ -1,0 +1,65 @@
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  config-server/0 [idle] active: 
+  shard/0 [idle] active: 
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  config-server/0 [idle] active: 
+  shard/0 [idle] active: 
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  config-server/0 [idle] active: 
+  shard/0 [executing] active: 
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  config-server/0 [idle] active: 
+  shard/0 [idle] active: 
+  mongos/0 [executing] blocked: The cluster relation with the config-server is missing.
+  mongos/1 [executing] blocked: The cluster relation with the config-server is missing.
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  config-server/0 [idle] active: 
+  mongos/0 [idle] active: 
+  mongos/1 [idle] active:
+[32mINFO    [0m pytest_operator.plugin:plugin.py:834 Model status:
+
+Model  Controller           Cloud/Region         Version  SLA          Timestamp
+test   localhost-localhost  localhost/localhost  3.6.1    unsupported  01:47:53Z
+
+App            Version  Status  Scale  Charm        Channel  Rev  Exposed  Message
+application             active      2  application             0  no       
+config-server  6.0.24   active      1  mongodb      6/edge   229  no       
+mongos         6.0.24   active      2  mongos                  0  no       
+shard          6.0.24   active      1  mongodb      6/edge   229  no       
+
+Unit              Workload  Agent  Machine  Public address  Ports            Message
+application/0     active    idle   0        10.90.42.50                      
+  mongos/0*       active    idle            10.90.42.50                      
+application/1*    active    idle   1        10.90.42.165                     
+  mongos/1        active    idle            10.90.42.165                     
+config-server/0*  active    idle   2        10.90.42.127    27017-27018/tcp  
+shard/0*          active    idle   3        10.90.42.94     27017/tcp        
+
+Machine  State    Address       Inst id        Base          AZ  Message
+0        started  10.90.42.50   juju-dd1c8c-0  ubuntu@22.04      Running
+1        started  10.90.42.165  juju-dd1c8c-1  ubuntu@22.04      Running
+2        started  10.90.42.127  juju-dd1c8c-2  ubuntu@22.04      Running
+3        started  10.90.42.94   juju-dd1c8c-3  ubuntu@22.04      Running
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:840 Juju error logs:
+
+machine-3: 01:42:35 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-3: 01:42:35 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-shard-0: 01:42:35 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+machine-2: 01:42:40 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-2: 01:42:40 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-config-server-0: 01:42:40 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+machine-1: 01:43:07 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-1: 01:43:07 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-application-1: 01:43:08 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+unit-shard-0: 01:43:20 ERROR unit.shard/0.juju-log Unable to set params: ['vm.max_map_count']
+unit-shard-0: 01:43:20 ERROR unit.shard/0.juju-log Error setting values on sysctl: Unable to set params: ['vm.max_map_count']
+unit-config-server-0: 01:43:26 ERROR unit.config-server/0.juju-log Unable to set params: ['vm.max_map_count']
+unit-config-server-0: 01:43:26 ERROR unit.config-server/0.juju-log Error setting values on sysctl: Unable to set params: ['vm.max_map_count']
+machine-0: 01:44:48 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-0: 01:44:48 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-application-0: 01:44:48 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+unit-mongos-0: 01:45:03 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+unit-mongos-1: 01:45:03 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:904 Forgetting main...
