@@ -18,6 +18,7 @@ pyOpenSSL = "^24.2.1"
 pure-sasl = ">=0.6.2"
 poetry-core = "^2.0"
 rpds-py = "0.18.0"
+lightkube = "^0.15.3"
 
 [tool.poetry.group.charm-libs.dependencies]
 ops = ">=2.21"
@@ -49,6 +50,7 @@ ruff = "^0.1.6"
 codespell = "^2.2.6"
 
 [tool.poetry.group.integration.dependencies]
+lightkube = "^0.15.3"
 mongo-charms-single-kernel = "1.8.16"
 allure-pytest = "^2.13.5"
 ops = ">=2.21"
