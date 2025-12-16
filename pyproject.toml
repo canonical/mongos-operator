@@ -7,17 +7,17 @@ requires-poetry = ">=2.0.0"
 
 [tool.poetry.dependencies]
 python = "^3.10.12"
-mongo-charms-single-kernel = "1.6.11"
-ops = ">=2.21"
-pymongo = "^4.7.3"
+mongo-charms-single-kernel = "1.8.16"
+ops = ">=2.23.1"
+pymongo = "^4.15.5"
 overrides = "^7.7.0"
-pyyaml = "^6.0.1"
-cffi = "^1.16.0"
-jinja2= "^3.1.3"
-pyOpenSSL = "^24.2.1"
+pyyaml = "^6.0.3"
+cffi = "^1.17.1"
+jinja2= "^3.1.6"
+pyOpenSSL = "^24.3.0"
 pure-sasl = ">=0.6.2"
-poetry-core = "^2.0"
-rpds-py = "0.18.0"
+poetry-core = "^2.2.1"
+rpds-py = "0.30.0"
 
 [tool.poetry.group.charm-libs.dependencies]
 ops = ">=2.21"
@@ -33,24 +33,24 @@ poetry-plugin-export = ">=1.8"
 optional = true
 
 [tool.poetry.group.format.dependencies]
-ruff = "^0.1.6"
+ruff = "^0.14.9"
 
 [tool.poetry.group.lint]
 optional = true
 
 [tool.poetry.group.lint.dependencies]
-ruff = "^0.1.6"
-codespell = "^2.2.6"
+ruff = "^0.14.9"
+codespell = "^2.4.1"
 
 [tool.poetry.group.integration.dependencies]
-mongo-charms-single-kernel = "1.6.11"
-allure-pytest = "^2.13.5"
-ops = ">=2.21"
-pymongo = "^4.7.3"
+mongo-charms-single-kernel = "1.8.16"
+allure-pytest = "^2.15.2"
+ops = ">=2.23.1"
+pymongo = "^4.15.5"
 juju = "^3.5.0"
-pytest = "^8.1.1"
-pytest-asyncio ="^0.21.1"
-pytest-operator = "^0.34.0"
+pytest = "^8.4.2"
+pytest-asyncio ="^0.26.0"
+pytest-operator = "^0.43.2"
 pytest-operator-cache = {git = "https://github.com/canonical/data-platform-workflows", tag = "v29.0.0", subdirectory = "python/pytest_plugins/pytest_operator_cache"}
 pytest-operator-groups = {git = "https://github.com/canonical/data-platform-workflows", tag = "v29.0.0", subdirectory = "python/pytest_plugins/pytest_operator_groups"}
 allure-pytest-collection-report = {git = "https://github.com/canonical/data-platform-workflows", tag = "v29.0.0", subdirectory = "python/pytest_plugins/allure_pytest_collection_report"}
