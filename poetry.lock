@@ -1444,14 +1444,14 @@ files = [
 
 [[package]]
 name = "mongo-charms-single-kernel"
-version = "1.8.27"
+version = "1.8.24"
 description = "Shared and reusable code for Mongo-related charms"
 optional = false
 python-versions = "<4.0,>=3.10"
 groups = ["main", "integration"]
 files = [
-    {file = "mongo_charms_single_kernel-1.8.27-py3-none-any.whl", hash = "sha256:85e4d3ef30b511dbf126e161165a905a38089b14535c35c1668c913a4fda572f"},
-    {file = "mongo_charms_single_kernel-1.8.27.tar.gz", hash = "sha256:66b9df672ff54e8408ec1c1715fc3b8c7122cf4c0b3c1d04a8f74a2848cfb112"},
+    {file = "mongo_charms_single_kernel-1.8.24-py3-none-any.whl", hash = "sha256:7bc32466eee0555a3870b90bbc1e4f74b0920ce101ba734823ae42cf2d6344f0"},
+    {file = "mongo_charms_single_kernel-1.8.24.tar.gz", hash = "sha256:9e8f440b0830ea11d58bf5cbb7e16213fc7e7fb7785cfd89b6e09175ad2adb22"},
 ]
 
 [package.dependencies]
@@ -2455,14 +2455,14 @@ rsa = ["oauthlib[signedtoken] (>=3.0.0)"]
 
 [[package]]
 name = "rich"
-version = "14.2.0"
+version = "14.3.1"
 description = "Render rich text, tables, progress bars, syntax highlighting, markdown and more to the terminal"
 optional = false
 python-versions = ">=3.8.0"
 groups = ["main", "integration"]
 files = [
-    {file = "rich-14.2.0-py3-none-any.whl", hash = "sha256:76bc51fe2e57d2b1be1f96c524b890b816e334ab4c1e45888799bfaab0021edd"},
-    {file = "rich-14.2.0.tar.gz", hash = "sha256:73ff50c7c0c1c77c8243079283f4edb376f0f6442433aecb8ce7e6d0b92d1fe4"},
+    {file = "rich-14.3.1-py3-none-any.whl", hash = "sha256:da750b1aebbff0b372557426fb3f35ba56de8ef954b3190315eb64076d6fb54e"},
+    {file = "rich-14.3.1.tar.gz", hash = "sha256:b8c5f568a3a749f9290ec6bddedf835cec33696bfc1e48bcfecb276c7386e4b8"},
 ]
 
 [package.dependencies]
@@ -2970,4 +2970,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.10.12"
-content-hash = "15c5e79e5bdc453cf3c9fc0d183cb36a1fdfed95b0598969c8cc20f9d2df32e2"
+content-hash = "25a2f4009fd93aafba61c42ae262ac263ad478aca63f85639fe132ee8988b8a5"
