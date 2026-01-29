@@ -2,9 +2,10 @@
 # Copyright 2024 Canonical Ltd.
 # See LICENSE file for licensing details.
 
-import json
 import os
-from pathlib import Path
+import typing
+import pathlib
+import subprocess
 
 
 def pytest_configure(config) -> None:
