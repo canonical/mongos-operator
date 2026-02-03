@@ -17,7 +17,7 @@ pyOpenSSL = "^24.2.1"
 pure-sasl = ">=0.6.2"
 poetry-core = "^2.0"
 rpds-py = "0.18.0"
-mongo-charms-single-kernel = "1.6.20"
+mongo-charms-single-kernel = "1.6.23"
 
 [tool.poetry.group.charm-libs.dependencies]
 ops = ">=2.21"
@@ -53,7 +53,7 @@ pytest-operator = "^0.34.0"
 pytest-operator-cache = {git = "https://github.com/canonical/data-platform-workflows", tag = "v29.0.0", subdirectory = "python/pytest_plugins/pytest_operator_cache"}
 pytest-operator-groups = {git = "https://github.com/canonical/data-platform-workflows", tag = "v29.0.0", subdirectory = "python/pytest_plugins/pytest_operator_groups"}
 allure-pytest-collection-report = {git = "https://github.com/canonical/data-platform-workflows", tag = "v29.0.0", subdirectory = "python/pytest_plugins/allure_pytest_collection_report"}
-mongo-charms-single-kernel = "1.6.20"
+mongo-charms-single-kernel = "1.6.23"
 
 [build-system]
 build-backend = "poetry.core.masonry.api"
