@@ -18,7 +18,7 @@ pure-sasl = ">=0.6.2"
 poetry-core = "^2.0"
 rpds-py = "0.18.0"
 lightkube = "^0.15.3"
-mongo-charms-single-kernel = "1.8.30"
+mongo-charms-single-kernel = "1.8.32"
 
 [tool.poetry.group.charm-libs.dependencies]
 ops = ">=2.21"
@@ -60,7 +60,7 @@ pytest-asyncio ="^0.21.1"
 pytest-operator = "^0.34.0"
 pytest-operator-groups = {git = "https://github.com/canonical/data-platform-workflows", tag = "v35.0.4", subdirectory = "python/pytest_plugins/pytest_operator_groups"}
 allure-pytest-collection-report = {git = "https://github.com/canonical/data-platform-workflows", tag = "v35.0.4", subdirectory = "python/pytest_plugins/allure_pytest_collection_report"}
-mongo-charms-single-kernel = "1.8.30"
+mongo-charms-single-kernel = "1.8.32"
 
 [build-system]
 build-backend = "poetry.core.masonry.api"
