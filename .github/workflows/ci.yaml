@@ -137,5 +137,6 @@ jobs:
       artifact-prefix: ${{ needs.build.outputs.artifact-prefix }}
       cloud: lxd
       _beta_allure_report: true
+      juju-snap-channel: 3.6/stable
     permissions:
       contents: write
