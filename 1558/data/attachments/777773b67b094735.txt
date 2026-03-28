@@ -1,0 +1,95 @@
+[32mINFO    [0m pytest_operator.plugin:plugin.py:834 Model status:
+
+Model  Controller           Cloud/Region         Version  SLA          Timestamp
+test   localhost-localhost  localhost/localhost  3.6.20   unsupported  01:37:51Z
+
+App            Version  Status   Scale  Charm        Channel  Rev  Exposed  Message
+application             active       2  application             0  no       
+config-server  8.0.10   active       1  mongodb      8/edge   292  no       
+mongos                  unknown      0  mongos                  0  no       
+shard          8.0.10   active       1  mongodb      8/edge   292  no       
+
+Unit              Workload     Agent      Machine  Public address  Ports  Message
+application/0     active       idle       0        10.245.209.116         
+application/1*    active       idle       1        10.245.209.150         
+config-server/0*  maintenance  executing  2        10.245.209.237         (install) Installing MongoDB...
+shard/0*          active       executing  3        10.245.209.98          
+
+Machine  State    Address         Inst id        Base          AZ             Message
+0        started  10.245.209.116  juju-d64d16-0  ubuntu@24.04  runnervmrg6be  Running
+1        started  10.245.209.150  juju-d64d16-1  ubuntu@24.04  runnervmrg6be  Running
+2        started  10.245.209.237  juju-d64d16-2  ubuntu@24.04  runnervmrg6be  Running
+3        started  10.245.209.98   juju-d64d16-3  ubuntu@24.04  runnervmrg6be  Running
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:840 Juju error logs:
+
+machine-0: 01:35:30 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-0: 01:35:30 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-1: 01:35:50 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-1: 01:35:50 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-2: 01:36:03 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-2: 01:36:03 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-3: 01:36:11 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-3: 01:36:11 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-1: 01:36:49 ERROR juju.worker.dependency "log-sender" manifold worker returned unexpected error: sending log message: websocket: close 1006 (abnormal closure): unexpected EOF: set tcp 10.245.209.150:50054: use of closed network connection
+machine-3: 01:36:49 ERROR juju.worker.dependency "log-sender" manifold worker returned unexpected error: sending log message: websocket: close 1006 (abnormal closure): unexpected EOF: set tcp 10.245.209.98:49840: use of closed network connection
+machine-2: 01:36:49 ERROR juju.worker.dependency "log-sender" manifold worker returned unexpected error: sending log message: websocket: close 1006 (abnormal closure): unexpected EOF: set tcp 10.245.209.237:33536: use of closed network connection
+machine-3: 01:36:49 ERROR juju.api.watcher error trying to stop watcher: websocket: close sent
+machine-3: 01:36:49 ERROR juju.api.watcher error trying to stop watcher: websocket: close sent
+machine-3: 01:36:49 ERROR juju.worker.dependency "api-caller" manifold worker returned unexpected error: api connection broken unexpectedly
+machine-2: 01:36:49 ERROR juju.api.watcher error trying to stop watcher: connection is shutdown before send: connection is shut down
+machine-2: 01:36:49 ERROR juju.worker.dependency "api-caller" manifold worker returned unexpected error: api connection broken unexpectedly
+machine-2: 01:36:49 ERROR juju.api.watcher error trying to stop watcher: connection is shutdown before send: connection is shut down
+machine-2: 01:36:49 ERROR juju.api.watcher error trying to stop watcher: connection is shutdown before send: connection is shut down
+machine-2: 01:36:49 ERROR juju.api.watcher error trying to stop watcher: connection is shutdown before send: connection is shut down
+machine-1: 01:36:49 ERROR juju.api.watcher error trying to stop watcher: connection is shutdown before send: connection is shut down
+machine-1: 01:36:49 ERROR juju.worker.dependency "api-caller" manifold worker returned unexpected error: api connection broken unexpectedly
+machine-0: 01:36:49 ERROR juju.api.watcher error trying to stop watcher: websocket: close sent
+machine-0: 01:36:49 ERROR juju.api.watcher error trying to stop watcher: websocket: close sent
+machine-0: 01:36:49 ERROR juju.api.watcher error trying to stop watcher: websocket: close sent
+machine-0: 01:36:49 ERROR juju.api.watcher error trying to stop watcher: websocket: close sent
+machine-0: 01:36:49 ERROR juju.api.watcher error trying to stop watcher: websocket: close sent
+machine-0: 01:36:49 ERROR juju.api.watcher error trying to stop watcher: websocket: close sent
+machine-0: 01:36:49 ERROR juju.api.watcher error trying to stop watcher: websocket: close sent
+machine-0: 01:36:49 ERROR juju.api.watcher error trying to stop watcher: websocket: close sent
+machine-0: 01:36:49 ERROR juju.api.watcher error trying to stop watcher: websocket: close sent
+machine-0: 01:36:49 ERROR juju.api.watcher error trying to stop watcher: websocket: close sent
+machine-0: 01:36:49 ERROR juju.api.watcher error trying to stop watcher: websocket: close sent
+machine-0: 01:36:49 ERROR juju.api.watcher error trying to stop watcher: websocket: close sent
+machine-0: 01:36:49 ERROR juju.api.watcher error trying to stop watcher: websocket: close sent
+machine-0: 01:36:49 ERROR juju.api.watcher error trying to stop watcher: websocket: close sent
+machine-0: 01:36:49 ERROR juju.api.watcher error trying to stop watcher: websocket: close sent
+machine-0: 01:36:49 ERROR juju.api.watcher error trying to stop watcher: websocket: close sent
+machine-0: 01:36:49 ERROR juju.api.watcher error trying to stop watcher: websocket: close sent
+machine-0: 01:36:49 ERROR juju.api.watcher error trying to stop watcher: websocket: close sent
+machine-0: 01:36:49 ERROR juju.worker.dependency "log-sender" manifold worker returned unexpected error: sending log message: websocket: close 1006 (abnormal closure): unexpected EOF: set tcp 10.245.209.116:59440: use of closed network connection
+machine-0: 01:36:49 ERROR juju.api.watcher error trying to stop watcher: websocket: close sent
+machine-0: 01:36:49 ERROR juju.worker.dependency "api-caller" manifold worker returned unexpected error: api connection broken unexpectedly
+machine-0: 01:36:49 ERROR juju.api.watcher error trying to stop watcher: websocket: close sent
+machine-0: 01:36:49 ERROR juju.api.watcher error trying to stop watcher: connection is shutdown before send: connection is shut down
+machine-0: 01:36:49 ERROR juju.api.watcher error trying to stop watcher: connection is shutdown before send: connection is shut down
+machine-0: 01:36:49 ERROR juju.api.watcher error trying to stop watcher: connection is shutdown before send: connection is shut down
+machine-0: 01:36:49 ERROR juju.api.watcher error trying to stop watcher: connection is shutdown before send: connection is shut down
+machine-0: 01:36:52 ERROR juju.worker.dependency "api-caller" manifold worker returned unexpected error: [1dcfe7] "machine-0" cannot open api: unable to connect to API: dial tcp 10.245.209.188:17070: connect: connection refused
+machine-1: 01:36:53 ERROR juju.worker.dependency "api-caller" manifold worker returned unexpected error: [1dcfe7] "machine-1" cannot open api: unable to connect to API: dial tcp 10.245.209.188:17070: connect: connection refused
+machine-2: 01:36:53 ERROR juju.worker.dependency "api-caller" manifold worker returned unexpected error: [1dcfe7] "machine-2" cannot open api: unable to connect to API: dial tcp 10.245.209.188:17070: connect: connection refused
+machine-3: 01:36:54 ERROR juju.worker.dependency "api-caller" manifold worker returned unexpected error: [1dcfe7] "machine-3" cannot open api: unable to connect to API: dial tcp 10.245.209.188:17070: connect: connection refused
+machine-0: 01:36:56 ERROR juju.worker.dependency "api-caller" manifold worker returned unexpected error: [1dcfe7] "machine-0" cannot open api: unable to connect to API: dial tcp 10.245.209.188:17070: connect: connection refused
+machine-1: 01:36:57 ERROR juju.worker.dependency "api-caller" manifold worker returned unexpected error: [1dcfe7] "machine-1" cannot open api: unable to connect to API: dial tcp 10.245.209.188:17070: connect: connection refused
+machine-2: 01:36:58 ERROR juju.worker.dependency "api-caller" manifold worker returned unexpected error: [1dcfe7] "machine-2" cannot open api: unable to connect to API: dial tcp 10.245.209.188:17070: connect: connection refused
+machine-3: 01:36:59 ERROR juju.worker.dependency "api-caller" manifold worker returned unexpected error: [1dcfe7] "machine-3" cannot open api: unable to connect to API: dial tcp 10.245.209.188:17070: connect: connection refused
+machine-0: 01:37:01 ERROR juju.worker.dependency "api-caller" manifold worker returned unexpected error: [1dcfe7] "machine-0" cannot open api: unable to connect to API: dial tcp 10.245.209.188:17070: connect: connection refused
+machine-1: 01:37:02 ERROR juju.worker.dependency "api-caller" manifold worker returned unexpected error: [1dcfe7] "machine-1" cannot open api: unable to connect to API: dial tcp 10.245.209.188:17070: connect: connection refused
+machine-2: 01:37:03 ERROR juju.worker.dependency "api-caller" manifold worker returned unexpected error: [1dcfe7] "machine-2" cannot open api: unable to connect to API: dial tcp 10.245.209.188:17070: connect: connection refused
+machine-3: 01:37:05 ERROR juju.worker.dependency "api-caller" manifold worker returned unexpected error: [1dcfe7] "machine-3" cannot open api: unable to connect to API: dial tcp 10.245.209.188:17070: connect: connection refused
+machine-0: 01:37:06 ERROR juju.worker.dependency "api-caller" manifold worker returned unexpected error: [1dcfe7] "machine-0" cannot open api: unable to connect to API: dial tcp 10.245.209.188:17070: connect: connection refused
+machine-2: 01:37:09 ERROR juju.worker.dependency "api-caller" manifold worker returned unexpected error: [1dcfe7] "machine-2" cannot open api: unable to connect to API: dial tcp 10.245.209.188:17070: connect: connection refused
+machine-1: 01:37:09 ERROR juju.worker.dependency "api-caller" manifold worker returned unexpected error: [1dcfe7] "machine-1" cannot open api: unable to connect to API: dial tcp 10.245.209.188:17070: connect: connection refused
+machine-3: 01:37:12 ERROR juju.worker.dependency "api-caller" manifold worker returned unexpected error: [1dcfe7] "machine-3" cannot open api: unable to connect to API: dial tcp 10.245.209.188:17070: connect: connection refused
+machine-0: 01:37:13 ERROR juju.worker.dependency "api-caller" manifold worker returned unexpected error: [1dcfe7] "machine-0" cannot open api: unable to connect to API: dial tcp 10.245.209.188:17070: connect: connection refused
+machine-2: 01:37:16 ERROR juju.worker.dependency "api-caller" manifold worker returned unexpected error: [1dcfe7] "machine-2" cannot open api: unable to connect to API: dial tcp 10.245.209.188:17070: connect: connection refused
+machine-1: 01:37:17 ERROR juju.worker.dependency "api-caller" manifold worker returned unexpected error: [1dcfe7] "machine-1" cannot open api: unable to connect to API: dial tcp 10.245.209.188:17070: connect: connection refused
+machine-0: 01:37:20 ERROR juju.worker.dependency "api-caller" manifold worker returned unexpected error: [1dcfe7] "machine-0" cannot open api: unable to connect to API: dial tcp 10.245.209.188:17070: connect: connection refused
+machine-3: 01:37:21 ERROR juju.worker.dependency "api-caller" manifold worker returned unexpected error: [1dcfe7] "machine-3" cannot open api: unable to connect to API: dial tcp 10.245.209.188:17070: connect: connection refused
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:904 Forgetting main...
