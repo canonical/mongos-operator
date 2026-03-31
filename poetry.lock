@@ -33,8 +33,8 @@ pytest = "*"
 [package.source]
 type = "git"
 url = "https://github.com/canonical/data-platform-workflows"
-reference = "v35.0.4"
-resolved_reference = "a5b9f86aca2c006ccf44f0f425eb0ff01f0db205"
+reference = "v42.1.0"
+resolved_reference = "110284a652ffdeb77c7c6c76576b563a55c0b72c"
 subdirectory = "python/pytest_plugins/allure_pytest_collection_report"
 
 [[package]]
@@ -2485,8 +2485,8 @@ pytest = "*"
 [package.source]
 type = "git"
 url = "https://github.com/canonical/data-platform-workflows"
-reference = "v35.0.4"
-resolved_reference = "a5b9f86aca2c006ccf44f0f425eb0ff01f0db205"
+reference = "v42.1.0"
+resolved_reference = "110284a652ffdeb77c7c6c76576b563a55c0b72c"
 subdirectory = "python/pytest_plugins/pytest_operator_groups"
 
 [[package]]
@@ -3189,4 +3189,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.10.12"
-content-hash = "a8c6f75d034a0fd635edf45c92651e793f916dee8cf57d89255392efd7432010"
+content-hash = "bd2c57c22dc7f49d0f27e7e05c68aae2eb9d6375165a056e15eba10e52ff1c44"
