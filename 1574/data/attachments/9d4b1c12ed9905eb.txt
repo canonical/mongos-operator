@@ -1,0 +1,60 @@
+[32mINFO    [0m pytest_operator.plugin:plugin.py:834 Model status:
+
+Model  Controller           Cloud/Region         Version  SLA          Timestamp
+test   localhost-localhost  localhost/localhost  3.6.20   unsupported  01:35:27Z
+
+App            Version  Status   Scale  Charm        Channel  Rev  Exposed  Message
+application             waiting    0/2  application             0  no       agent initialising
+config-server           waiting    0/1  mongodb      8/edge   292  no       waiting for machine
+mongos                  unknown      0  mongos                  0  no       
+shard                   waiting    0/1  mongodb      8/edge   292  no       agent initialising
+
+Unit             Workload  Agent       Machine  Public address  Ports  Message
+application/0*   waiting   allocating  0        10.179.135.82          agent initialising
+application/1    waiting   allocating  1        10.179.135.78          agent initialising
+config-server/0  waiting   allocating  2        10.179.135.42          waiting for machine
+shard/0*         waiting   allocating  3        10.179.135.248         agent initialising
+
+Machine  State    Address         Inst id        Base          AZ             Message
+0        started  10.179.135.82   juju-e55e83-0  ubuntu@24.04  runnervm727z3  Running
+1        started  10.179.135.78   juju-e55e83-1  ubuntu@24.04  runnervm727z3  Running
+2        pending  10.179.135.42   juju-e55e83-2  ubuntu@24.04  runnervm727z3  Running
+3        started  10.179.135.248  juju-e55e83-3  ubuntu@24.04  runnervm727z3  Running
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:840 Juju error logs:
+
+machine-0: 01:34:50 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-0: 01:34:50 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-1: 01:35:10 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-1: 01:35:10 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-0: 01:35:21 ERROR juju.worker.dependency "migration-minion" manifold worker returned unexpected error: watcher has been stopped (stopped)
+machine-0: 01:35:21 ERROR juju.worker.dependency "log-sender" manifold worker returned unexpected error: sending log message: websocket: close 1006 (abnormal closure): unexpected EOF: set tcp 10.179.135.82:54628: use of closed network connection
+machine-0: 01:35:21 ERROR juju.worker.dependency "api-caller" manifold worker returned unexpected error: api connection broken unexpectedly
+machine-0: 01:35:21 ERROR juju.api.watcher error trying to stop watcher: connection is shutdown before send: connection is shut down
+machine-0: 01:35:21 ERROR juju.api.watcher error trying to stop watcher: connection is shutdown before send: connection is shut down
+machine-1: 01:35:21 ERROR juju.worker.dependency "migration-minion" manifold worker returned unexpected error: watcher has been stopped (stopped)
+machine-1: 01:35:21 ERROR juju.api.watcher error trying to stop watcher: connection is shutdown before send: connection is shut down
+machine-1: 01:35:21 ERROR juju.api.watcher error trying to stop watcher: connection is shutdown before send: connection is shut down
+machine-1: 01:35:21 ERROR juju.api.watcher error trying to stop watcher: connection is shutdown before send: connection is shut down
+machine-1: 01:35:21 ERROR juju.api.watcher error trying to stop watcher: connection is shutdown before send: connection is shut down
+machine-1: 01:35:21 ERROR juju.worker.dependency "log-sender" manifold worker returned unexpected error: sending log message: websocket: close 1006 (abnormal closure): unexpected EOF: set tcp 10.179.135.78:44900: use of closed network connection
+machine-1: 01:35:21 ERROR juju.api.watcher error trying to stop watcher: websocket: close sent
+machine-1: 01:35:21 ERROR juju.api.watcher error trying to stop watcher: websocket: close sent
+machine-1: 01:35:21 ERROR juju.api.watcher error trying to stop watcher: websocket: close sent
+machine-1: 01:35:21 ERROR juju.api.watcher error trying to stop watcher: websocket: close sent
+machine-1: 01:35:21 ERROR juju.api.watcher error trying to stop watcher: websocket: close sent
+machine-1: 01:35:21 ERROR juju.api.watcher error trying to stop watcher: websocket: close sent
+machine-1: 01:35:21 ERROR juju.worker.dependency "migration-inactive-flag" manifold worker returned unexpected error: watcher has been stopped (stopped)
+machine-1: 01:35:21 ERROR juju.api.watcher error trying to stop watcher: websocket: close sent
+machine-1: 01:35:21 ERROR juju.api.watcher error trying to stop watcher: websocket: close sent
+machine-1: 01:35:21 ERROR juju.api.watcher error trying to stop watcher: websocket: close sent
+machine-1: 01:35:21 ERROR juju.api.watcher error trying to stop watcher: websocket: close sent
+machine-1: 01:35:21 ERROR juju.api.watcher error trying to stop watcher: websocket: close sent
+machine-1: 01:35:21 ERROR juju.api.watcher error trying to stop watcher: websocket: close sent
+machine-1: 01:35:21 ERROR juju.api.watcher error trying to stop watcher: websocket: close sent
+machine-1: 01:35:21 ERROR juju.api.watcher error trying to stop watcher: websocket: close sent
+machine-1: 01:35:21 ERROR juju.worker.dependency "api-caller" manifold worker returned unexpected error: api connection broken unexpectedly
+machine-3: 01:35:25 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-3: 01:35:25 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:904 Forgetting main...
