@@ -1,0 +1,32 @@
+[32mINFO    [0m pytest_operator.plugin:plugin.py:834 Model status:
+
+Model  Controller           Cloud/Region         Version  SLA          Timestamp
+test   localhost-localhost  localhost/localhost  3.6.20   unsupported  01:35:24Z
+
+App            Version  Status   Scale  Charm        Channel  Rev  Exposed  Message
+application             active       2  application             0  no       
+config-server           waiting    0/1  mongodb      8/edge   292  no       waiting for machine
+mongos                  unknown      0  mongos                  0  no       
+shard                   waiting    0/1  mongodb      8/edge   292  no       waiting for machine
+
+Unit             Workload  Agent       Machine  Public address  Ports  Message
+application/0*   active    idle        0        10.167.250.161         
+application/1    active    idle        1        10.167.250.96          
+config-server/0  waiting   allocating  2        10.167.250.132         waiting for machine
+shard/0          waiting   allocating  3        10.167.250.103         waiting for machine
+
+Machine  State    Address         Inst id        Base          AZ             Message
+0        started  10.167.250.161  juju-acdab5-0  ubuntu@24.04  runnervm727z3  Running
+1        started  10.167.250.96   juju-acdab5-1  ubuntu@24.04  runnervm727z3  Running
+2        pending  10.167.250.132  juju-acdab5-2  ubuntu@24.04  runnervm727z3  Running
+3        pending  10.167.250.103  juju-acdab5-3  ubuntu@24.04  runnervm727z3  Running
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:840 Juju error logs:
+
+machine-0: 01:34:51 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-0: 01:34:51 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-1: 01:35:12 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-1: 01:35:12 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-application-1: 01:35:19 ERROR juju.worker.dependency "leadership-tracker" manifold worker returned unexpected error: error while application/1 waiting for application leadership release: error blocking on leadership release: lease manager stopped
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:904 Forgetting main...
