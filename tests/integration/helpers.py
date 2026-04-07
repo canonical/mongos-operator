@@ -184,14 +184,14 @@ async def check_all_units_blocked_with_status(
         unit_name = status_item[0]
         status_type = status_item[1]
         status_message = " ".join(status_item[4:])
-        assert (
-            status_type == "blocked"
-        ), f"unit {unit_name} not in blocked state, in {status_type}"
+        assert status_type == "blocked", (
+            f"unit {unit_name} not in blocked state, in {status_type}"
+        )
 
         if status:
-            assert (
-                status_message == status
-            ), f"unit {unit_name} does not show the status {status}"
+            assert status_message == status, (
+                f"unit {unit_name} does not show the status {status}"
+            )
 
 
 async def wait_for_mongos_units_blocked(
@@ -215,12 +215,11 @@ async def wait_for_mongos_units_blocked(
 
 
 async def deploy_cluster_components(
-    ops_test: OpsTest, channel: str | None = None
+    ops_test: OpsTest, charm: str, application_charm: str, channel: str | None = None
 ) -> None:
     """Deploys all cluster components and waits for idle."""
-    application_charm = await ops_test.build_charm("tests/integration/application")
     if not channel:
-        mongos_charm = await ops_test.build_charm(".")
+        mongos_charm = charm
     else:
         mongos_charm = MONGOS_APP_NAME
 
