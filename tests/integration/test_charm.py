@@ -22,14 +22,16 @@ TEST_USER_PWD = "Test123"
 TEST_DB_NAME = "my-test-db"
 
 
-@pytest.mark.group(1)
 @pytest.mark.abort_on_fail
-async def test_build_and_deploy(ops_test: OpsTest) -> None:
+async def test_build_and_deploy(
+    ops_test: OpsTest, charm: str, application_charm: str
+) -> None:
     """Build and deploy a sharded cluster."""
-    await deploy_cluster_components(ops_test)
+    await deploy_cluster_components(
+        ops_test, charm=charm, application_charm=application_charm
+    )
 
 
-@pytest.mark.group(1)
 @pytest.mark.abort_on_fail
 async def test_waits_for_config_server(ops_test: OpsTest) -> None:
     """Verifies that the application and unit are active."""
@@ -44,7 +46,6 @@ async def test_waits_for_config_server(ops_test: OpsTest) -> None:
     )
 
 
-@pytest.mark.group(1)
 @pytest.mark.abort_on_fail
 async def test_mongos_starts_with_config_server(ops_test: OpsTest) -> None:
     # prepare sharded cluster
