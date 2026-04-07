@@ -17,27 +17,6 @@ allure-python-commons = "2.15.3"
 pytest = ">=4.5.0"
 
 [[package]]
-name = "allure-pytest-collection-report"
-version = "0.1.0"
-description = ""
-optional = false
-python-versions = ">=3.8"
-groups = ["integration"]
-files = []
-develop = false
-
-[package.dependencies]
-allure-pytest = ">=2.13.5"
-pytest = "*"
-
-[package.source]
-type = "git"
-url = "https://github.com/canonical/data-platform-workflows"
-reference = "v35.0.4"
-resolved_reference = "a5b9f86aca2c006ccf44f0f425eb0ff01f0db205"
-subdirectory = "python/pytest_plugins/allure_pytest_collection_report"
-
-[[package]]
 name = "allure-python-commons"
 version = "2.15.3"
 description = "Contains the API for end users as well as helper functions and classes to build Allure adapters for Python test frameworks"
@@ -2470,26 +2449,6 @@ pytest-asyncio = "<0.23"
 pyyaml = "*"
 
 [[package]]
-name = "pytest-operator-groups"
-version = "0.1.0"
-description = ""
-optional = false
-python-versions = ">=3.8"
-groups = ["integration"]
-files = []
-develop = false
-
-[package.dependencies]
-pytest = "*"
-
-[package.source]
-type = "git"
-url = "https://github.com/canonical/data-platform-workflows"
-reference = "v35.0.4"
-resolved_reference = "a5b9f86aca2c006ccf44f0f425eb0ff01f0db205"
-subdirectory = "python/pytest_plugins/pytest_operator_groups"
-
-[[package]]
 name = "python-dateutil"
 version = "2.9.0.post0"
 description = "Extensions to the standard Python datetime module"
@@ -3189,4 +3148,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.10.12"
-content-hash = "a8c6f75d034a0fd635edf45c92651e793f916dee8cf57d89255392efd7432010"
+content-hash = "b01fa8996a36e853d549cdd9dcfbf3382ad5b6b1a5ea30e970c0dca7781e1898"
