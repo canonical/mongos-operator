@@ -23,7 +23,7 @@ def charm(arch: str) -> str:
     # Return str instead of pathlib.Path since python-libjuju's model.deploy(), juju deploy, and
     # juju bundle files expect local charms to begin with `./` or `/` to distinguish them from
     # Charmhub charms.
-    return f"./mongodb-k8s_ubuntu@24.04-{arch}.charm"
+    return f"./mongos_ubuntu@24.04-{arch}.charm"
 
 
 @pytest.fixture
