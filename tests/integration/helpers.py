@@ -23,7 +23,6 @@ SHARD_REL_NAME = "sharding"
 CONFIG_SERVER_REL_NAME = "config-server"
 
 MONGOS_SOCKET = "%2Fvar%2Fsnap%2Fcharmed-mongodb%2Fcommon%2Fvar%2Fmongodb-27018.sock"
-MONGOS_APP_NAME = "mongos"
 PING_CMD = "db.runCommand({ping: 1})"
 MONGO_SHELL = "charmed-mongodb.mongosh"
 
@@ -184,14 +183,14 @@ async def check_all_units_blocked_with_status(
         unit_name = status_item[0]
         status_type = status_item[1]
         status_message = " ".join(status_item[4:])
-        assert (
-            status_type == "blocked"
-        ), f"expected unit {unit_name} in blocked state. Got {status_type}"
+        assert status_type == "blocked", (
+            f"unit {unit_name} not in blocked state, in {status_type}"
+        )
 
         if status:
-            assert (
-                status_message == status
-            ), f"expected {unit_name} status message to be `{status}`. Got `{status_message}`"
+            assert status_message == status, (
+                f"unit {unit_name} does not show the status {status}"
+            )
 
 
 async def wait_for_mongos_units_blocked(
@@ -215,12 +214,11 @@ async def wait_for_mongos_units_blocked(
 
 
 async def deploy_cluster_components(
-    ops_test: OpsTest, channel: str | None = None
+    ops_test: OpsTest, charm: str, application_charm: str, channel: str | None = None
 ) -> None:
     """Deploys all cluster components and waits for idle."""
-    application_charm = await ops_test.build_charm("tests/integration/application")
     if not channel:
-        mongos_charm = await ops_test.build_charm(".")
+        mongos_charm = charm
     else:
         mongos_charm = MONGOS_APP_NAME
 
