@@ -183,34 +183,14 @@ async def check_all_units_blocked_with_status(
         unit_name = status_item[0]
         status_type = status_item[1]
         status_message = " ".join(status_item[4:])
-<<<<<<< LEFT
-        assert (
-            status_type == "blocked"
-        ), f"expected unit {unit_name} to be in blocked state. Got: {status_type}"
-||||||| BASE
-        assert (
-            status_type == "blocked"
-        ), f"unit {unit_name} not in blocked state, in {status_type}"
-=======
         assert status_type == "blocked", (
             f"unit {unit_name} not in blocked state, in {status_type}"
         )
->>>>>>> RIGHT
 
         if status:
-<<<<<<< LEFT
-            assert (
-                status_message == status
-            ), f"expected {unit_name} status message to be `{status}`. Got `{status_message}`"
-||||||| BASE
-            assert (
-                status_message == status
-            ), f"unit {unit_name} does not show the status {status}"
-=======
             assert status_message == status, (
                 f"unit {unit_name} does not show the status {status}"
             )
->>>>>>> RIGHT
 
 
 async def wait_for_mongos_units_blocked(
