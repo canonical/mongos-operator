@@ -115,7 +115,7 @@ jobs:
     uses: canonical/data-platform-workflows/.github/workflows/build_charm.yaml@v42.1.0
     with:
       path-to-charm-directory: ${{ matrix.path }}
-      cache: false
+      cache: true
 
   integration-test:
     name: Integration test charm
@@ -125,6 +125,5 @@ jobs:
     uses: ./.github/workflows/integration_test.yaml
     with:
       artifact-prefix: ${{ needs.build.outputs.artifact-prefix }}
-      juju-agent-version: 3.6.1 # renovate: juju-agent-pin-minor
     permissions:
-      contents: write
+      contents: read
