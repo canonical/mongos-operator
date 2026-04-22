@@ -77,9 +77,10 @@ jobs:
     timeout-minutes: 120
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
+          persist-credentials: false
       - name: Install terraform snap
         run: |
           sudo snap install terraform --channel=latest/stable --classic
