@@ -111,7 +111,12 @@ jobs:
           terraform apply  -var "model_name=test" -target null_resource.juju_wait_deployment -auto-approve
 
   build:
-    name: Build charm
+    strategy:
+      matrix:
+        path:
+          - .
+          - tests/integration/application
+    name: Build charm | ${{ matrix.path }}
     uses: canonical/data-platform-workflows/.github/workflows/build_charm.yaml@v49.0.0
     with:
       cache: true
