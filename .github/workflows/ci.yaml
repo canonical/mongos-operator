@@ -73,8 +73,7 @@ jobs:
     needs:
       - terraform-lint
     runs-on: ubuntu-22.04
-    permissions:
-      contents: read
+    permissions: {}
     timeout-minutes: 120
     steps:
       - name: Checkout repo
