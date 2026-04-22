@@ -119,6 +119,7 @@ jobs:
     name: Build charm | ${{ matrix.path }}
     uses: canonical/data-platform-workflows/.github/workflows/build_charm.yaml@v49.0.0
     with:
+      path-to-charm-directory: ${{ matrix.path }}
       cache: true
     permissions:
       actions: read
