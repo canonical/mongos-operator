@@ -17,7 +17,7 @@ pure-sasl = ">=0.6.2"
 poetry-core = "^2.0"
 rpds-py = "0.18.0"
 lightkube = "^0.15.3"
-mongo-charms-single-kernel = "1.8.41"
+mongo-charms-single-kernel = "1.8.42"
 
 [tool.poetry.group.charm-libs.dependencies]
 ops = ">=2.21"
@@ -57,7 +57,7 @@ juju = "^3.5.0"
 pytest = "^8.1.1"
 pytest-asyncio ="^0.21.1"
 pytest-operator = "^0.34.0"
-mongo-charms-single-kernel = "1.8.41"
+mongo-charms-single-kernel = "1.8.42"
 
 [build-system]
 build-backend = "poetry.core.masonry.api"
