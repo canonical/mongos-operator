@@ -1,9 +1,8 @@
 module "mongos" {
   source     = "../"
   app_name   = var.mongos_name
-  model_uuid = var.model_uuid
-  units      = 1
   channel    = "8/edge"
+  model_uuid = var.model_uuid
 }
 
 resource "juju_application" "data-integrator" {

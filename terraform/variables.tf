@@ -50,9 +50,3 @@ variable "revision" {
   type        = number
   default     = null
 }
-
-variable "units" {
-  description = "Charm units"
-  type        = number
-  default     = 3
-}
