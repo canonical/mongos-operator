@@ -36,7 +36,6 @@ The module offers the following configurable inputs:
 | `base` | Charm base (old name: series) | `string` | `"ubuntu@24.04"` | no |
 | `channel` | Charm channel | `string` | `"8/stable"` | no |
 | `config` | Map of charm configuration options | `map(string)` | `{}` | no |
-| `constraints`       | String listing constraints for this application | `string` | `"arch=amd64"` | no |
 | `endpoint_bindings` | Map of endpoint bindings | `set(object)` | `[]` | no |
 | `machines` | List of machines for placement | `set(string)` | `[]` | no |
 | `model_uuid` | Model UUID | `string` | n/a | yes |

@@ -80,7 +80,7 @@ jobs:
           sudo snap install terraform --channel=latest/stable --classic
       - name: juju set up
         run: |
-          sudo snap install juju --channel=3.6/beta --classic
+          sudo snap install juju --channel=3.6 --classic
           sudo snap install juju-wait --channel=latest/stable --classic
       - name: LXD setup
         run: |

@@ -9,7 +9,6 @@ resource "juju_application" "mongos" {
     base     = var.base
   }
   config            = var.config
-  constraints       = var.constraints
   endpoint_bindings = var.endpoint_bindings
   machines          = (var.machines == null || length(var.machines) == 0) ? null : var.machines
   model_uuid        = var.model_uuid

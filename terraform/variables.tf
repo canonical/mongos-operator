@@ -25,12 +25,6 @@ variable "config" {
   default     = {}
 }
 
-variable "constraints" {
-  description = "String listing constraints for this application"
-  type        = string
-  default     = "arch=amd64"
-}
-
 variable "endpoint_bindings" {
   description = "Map of endpoint bindings"
   type = set(object({
