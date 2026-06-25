@@ -11,6 +11,6 @@ resource "juju_application" "data-integrator" {
     name    = "data-integrator"
     channel = "latest/stable"
   }
-  model      = var.model_name
+  model_uuid = var.model_uuid
   depends_on = [null_resource.preamble]
 }
