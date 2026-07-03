@@ -11,6 +11,11 @@ variable "base" {
   description = "Charm base (old name: series)"
   type        = string
   default     = "ubuntu@24.04"
+
+  validation {
+    condition     = var.base == "ubuntu@24.04"
+    error_message = "The base variable only accepts ubuntu@24.04."
+  }
 }
 
 variable "channel" {
@@ -32,12 +37,6 @@ variable "endpoint_bindings" {
     endpoint = optional(string)
   }))
   default = []
-}
-
-variable "machines" {
-  description = "List of machines for placement"
-  type        = set(string)
-  default     = []
 }
 
 variable "model_uuid" {

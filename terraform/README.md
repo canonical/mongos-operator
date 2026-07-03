@@ -37,7 +37,6 @@ The module offers the following configurable inputs:
 | `channel` | Charm channel | `string` | `"8/stable"` | no |
 | `config` | Map of charm configuration options | `map(string)` | `{}` | no |
 | `endpoint_bindings` | Map of endpoint bindings | `set(object)` | `[]` | no |
-| `machines` | List of machines for placement | `set(string)` | `[]` | no |
 | `model_uuid` | Model UUID | `string` | n/a | yes |
 | `revision` | Charm revision | `number` | `null` | no |
 | `units` | Charm units | `number` | `3` | no |
