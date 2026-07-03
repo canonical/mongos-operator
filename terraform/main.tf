@@ -10,7 +10,6 @@ resource "juju_application" "mongos" {
   }
   config            = var.config
   endpoint_bindings = var.endpoint_bindings
-  machines          = var.machines
   model_uuid        = var.model_uuid
   name              = var.app_name
 }
