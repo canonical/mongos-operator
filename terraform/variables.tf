@@ -30,6 +30,12 @@ variable "config" {
   default     = {}
 }
 
+variable "constraints" {
+  description = "String listing constraints for this application. Not used by the mongos operator since it is a subordinate charm"
+  type        = string
+  default     = null
+}
+
 variable "endpoint_bindings" {
   description = "Map of endpoint bindings"
   type = set(object({
@@ -48,4 +54,10 @@ variable "revision" {
   description = "Charm revision"
   type        = number
   default     = null
+}
+
+variable "units" {
+  description = "Unit count. Not used by the mongos operator since it is a subordinate charm"
+  type        = number
+  default     = 1
 }

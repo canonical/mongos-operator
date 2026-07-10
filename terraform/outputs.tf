@@ -6,6 +6,16 @@ output "application" {
   value       = juju_application.mongos
 }
 
+output "offers" {
+  description = "Map of all offers exposed by the single charm."
+  value       = {}
+}
+
+output "provides" {
+  description = "Map of all \"provides\" endpoints"
+  value       = {}
+}
+
 # Required integration endpoints
 output "requires" {
   description = "Map of all \"requires\" endpoints"
