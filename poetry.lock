@@ -1688,14 +1688,14 @@ files = [
 
 [[package]]
 name = "mongo-charms-single-kernel"
-version = "1.8.51"
+version = "1.8.52"
 description = "Shared and reusable code for Mongo-related charms"
 optional = false
 python-versions = "<4.0,>=3.12"
 groups = ["main", "integration"]
 files = [
-    {file = "mongo_charms_single_kernel-1.8.51-py3-none-any.whl", hash = "sha256:ff05c09a8e366e64e4e42ae6b979fca99d615cd88659936cc8091c47da7b013e"},
-    {file = "mongo_charms_single_kernel-1.8.51.tar.gz", hash = "sha256:197c9d72360f131ad099d0be1240fd468fc4f0a3dd713e479526b330991bae5b"},
+    {file = "mongo_charms_single_kernel-1.8.52-py3-none-any.whl", hash = "sha256:3719034d7fb171ed7adc3d402d21c5fbdc23ff60b1bea31785f375806f9c9c4d"},
+    {file = "mongo_charms_single_kernel-1.8.52.tar.gz", hash = "sha256:651eca1eaf6407874cc2b2994b7fa1e5e6039ea95e7d857bb41bbd99b3675a10"},
 ]
 
 [package.dependencies]
@@ -1706,7 +1706,7 @@ charmlibs-snap = ">=1.0.0,<2.0.0"
 cosl = "*"
 cryptography = "*"
 dacite = ">=1.9.0,<1.10.0"
-data-platform-helpers = ">=0.1.7"
+data-platform-helpers = ">=1.1.0"
 deepmerge = ">=2.0"
 google-api-core = ">=2.17.0,<2.18.0"
 google-cloud-storage = ">=2.16.0,<2.17.0"
@@ -3404,4 +3404,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.12.0"
-content-hash = "31eaf1bda777ffa666978894eb5966fbd3c1dd80a2abef3cdfed2a29aab502d5"
+content-hash = "e24cae27f18ad8a3b4f46ccd47747cc7609ab471e05cdc9811cbf629ed50b36b"
