@@ -8,6 +8,7 @@ module "mongos" {
 resource "juju_application" "data-integrator" {
   charm {
     name    = "data-integrator"
+    base    = "ubuntu@22.04"
     channel = "latest/stable"
   }
   model_uuid = var.model_uuid
