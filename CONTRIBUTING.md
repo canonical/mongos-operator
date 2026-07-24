@@ -47,6 +47,27 @@ tox run -e integration   # integration tests
 tox                      # runs 'lint' environment
 ```
 
+### Terraform tests
+
+The Terraform test module expects an existing Juju model and takes the model UUID as input. This
+is a primitive smoke test: it only deploys Mongos with `data-integrator` and performs no behavioral
+checks.
+
+```shell
+juju add-model test-mongos-tf
+model_uuid="$(juju show-model test-mongos-tf | awk -F': ' '/model-uuid/ {print $2}')"
+tox run -e terraform-test -- "${model_uuid}"
+```
+
+After testing, clean up the Terraform resources and Juju model:
+
+```shell
+cd terraform/tests
+terraform destroy -var "model_uuid=${model_uuid}" -auto-approve
+cd -
+juju destroy-model test-mongos-tf --destroy-storage --force --no-prompt
+```
+
 ## Build the charm
 
 Build the charm in this git repository using:
