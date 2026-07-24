@@ -61,7 +61,7 @@ jobs:
       - name: Lint / format / validate TF modules
         run: tox run -e terraform-lin
 
-terraform-test:
+  terraform-test:
     name: Terraform - Run terraform tests
     needs:
       - terraform-lint
