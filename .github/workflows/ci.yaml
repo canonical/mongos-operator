@@ -59,7 +59,7 @@ jobs:
         run: pipx install tox
 
       - name: Lint / format / validate TF modules
-        run: tox run -e terraform-lin
+        run: tox run -e terraform-lint
 
   terraform-test:
     name: Terraform - Run terraform tests
