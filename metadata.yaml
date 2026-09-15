@@ -43,7 +43,7 @@ requires:
     interface: mongos_client
     scope: container
     limit: 1
-    optional: true
+    optional: false
   cluster:
     interface: config-server
     limit: 1
