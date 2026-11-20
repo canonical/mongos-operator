@@ -15,6 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions: {}
+    cache-mode: none
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -86,6 +87,7 @@ jobs:
     timeout-minutes: 217 # Sum of steps `timeout-minutes` + 5
     permissions:
       contents: read
+    cache-mode: none
     steps:
       - name: Disk usage
         timeout-minutes: 1
